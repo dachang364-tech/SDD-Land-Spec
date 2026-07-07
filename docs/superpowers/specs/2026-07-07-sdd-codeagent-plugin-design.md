@@ -277,7 +277,8 @@ feature-payment.md
    - 对每个任务：写失败测试 → 实现 → 通过测试 → 提交。
    - 每次提交前调用 `verification-before-completion`。
 4. **PreToolUse Hook**（v0.1）不拦截源码路径；只对 `docs/vX.Y.Z/**` 文档路径做阶段许可检查。subagent 写源码时**无路径白名单约束**。
-5. 任务完成后，把 `artifacts.features[name].status` 从 `coding` 改为 `done`。
+5. **subagent 状态同步**：subagent 与主 Agent **不共享** `state.json`。subagent 完成后必须返回结构化总结：`{ 完成的任务 IDs、commit hashes、测试输出、未完成原因 }`；主 Agent 据此把 `artifacts.features[name].status = done`，并把任何遗漏写进 `compaction_snapshot`。
+6. 若 subagent 中途未返回总结（崩溃/超时），主 Agent 下次 `SessionStart` 触发 `sdd-status-reader`，识别 `status = coding` 但无最近 commit 时主动提示「上一次 subagent 可能中断，是否重新调度」。
 
 ### 7.6 `sdd-bugfix-triage`
 
@@ -414,7 +415,7 @@ Plugin 根目录下的 `build.sh`：
 v0.1 视为完成，当且仅当：
 
 1. Plugin 能从本仓库安装进 Claude Code。
-2. 用户能在一个空白仓库里依次运行 `/sdd.init` → `/sdd.new v0.0.1` → `/sdd.prd`（或手动放置 `prd.md`） → `/sdd.spec` → `/sdd.trd` → `/sdd.feature demo` → `/sdd.code demo`，全程无需人工介入。
+2. 用户能在一个空白仓库里依次运行 `/sdd.init` → `/sdd.new v0.0.1` → `/sdd.prd` → `/sdd.spec` → `/sdd.trd` → `/sdd.feature demo` → `/sdd.code demo`，**仅在阶段门控点（PRD / spec / trd 批准）由用户做一次批准**，阶段之间不需用户写额外指导。
 3. 在错误阶段试图改 `docs/vX.Y.Z/` 下的文档（如在 TRD 阶段写 `specs/spec.md`）会被 PreToolUse 硬拦截，并提示「请运行 /sdd.<对应阶段>」。
 4. `/sdd.status` 在每个阶段都准确反映当前状态（包括 PRD 状态、`active_bugfix`）。
 5. `/sdd.archive` 能把 `docs/v0.0.1/` 通过 `git mv` 迁移到 `docs/archive/v0.0.1/`（包括 `prd.md`），原位置不再保留，并清空 `state.json.active_bugfix`。
