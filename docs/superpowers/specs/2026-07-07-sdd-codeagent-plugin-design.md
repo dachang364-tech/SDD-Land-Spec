@@ -4,6 +4,7 @@
 - **Status**: Approved (brainstorming complete)
 - **Owner**: Dachang (@dachang364-tech)
 - **Repository**: `SDD-Land-Spec` (root of this repo)
+- **Implementation language**: 中文（zh-CN）— 所有用户可见的文案、模板、命令输出、状态信息、文档示例、错误提示、commit 模板均使用中文。命令名、文件路径、技术术语、配置键保留英文。
 
 ## 1. Purpose & Context
 
@@ -35,6 +36,21 @@ project-local conventions.
   borrowed from Spec-Kit (and customised minimally).
 - Build a cross-platform runtime abstraction. Each platform gets its own
   thin adapter directory.
+
+### Implementation Language
+
+All user-facing strings inside the Plugin — Skill bodies, command
+output, status reports, templates (`spec.md`, `trd.md`, `feature-*.md`,
+ADR, bugfix record), error messages, git commit-message suggestions —
+are written in **Simplified Chinese**. The following remain in English
+on purpose:
+
+- Slash-command names (`/sdd.*`) — they are identifiers typed by the user.
+- File paths, glob patterns, manifest keys.
+- Code identifiers, configuration keys, technical terms commonly used
+  in English (`ADR`, `JSON`, `glob`, etc.).
+- Direct quotes from external framework docs (e.g. Superpowers Skill
+  titles) when used verbatim.
 
 ## 2. Architecture Overview
 
