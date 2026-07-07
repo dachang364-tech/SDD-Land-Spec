@@ -346,12 +346,94 @@ DR 文件头部：
 
 不强制所有 `/sdd.spec` / `/sdd.prd` 调用都先写 DR —— 对纯 typo / 表达修订（小工作量、低风险）仍可走原始 Skill；DR 是**显式记录器**，不替代直接修改。
 
+### 3.3 CONSTITUTION.md 宪法
+
+`.sdd/CONSTITUTION.md` 是**项目级流程强制约束文件**，与 `CLAUDE.md` / `AGENTS.md`（项目偏好）职责不重叠。三者加载顺序与优先级：
+
+| 文件 | 作用域 | 谁写 | 优先级 |
+| ---- | ------ | ---- | ------ |
+| `.sdd/CONSTITUTION.md` | SDD Plugin 强控流程 | Plugin 生成默认骨架 + 项目 owner 增删 | **最高** |
+| `CLAUDE.md` / `AGENTS.md` | 项目偏好（语言、风格、命名） | 项目 owner 自由写 | 次高 |
+| `Skill description` | Plugin 各 Skill 自身的入口约定 | Plugin 自身 | 最低 |
+
+启动 Claude Code 时按 **CONSTITUTION → CLAUDE.md → Skill description** 顺序加载。后加载的不覆盖前者 —— 宪法是**最高优先级**。
+
+#### 文件位置与生成时机
+
+- 路径：`.sdd/CONSTITUTION.md`（与 `state.json` / `progress.md` 同级）
+- 由 `sdd-init-runner` 在 `/sdd.init` 时生成**全量默认骨架**（八章节占位 + 默认条款）
+- 项目 owner 可自由增删章节、调整条款或降低 severity；Plugin **不**阻止修改，只在读取时按当前文件内容生效
+
+#### 严重程度语义
+
+每条规则带 `severity` 标记：
+
+| severity | 含义 | 违反时处理 |
+| -------- | ---- | ---------- |
+| `must`   | 强制约束 | PreToolUse Hook 拒绝 + 报错；如需跳过，先改 severity 为 `should` |
+| `should` | 推荐约束 | PreToolUse Hook 警告 + 提示；可手动 override |
+| `may`    | 提示 | 不警告、不拦截；仅作信息 |
+
+#### 八章节骨架（Plugin 默认全量内容）
+
+```markdown
+# CONSTITUTION
+
+> SDD Plugin 项目级流程强制约束。修改请保留章节结构，只改 severity / 细则。
+
+## 1. 阶段门控
+- must: phase 推进必须由 `/sdd.<阶段>` 命令入口触发，禁止直接 Edit 切 phase
+
+## 2. DR 流程
+- must: 任何修改代码（fix / feat / chg / arch）前必须先有 accepted DR
+- must: 跨版本修改代码必须先 `/sdd.dr` 起草 DR，不能 `/sdd.code` 绕过 DR
+- must: 修改 specs/spec.md / feature-*.md 前必须有 spec / doc DR accepted
+- must: 修改 prd.md 前必须有 spec DR accepted（PRD → spec 顺序）
+- must: DR 关闭前，spec.md 顶部「关联 DRs」表必须已 append 本 DR
+- may: typo 类修订可跳过 DR
+
+## 3. Skill 身份
+- must: 各 Skill 边界不可越权（例：sdd-spec-writer 不能改代码）
+
+## 4. subagent 调度
+- must: 主 Agent 是 state.json 的唯一写者
+- must: subagent 通过 `.sdd/progress.md` 间接表达进度
+
+## 5. Hooks 行为
+- must: 不允许绕过 PreToolUse 直接 Write docs/vX.Y.Z/ 路径
+- must: 写文档必须通过 `/sdd.<阶段>` 命令入口，命令入口内部切 phase 后再调 Skill
+
+## 6. 多 Skill 协作
+- must: skill 之间的接口契约不可破坏（plan → code、dr → plan 等）
+
+## 7. 错误处理
+- must: 错误状态展示与恢复路径一致，不允许静默吞错
+
+## 8. 门控破坏检测
+- must: /sdd.doctor 必须检查最近 N 次状态变化是否违反宪法 §1-§7
+```
+
+#### 读取点
+
+| 读取点 | 时机 | 行为 |
+| ------ | ---- | ---- |
+| **SessionStart Hook** | Claude Code 启动 / 恢复会话 | 读取全文注入 `additionalContext`；主 Agent + subagent + Skill 都受约束 |
+| **PreToolUse Hook** | 即将 Write/Edit 文档类路径 | 比对操作意图与 `must` 条，违反则**拒绝** + 报错；`should` 警告 |
+| **主流程 Skill 入口** | sdd-dr-writer / sdd-plan-writer / sdd-spec-writer / sdd-code-orchestrator 启动时 | 读 §1「阶段门控」+ §2「DR 流程」作前置判断依据 |
+| **/sdd.doctor** | 诊断运行时 | 跑 §8「门控破坏检测」检查最近 N 次状态变化是否违反宪法 |
+
+#### 与 §3.2 DR 流程的关系
+
+宪法是 DR 流程的**强制执行层**，§3.2 是**流程定义层**。DR 流程定义了"如何走变更"，宪法定义了"必须走变更（不可绕过）"。任何识别到代码变更的场景（包括 bugfix、refactor、feature、arch）都强制走 DR 流程；直接 `/sdd.code` 改代码而不先起草 DR 会被宪法 §2 拒绝。
+
 ## 4. 目录结构
 
 ```
 <project root>/
 ├── .sdd/
-│   └── state.json
+│   ├── CONSTITUTION.md        # 项目级流程强制约束（Plugin 默认骨架 + 项目 owner 增删）
+│   ├── state.json             # 状态机持久化
+│   └── progress.md            # subagent ledger（实现进度真账）
 ├── docs/
 │   ├── vX.Y.Z/                         # 当前进行中的版本
 │   │   ├── research.md                  # 需求调研（Plugin 模板规范）
@@ -457,6 +539,7 @@ fix-<ID>.md            <- fix DR 触发的实现层：DR `accepted` 后由 /sdd.
 3. 创建 `docs/` 目录结构。
 4. **不**预创建任何版本目录；版本目录由 `/sdd.new` 启动。
 5. 若项目根不是 git 仓库，**不强制** git init，但提示「建议先 `git init` 以便后续归档写入 commit」。
+6. 写入 `.sdd/CONSTITUTION.md` 默认骨架（见 §3.3 八章节占位 + 默认 `must` 条款）。项目 owner 可自由增删。
 
 ### 7.1 `sdd-new-version-bootstrapper`
 
@@ -679,6 +762,8 @@ docs/vX.Y.Z/decisions/<tag>-NNNN-<slug>.md
 | 文档目录 vs state.json 路径一致     | 每个 `artifacts.*.path` 字段对应的文件真实存在                            |
 | `.sdd/progress.md` 与 git log 一致   | ledger 中标记 complete 的 task IDs 都能在 `git log` 中找到对应 commit hash 段 |
 | 顶层模块变更提示                    | 最近 N 次提交新增了 `src/<new-module>/` 且没有对应 `decisions/*.md` 时，输出 `⚠️ 建议补一条 DR` |
+| 宪法（CONSTITUTION）存在           | `.sdd/CONSTITUTION.md` 文件存在且能解析                                         |
+| CONFORMANCE 检查                   | 读 CONSTITUTION §8「门控破坏检测」条款 + 最近 N 次 `git log` + `state.json.artifacts.*.drs` 数组，检查是否违反 §1-§7 must 条款 |
 
 输出格式示例：
 
@@ -698,8 +783,15 @@ Plugin 自身安装
   ⚠️ phase = FEATURE_PLAN 但 specs/spec.md.status = draft（请运行 /sdd.spec 批准）
   ✅ 文档目录 vs state.json 路径一致
   ✅ progress.md 与 git log 一致
+  ✅ CONSTITUTION.md 存在
 
-下一步建议：批准 specs/spec.md 后再 /sdd.plan <name>。
+CONFORMANCE（最近 10 次提交 vs 宪法 §1-§7）
+  ❌ commit a1b2c3d 修改 src/payment/index.ts，但 state.json.drs 中无对应 fix/feat/chg DR
+     违反 CONSTITUTION §2 "任何修改代码前必须有 accepted DR"
+  ⚠️ commit d4e5f6a 修改 docs/v1.0.1/specs/spec.md，但 spec.md 顶部「关联 DRs」表未 append 本 DR
+     违反 CONSTITUTION §2 "DR 关闭前 spec.md 顶部必须已 append 本 DR"
+
+下一步建议：/sdd.dr fix <title> 起草 DR accept 后再继续。
 ```
 
 **已知不做**：不检测外部框架（Superpowers / Spec-Kit / OpenSpec）的可达性 —— 这是用户的环境配置问题，不属于 Plugin 自检范围。
@@ -708,18 +800,22 @@ Plugin 自身安装
 
 | Hook                    | 触发时机                  | 动作                                                                       |
 | ----------------------- | ------------------------- | -------------------------------------------------------------------------- |
-| `SessionStart`          | Agent 启动 / 恢复会话     | 读取 `state.json`，把摘要 `<plugin>active version=...phase=...missing=[...] next=/sdd.<x>` 注入 context（Claude Code 的 `hookSpecificOutput.additionalContext`）。 |
-| `PreToolUse Write/Edit` | 即将写入                  | **仅检查文档类路径**：目标路径命中 `docs/vX.Y.Z/**` 时，按路径查「该路径对应的合法阶段集合」是否包含 `state.json.phase`。<br>- `research.md` ↔ `RESEARCH`<br>- `prd.md` ↔ `PRD`<br>- `specs/spec.md` ↔ `SPEC`<br>- `plans/feature-*.md` ↔ `FEATURE_PLAN`、`CODE`<br>- `plans/fix-*.md` ↔ `FEATURE_PLAN`、`CODE`<br>- `decisions/**` ↔ 任何阶段（DR 是横切产物）<br>**phase 上下跳的处理**：用户想从 SPEC 阶段回跳改 `prd.md`，**不能**直接 Edit —— 必须调用 `/sdd.prd` 等命令入口。该命令入口在内部把 `phase` 切到目标阶段后，再调起对应的 Skill 写文档；Hook 始终读到的是**已稳定**的 phase，不会看到「写之前的瞬态切换」。<br>越阶段 → 退出码 2 + 提示「请运行 `/sdd.<对应阶段>`」。**v0.1 不拦截源码路径**。 |
+| `SessionStart`          | Agent 启动 / 恢复会话     | **同时读取** `state.json` 与 `.sdd/CONSTITUTION.md`；把摘要 `<plugin>active version=...phase=...missing=[...] next=/sdd.<x>` + CONSTITUTION 全文 注入 context（Claude Code 的 `hookSpecificOutput.additionalContext`）。 |
+| `PreToolUse Write/Edit` | 即将写入                  | **三层检查**（依次短路）：<br>**L1 路径合法性**：目标路径命中 `docs/vX.Y.Z/**` 时，按路径查「该路径对应的合法阶段集合」是否包含 `state.json.phase`，越阶段退出码 2。<br>- `research.md` ↔ `RESEARCH`<br>- `prd.md` ↔ `PRD`<br>- `specs/spec.md` ↔ `SPEC`<br>- `plans/feature-*.md` ↔ `FEATURE_PLAN`、`CODE`<br>- `plans/fix-*.md` ↔ `FEATURE_PLAN`、`CODE`<br>- `decisions/**` ↔ 任何阶段（DR 是横切产物）<br>**phase 上下跳的处理**：用户想从 SPEC 阶段回跳改 `prd.md`，**不能**直接 Edit —— 必须调用 `/sdd.prd` 等命令入口。该命令入口在内部把 `phase` 切到目标阶段后，再调起对应的 Skill 写文档；Hook 始终读到的是**已稳定**的 phase，不会看到「写之前的瞬态切换」。<br>越阶段 → 退出码 2 + 提示「请运行 `/sdd.<对应阶段>`」。<br>**L2 宪法 must 条款**：识别本次写入语义（命令意图或路径 → 类别映射，例如写 `src/**` = 「改代码」、写 `docs/vX.Y.Z/specs/spec.md` = 「改 spec」、写 `plans/fix-*.md` = 「fix plan」）。比对 CONSTITUTION §2 的 must 条款：<br>- 「改代码」 → 必须有 accepted fix/feat/chg/arch DR（否则退出码 2 + 指向 `/sdd.dr`）<br>- 「改 spec」 → 必须有 accepted spec/doc DR（否则退出码 2 + 指向 `/sdd.dr`）<br>- 「改 prd」 → 必须有 accepted spec DR（否则退出码 2 + 指向 `/sdd.dr`）<br>应条款缺失时**不**硬拦，提示用户去 `/sdd.dr` 起草；用户在 `/sdd.dr` 完成 accept 后重试原操作。<br>**L3 宪法 should 条款**：警告不拦截。<br>**v0.1 不拦截源码路径**（路径合法性只在 L1 文档类路径检查；源码路径只走 L2 宪法检查）。 |
 | `PostToolUse Write/Edit`| 写入完成                  | ① 文档路径命中 `docs/vX.Y.Z/**` → 更新对应 `artifacts.<name>.status = draft`、`updated_at` 时间戳。<br>② 源码路径 → 更新 `state.json.last_modified`；若新增了顶层模块，提示「建议补一条 DR（建议 tag = `arch`）」。 |
 | `PreCompact`            | 会话压缩                  | 把当前阶段产物路径快照写入 `state.json.compaction_snapshot`。下次 `SessionStart` 会重新注入，使被压缩过的 context 能找回这些文件路径。 |
 
-Hooks **不**对方法论本身做二次判断（不审 spec 文字、不做 TDD 强制 —— 这些都在 Skill 里）。Hooks 只守护路径合法性与状态机一致性。
+Hooks **不**对方法论本身做二次判断（不审 spec 文字、不做 TDD 强制 —— 这些都在 Skill 里）。Hooks 只守护路径合法性、宪法强控、状态机一致性。
 
 ## 9. 错误处理
 
 | 失败场景                            | 用户可见的表现                                                | 恢复方式                                                   |
 | ----------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------- |
 | `state.json` 缺失 / 损坏            | 「项目未初始化。请运行 `/sdd.init`。」                        | 运行 `/sdd.init`                                           |
+| CONSTITUTION.md 缺失                | SessionStart 警告「项目无宪法强控」；PreToolUse L2 跳过只跑 L1 | `/sdd.init` 重生，或手动从模板拷贝                         |
+| 修改代码但无 accepted DR            | PreToolUse 退出码 2 + 提示「请先 `/sdd.dr fix|feat|chg|arch <title>` 起草 DR 并 accept」 | `/sdd.dr <tag> <title>` accept 后重试                       |
+| 修改 spec 但无 accepted spec/doc DR | PreToolUse 退出码 2 + 提示「请先 `/sdd.dr spec|doc <title>` 起草 DR 并 accept」 | `/sdd.dr spec|doc <title>` accept 后重试                    |
+| 修改 prd 但无 accepted spec DR      | PreToolUse 退出码 2 + 提示「PRD 修订需先有关联 spec 变更 DR」 | 先改 spec 或起草 spec DR accept                          |
 | PRD 缺失或不符合 schema            | `/sdd.spec` 拒绝并提示「请先运行 `/sdd.prd` 或手动补齐 PRD 至符合规范。」 | 运行 `/sdd.prd` 或手动补齐 PRD 章节                     |
 | 阶段跳跃（例如无 PRD 直接 `/sdd.spec`） | 命令拒绝并说明原因                                            | 运行前置命令                                               |
 | 文档路径在错误阶段被改              | PreToolUse 退出码 2 并提示「请运行 /sdd.<对应阶段>」           | 切换到正确阶段                                             |
@@ -821,3 +917,10 @@ v0.1 视为完成，当且仅当：
    1. `/sdd.code <feature>` 完成后，用户回答「不符合」，触发起草 DR（`/sdd.dr fix <title>`），DR 状态走 `proposed → accepted → coded`，过程中 `state.json.drs` 与受影响 spec 资产的「关联 DRs」双向同步更新。
    2. `/sdd.dr spec` 修改 spec.md 表达后，状态走 `proposed → accepted → merged`，spec 资产对应的章节「变更履历」表自动 append 一行。
    3. 把已 `coded` 的 DR supersede：新 DR `supersedes` 含旧 DR ID；旧 DR `superseded_by` 自动被填入新 DR ID；二者 spec 资产「关联 DRs」表都保留两行（历史可查）。
+8. **宪法强控验证**：
+   1. `/sdd.init` 后 `.sdd/CONSTITUTION.md` 存在且包含八章节默认骨架（§1 阶段门控 / §2 DR 流程 / §3 Skill 身份 / §4 subagent / §5 Hooks / §6 多 Skill 协作 / §7 错误处理 / §8 门控破坏检测）。
+   2. SessionStart 启动时，CONSTITUTION 全文注入 context；主 Agent + subagent 都受约束。
+   3. 用户尝试 Write `src/payment/index.ts`（修改代码）但 `state.json.drs` 中无 accepted fix/feat/chg/arch DR → PreToolUse 退出码 2 + 提示「请先 `/sdd.dr fix|feat|chg|arch <title>`」。
+   4. 用户尝试 Edit `docs/vX.Y.Z/specs/spec.md` 但无 accepted spec/doc DR → PreToolUse 退出码 2 + 提示「请先 `/sdd.dr spec|doc <title>`」。
+   5. `/sdd.doctor` 跑 CONFORMANCE 检查，发现最近 N 次提交违反 CONSTITUTION §2 must 条款 → 输出 `❌` 标记并指向具体 commit + 违规条款。
+   6. 项目 owner 修改 CONSTITUTION.md 中某条 `must` 为 `should` → 该条款降级为警告，下次违规不再硬拦。
