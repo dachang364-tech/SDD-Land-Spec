@@ -22,6 +22,8 @@
 - 不重新实现 brainstorming、TDD、verification —— 这些直接消费 Superpowers。
 - 不从零写 spec / plan / tasks 模板 —— 借自 Spec-Kit（只做最小化定制）。
 - 不构建跨平台运行时抽象层。每个平台单独一份薄薄的 adapter 目录。
+- **Plugin 自身不适用 SDD 流程**：Plugin 是工具不是产品。其开发走普通 git workflow（feature branch、PR、CHANGELOG），不创建 `docs/vX.Y.Z/`、`state.json`、不跑 `/sdd.*`。
+- **Plugin 的设计文档与 SDD 项目产物分离**：本设计文档目前位于 `docs/superpowers/specs/` 仅因 brainstorming skill 的默认输出位置；正式落地时 Plugin 仓库的设计/计划/ADR 文档应放在独立目录（例如 `plugin-docs/`、`docs/plugin/`），避免与使用 Plugin 的项目自身产生的 `docs/vX.Y.Z/` 命名冲突。
 
 ### 1.3 实现语言约束
 
@@ -203,11 +205,13 @@ feature-payment.md
 | `/sdd.feature X`  | `sdd-feature-planner`       | `docs/vX.Y.Z/plans/feature-X.md`                      | trd 已批准              |
 | `/sdd.code X`     | `sdd-code-orchestrator`     | 源文件（通过 subagent + TDD）                         | `feature-X.md` 存在     |
 | `/sdd.bugfix`     | `sdd-bugfix-triage`         | `decisions/bugfix-*.md` + 代码                        | phase = CODE            |
-| `/sdd.adr`        | `sdd-adr-writer`            | `docs/vX.Y.Z/decisions/NNNN-*.md`                     | —                       |
+| `/sdd.adr`        | `sdd-adr-writer`            | `docs/vX.Y.Z/decisions/NNNN-*.md`                     | phase ≥ INITED（横切） |
 | `/sdd.status`     | `sdd-status-reader`         | （无）                                                | —                       |
 | `/sdd.archive`    | `sdd-archiver`              | `docs/archive/vX.Y.Z/`                                | phase = RELEASE         |
 
 每个 Skill 同时支持自然语言触发：Skill 的 `description` 字段按用户可能的说法撰写，所以用户即使说「帮我写一下支付功能的 spec」，也能命中 `sdd-spec-writer`，不必输入斜杠命令。
+
+**横切命令**：`/sdd.adr` 是唯一的横切命令，可从任何阶段（phase ≥ INITED）调用，写入 `docs/vX.Y.Z/decisions/`，不改变 `state.json.phase`。其余命令都是顺序主流程命令。
 
 ## 6. 各阶段外部框架组合
 
@@ -276,6 +280,8 @@ feature-payment.md
 5. 任务完成后，把 `artifacts.features[name].status` 从 `coding` 改为 `done`。
 
 ### 7.6 `sdd-bugfix-triage`
+
+**职责范围**：本 Skill 只做「流程路由」（决定走哪条分支、生成什么记录），不替代 Superpowers `systematic-debugging` 做根因诊断。
 
 决策树（由 Skill 内部执行，不是用户驱动）：
 
@@ -399,7 +405,8 @@ Plugin 根目录下的 `build.sh`：
 
 - **Hook 脚本语言**：Claude Code 同时支持 bash 与 node hook，OpenCode 可能不同。逐 adapter 决定而非一刀切。
 - **Bugfix 自动分类**：当前由 Skill 内部走决策树。若用户觉得过于严格，后续可加启发式规则（文件数量、变更行数、是否触及 spec 表面）做预分类。
-- **多版本并行**：当前设计假定同一时间只有一个活跃版本。若出现并行维护分支，`guards` 需要按 `version` 区分。
+- **跨版本 PRD 演子**：当前设计假定新版本独立起，PRD 需从 `docs/archive/<prev>/prd.md` 手工复制后再改。后续可加 `/sdd.new v1.0.1 --base v1.0.0` 简化。
+- **多版本并行**：当前设计假定同一时间只有一个活跃版本。若出现并行维护分支（如同时维护 v1.0.x 与 v2.0.0），`state.json` 当前只支持单一版本 —— 后续可扩展为多版本数组。
 - **Plugin 分发**：v0.1 稳定后，对接公开 plugin 市场（Claude Code 的 `claude-plugins-official`、OpenCode 的 loadout registry）。
 
 ## 13. 验收标准
