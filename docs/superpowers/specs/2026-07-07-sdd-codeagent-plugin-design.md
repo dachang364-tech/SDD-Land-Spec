@@ -82,9 +82,12 @@ NONE ──/sdd.init──▶ INITED ──/sdd.new vX.Y.Z──▶ PRD ──/s
                                                                 （逐个 feature）
                                                                 FEATURE_PLAN ──/sdd.code──▶ CODE
                                                                                             │
-                                                                                            │ /sdd.bugfix
                                                                                             ▼
-                                                                                        BUGFIX ──▶ CODE
+                                                                                       (CODE 子状态)
+                                                                                            │
+                                                                                            │ /sdd.bugfix (可选多次)
+                                                                                            ▼
+                                                                                       active_bugfix: "bugfix-0002-fix-null"
                                                                                             │
                                                                                             ▼
                                                                                         RELEASE
@@ -93,7 +96,7 @@ NONE ──/sdd.init──▶ INITED ──/sdd.new vX.Y.Z──▶ PRD ──/s
                                                                                         ARCHIVED
 ```
 
-阶段可以重复进入（例如在 `TRD` 阶段回头编辑 `spec.md` 会写一个新版本，不会重置下游产物）。`state.json.phase` 记录达到的最高阶段；各产物的具体状态存放在 `state.json.artifacts.<name>.status`。
+阶段可以重复进入（例如在 `TRD` 阶段回头编辑 `spec.md`，phase 临时跳回 `SPEC`，改完后回到 `TRD`）。`state.json.phase` 是**当前活动阶段**，不是历史最高。各产物的具体状态存放在 `state.json.artifacts.<name>.status`。
 
 **关于 PRD 阶段**：默认假设 `docs/vX.Y.Z/prd.md` 在 `/sdd.new` 之前就已存在（由产品方提供、从前一版本继承，或由 `/sdd.prd` 在 `/sdd.new` 之后生成）。`/sdd.spec` 必须先看到 PRD 才能产出 User Story —— 这是 SDD 流程的输入契约。若 PRD 缺失，`/sdd.spec` 拒绝运行并提示「运行 `/sdd.prd` 生成或手动导入 PRD」。
 
@@ -105,7 +108,7 @@ NONE ──/sdd.init──▶ INITED ──/sdd.new vX.Y.Z──▶ PRD ──/s
   "phase": "TRD",
   "branch": "feat/v1.0.1-payment",
   "artifacts": {
-    "prd":   { "path": "docs/v1.0.1/prd.md",      "status": "approved", "updated_at": "2026-07-07T09:00:00Z" },
+    "prd":   { "path": "docs/v1.0.1/prd.md",       "status": "approved", "updated_at": "2026-07-07T09:00:00Z" },
     "spec":  { "path": "docs/v1.0.1/specs/spec.md",  "status": "approved", "updated_at": "2026-07-07T10:00:00Z" },
     "trd":   { "path": "docs/v1.0.1/plans/trd.md",   "status": "draft",    "updated_at": "2026-07-07T11:00:00Z" },
     "features": [
@@ -120,9 +123,12 @@ NONE ──/sdd.init──▶ INITED ──/sdd.new vX.Y.Z──▶ PRD ──/s
     "trd_covered_modules": ["src/payment/**", "src/checkout/**"],
     "code_writes_outside_covered": "block"
   },
+  "active_bugfix": null,
   "compaction_snapshot": null
 }
 ```
+
+**status 取值**：`missing` | `draft` | `approved` | `deprecated`。`/sdd.new` 不预创建 `prd.md`，因此新建版本后 `artifacts.prd.status = "missing"`；`/sdd.prd` 完成后变 `draft`，用户批准后变 `approved`。`spec` / `trd` / `features.*` 同理。
 
 ## 4. 目录结构
 
