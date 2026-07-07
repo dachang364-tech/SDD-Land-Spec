@@ -312,7 +312,7 @@ Reports: current `version`, `phase`, missing artifacts, open
 | `SessionStart`            | Agent start / resume        | Read `state.json`; inject summary `<plugin>active version=...phase=...missing=[...] next=/sdd.<x>` into context (Claude Code `hookSpecificOutput.additionalContext`). |
 | `PreToolUse Write/Edit`   | About to write source       | Compare target file path against `state.json.guards.trd_covered_modules`. In scope → allow. Out of scope → exit 2 + message `"<path> is outside vX.Y.Z coverage scope. Update trd.md or run /sdd.spec to extend scope."`. |
 | `PostToolUse Write/Edit`  | Source write completed      | Update `state.json.last_modified`; if the file adds a new top-level module, post a hint to add an ADR. |
-| `PreCompact`              | Conversation compaction     | Snapshot current phase artifact paths into `state.json.compaction_snapshot`. |
+| `PreCompact`              | Conversation compaction     | Snapshot current phase artifact paths into `state.json.compaction_snapshot`. `SessionStart` re-injects this snapshot on the next session so a compacted context can recover the file paths it lost. |
 
 The hooks **do not** second-guess methodology (no quality checks on
 spec prose, no TDD enforcement — those live inside Skills). They only
