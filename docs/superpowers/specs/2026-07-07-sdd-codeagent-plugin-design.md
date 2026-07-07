@@ -98,22 +98,20 @@ NONE --/sdd.init--> INITED --/sdd.new vX.Y.Z--> RESEARCH --/sdd.prd--> PRD --/sd
                                                                                                                   ARCHIVED
 ```
 
-如果你的 Markdown 渲染器支持 mermaid，下面的版本会自动渲染为流程图（无等宽字体错位问题）：
+如果你的 Markdown 渲染器支持 Mermaid（如 GitHub、Obsidian、Typora ≥ 1.0），下面的版本会自动渲染为流程图（无等宽字体错位问题）：
 
 ```mermaid
-stateDiagram-v2
-    [*] --> NONE
-    NONE --> INITED: /sdd.init
-    INITED --> RESEARCH: /sdd.new vX.Y.Z
-    RESEARCH --> PRD: /sdd.prd
-    PRD --> SPEC: /sdd.spec
-    SPEC --> TRD: /sdd.trd
-    TRD --> FEATURE_PLAN: /sdd.feature &lt;name&gt;<br/>(per-feature, repeatable)
-    FEATURE_PLAN --> CODE: /sdd.code &lt;name&gt;
-    CODE --> CODE: /sdd.bugfix<br/>(optional, repeatable)
-    CODE --> RELEASE: (user manual)
-    RELEASE --> ARCHIVED: /sdd.archive
-    ARCHIVED --> [*]
+flowchart TD
+    NONE[("NONE")] -- /sdd.init --> INITED["INITED"]
+    INITED -- "/sdd.new vX.Y.Z" --> RESEARCH["RESEARCH"]
+    RESEARCH -- /sdd.prd --> PRD["PRD"]
+    PRD -- /sdd.spec --> SPEC["SPEC"]
+    SPEC -- /sdd.trd --> TRD["TRD"]
+    TRD -- "/sdd.feature &lt;name&gt;<br/>(per-feature, repeatable)" --> FEATURE_PLAN["FEATURE_PLAN"]
+    FEATURE_PLAN -- "/sdd.code &lt;name&gt;" --> CODE["CODE"]
+    CODE -- "/sdd.bugfix<br/>(optional, repeatable)" --> CODE
+    CODE -- "(user manual)" --> RELEASE["RELEASE"]
+    RELEASE -- /sdd.archive --> ARCHIVED[("ARCHIVED<br/>(terminal)")]
 ```
 
 **回跳语义**：任意阶段都可通过 `/sdd.<目标阶段>` 命令回跳到上游阶段（详见 §8 PreToolUse Hook 与 §7 各 Skill 的命令入口）。`state.json.phase` 写入由**命令入口**而非 Hook 完成，因此 Hook 看到的总是已稳定的 phase。
