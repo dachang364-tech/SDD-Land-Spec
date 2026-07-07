@@ -215,10 +215,11 @@ feature-payment.md
 | `/sdd.adr`         | `sdd-adr-writer`            | `docs/vX.Y.Z/decisions/NNNN-*.md`                     | phase ≥ INITED（横切） |
 | `/sdd.status`      | `sdd-status-reader`         | （无）                                                | —                       |
 | `/sdd.archive`     | `sdd-archiver`              | `docs/archive/vX.Y.Z/`                                | phase = RELEASE         |
+| `/sdd.doctor`      | `sdd-doctor-runner`         | （无；只读）                                          | —                       |
 
 每个 Skill 同时支持自然语言触发：Skill 的 `description` 字段按用户可能的说法撰写，所以用户即使说「帮我写一下支付功能的 spec」，也能命中 `sdd-spec-writer`，不必输入斜杠命令。
 
-**横切命令**：`/sdd.adr` 是唯一的横切命令，可从任何阶段（phase ≥ INITED）调用，写入 `docs/vX.Y.Z/decisions/`，不改变 `state.json.phase`。其余命令都是顺序主流程命令。
+**横切命令**：`/sdd.adr` 与 `/sdd.doctor` 是横切命令，可从任何阶段（`/sdd.adr` 要求 phase ≥ INITED；`/sdd.doctor` 任意）调用，不改变 `state.json.phase`。其余命令都是顺序主流程命令。
 
 ## 6. 各阶段外部框架组合
 
@@ -355,13 +356,69 @@ Plugin 原生。模板如下：
 
 1. 要求 `phase = RELEASE`（由用户手动设置或通过发布 hook 触发）。
 2. 调用 Spec-Kit `/speckit.converge` 检测各 feature plan 中未完成的工作；若有未完成任务，在用户未明确「强制归档」前拒绝。
-3. **迁移**（非快照）：用 `git mv` 把 `docs/vX.Y.Z/` 整个目录搬到 `docs/archive/vX.Y.Z/`。文档不双份并存。
+3. **探测 git 可用性并自适应迁移**：
+   - 若当前项目根目录是 git 仓库（即 `git rev-parse --is-inside-work-tree` 返回 `true`）：使用 `git mv docs/vX.Y.Z/ docs/archive/vX.Y.Z/`。提交一次 `chore(archive): migrate vX.Y.Z`。
+   - 若当前项目**不是** git 仓库：使用纯文件 `mv docs/vX.Y.Z docs/archive/vX.Y.Z`，并在归档报告末尾追加一行 `⚠️ 当前项目不是 git 仓库，无法写入归档 commit；如需 git 历史，请先 git init 并补一次初始提交。`。
+   - 文档不双份并存，无论 git / 非 git 模式均**先迁移再标记** state.json。
 4. 把 `state.json.phase` 标记为 `ARCHIVED`，清空 `guards`，版本字段保留 `vX.Y.Z` 作为只读历史。
 5. 归档后 `docs/` 下不再有 `vX.Y.Z/` 同名目录；要查阅历史文档只能从 `docs/archive/vX.Y.Z/` 走。
+
+**为什么这么设计**：v0.1 不强制项目必须是 git 仓库（虽然 init 时会鼓励 `git init`）。归档路径语义在两种模式下完全一致 —— 「目录物理迁移到 archive」，唯一的差异是有 git 时由 git 负责记录历史，无 git 时由文件系统负责。
 
 ### 7.10 `sdd-status-reader`
 
 报告：当前 `version`、`phase`、缺失的产物、`proposed` 状态的 ADR、下一步推荐的斜杠命令。
+
+### 7.11 `sdd-doctor-runner`
+
+**职责**：只读诊断命令，输出统一清单。**不**自动修复，**不**改变 `state.json.phase`。横切命令（见 §5）。
+
+诊断项分两组，输出 `✅ / ⚠️ / ❌` 三档：
+
+**A. Plugin 自身安装完整性**（诊断当前 Plugin 仓库是否完整）：
+
+| 检查项                              | 通过条件                                                                 |
+| ----------------------------------- | ------------------------------------------------------------------------ |
+| Plugin manifest                     | `.claude-plugin/plugin.json` 存在，`name` / `version` / `description` 字段非空 |
+| 12 个 Skill 目录                    | `skills/sdd-{init-runner,new-version-bootstrapper,research-writer,prd-writer,spec-writer,trd-writer,feature-planner,code-orchestrator,bugfix-triage,adr-writer,archiver,status-reader,doctor-runner}/SKILL.md` 全部存在 |
+| 13 个 command 文件                  | `commands/sdd.{init,new,research,prd,spec,trd,feature,code,bugfix,adr,status,archive,doctor}.md` 全部存在 |
+| Hooks 配置                          | `hooks/hooks.json` 合法 JSON，四个事件都注册（SessionStart / PreToolUse / PostToolUse / PreCompact） |
+| Templates 齐备                      | `templates/{research,prd,spec,trd,feature-plan,adr,bugfix}.md.tmpl` 全部存在 |
+| Scripts 齐备                        | `scripts/{init,archive,status,render-template}.js`（或 .sh）全部存在     |
+
+**B. 项目状态诊断**（诊断当前正在使用 SDD 的项目仓库）：
+
+| 检查项                              | 通过条件                                                                 |
+| ----------------------------------- | ------------------------------------------------------------------------ |
+| `.sdd/state.json` 可解析            | JSON 合法，schema 字段齐全（`version` / `phase` / `branch` / `artifacts`）|
+| 当前 phase 与文档路径一致           | `phase = PRD` 时 `prd.md.status == approved`；`phase = SPEC` 时 `spec.md.status == approved`；依此类推 |
+| 文档目录 vs state.json 路径一致     | 每个 `artifacts.*.path` 字段对应的文件真实存在                            |
+| `.sdd/progress.md` 与 git log 一致   | ledger 中标记 complete 的 task IDs 都能在 `git log` 中找到对应 commit hash 段 |
+| 顶层模块变更提示                    | 最近 N 次提交新增了 `src/<new-module>/` 且没有对应 `decisions/*.md` 时，输出 `⚠️ 建议补一条 ADR` |
+
+输出格式示例：
+
+```
+/sdd.doctor
+
+Plugin 自身安装
+  ✅ .claude-plugin/plugin.json
+  ✅ 12 个 Skill 目录
+  ⚠️ commands/sdd.doctor.md 缺失（新增命令后忘了同步 commands/）
+  ✅ hooks/hooks.json
+  ✅ Templates 齐备
+  ✅ Scripts 齐备
+
+项目状态（当前仓库）
+  ✅ .sdd/state.json 可解析
+  ⚠️ phase = TRD 但 specs/spec.md.status = draft（请运行 /sdd.spec 批准）
+  ✅ 文档目录 vs state.json 路径一致
+  ✅ progress.md 与 git log 一致
+
+下一步建议：批准 specs/spec.md 后再 /sdd.trd。
+```
+
+**已知不做**：不检测外部框架（Superpowers / Spec-Kit / OpenSpec）的可达性 —— 这是用户的环境配置问题，不属于 Plugin 自检范围。
 
 ## 8. Hooks
 
@@ -399,38 +456,64 @@ Hooks **不**对方法论本身做二次判断（不审 spec 文字、不做 TDD
 
 ## 11. 平台适配策略
 
-真源内容放在 `sources/` 下，每个平台拿到一份薄薄的 adapter，把同一份内容重塑为该平台期望的目录布局。
+**v0.1 范围声明**：本版本仅交付 **Claude Code adapter**。OpenCode / CodeX / Cursor / Copilot CLI 等其他平台**不在 v0.1 范围**，等 Claude Code 版本稳定后再启动跨平台评估（见 §11.1）。
+
+**没有 build.sh、没有 sources/adapters 中间层**（YAGNI）。Claude Code 直接消费仓库根目录，仓库根就是 Plugin 根。预期布局：
 
 ```
-sources/
-├── skills/        （12 个 Skill，每个 Skill 一个目录）
-├── templates/     （research / prd / spec / trd / feature-plan / adr / bugfix）
-├── hooks/         （session-start、pre-write-guard、post-write-track）
-└── scripts/       （init、archive、status）
-
-adapters/
-├── claude-code/
-│   ├── .claude-plugin/plugin.json
-│   ├── commands/                   # /sdd.* 的薄别名
-│   └── hooks/hooks.json
-├── opencode/
-│   └── loadout.json                # OpenCode loadout 定义
-└── codex/
-    └── （CodeX 专属布局）
+sdd-codeagent-plugin/
+├── .claude-plugin/
+│   └── plugin.json                 # Claude Code plugin manifest
+├── commands/                        # /sdd.* 的薄别名（指向同名 Skill）
+│   ├── sdd.init.md
+│   ├── sdd.new.md
+│   ├── sdd.research.md
+│   ├── sdd.prd.md
+│   ├── sdd.spec.md
+│   ├── sdd.trd.md
+│   ├── sdd.feature.md
+│   ├── sdd.code.md
+│   ├── sdd.bugfix.md
+│   ├── sdd.adr.md
+│   ├── sdd.status.md
+│   └── sdd.archive.md
+├── skills/                          # 12 个 Skill，每个 Skill 一个目录
+│   ├── sdd-init-runner/
+│   ├── sdd-new-version-bootstrapper/
+│   ├── sdd-research-writer/
+│   ├── sdd-prd-writer/
+│   ├── sdd-spec-writer/
+│   ├── sdd-trd-writer/
+│   ├── sdd-feature-planner/
+│   ├── sdd-code-orchestrator/
+│   ├── sdd-bugfix-triage/
+│   ├── sdd-adr-writer/
+│   ├── sdd-archiver/
+│   └── sdd-status-reader/
+├── hooks/
+│   └── hooks.json                  # SessionStart / PreToolUse / PostToolUse / PreCompact
+├── templates/                       # research / prd / spec / trd / feature-plan / adr / bugfix
+├── scripts/                         # init / archive / status / template-render
+├── docs/
+│   └── superpowers/
+│       └── specs/
+│           └── 2026-07-07-sdd-codeagent-plugin-design.md   # 本文档
+├── README.md
+└── LICENSE
 ```
 
-Plugin 根目录下的 `build.sh`：
+**安装方式**：`/plugin install <repo-url>`（Claude Code marketplace 或 git 直装）；无需 build 步骤，仓库即产物。
 
-1. 把 `sources/skills/` 复制到各 adapter 的目标位置。
-2. 生成各平台的 manifest / 配置文件。
-3. 在 Skill 实际运行时，把 `sources/templates/` 渲染到 `docs/vX.Y.Z/`。
-4. 跑 smoke 测试。
+**模板渲染**：Skill 运行时由脚本（如 `scripts/render-template.js`）读取 `templates/*.md.tmpl`，把变量替换后写入 `docs/vX.Y.Z/`。这是 Skill 内部步骤，与构建无关。
 
-### 11.1 适配器版本节奏
+### 11.1 跨平台适配 —— 后续节奏
 
-- **v0.1**：仅 Claude Code。
-- **v0.2**：OpenCode adapter（验证 loadout 模型是否支持所需 Skills / Hooks；若不支持，缩减该平台暴露的功能面）。
-- **v0.3+**：按需求追加 CodeX、Cursor、Copilot CLI。
+v0.1 **不**预留任何平台抽象层（YAGNI）。等 Claude Code adapter 稳定并经过实战验证后，再按以下顺序评估迁移：
+
+- **候选 1**：OpenCode —— 需先验证其 loadout 模型对 Skills / Hooks / Subagents 三件套的实际支持度。若不全支持，按三档回退：全能力 / 缺 Hooks（无阶段护栏，命令顺序推进自负） / 仅 `/sdd.status` 与命令别名。
+- **候选 2+**：CodeX、Cursor、Copilot CLI —— 按需求追加。
+
+**触发条件**：Claude Code v0.1 在真实项目里跑完 1-2 个完整版本（research → archive），积累足够用户反馈后再启动。
 
 ## 12. 开放问题 / 后续工作
 
