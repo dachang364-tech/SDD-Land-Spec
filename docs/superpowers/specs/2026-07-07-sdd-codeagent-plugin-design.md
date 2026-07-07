@@ -226,8 +226,8 @@ feature-payment.md
 | ----------- | ------------------------- | ----------------------------------------------------------------------- |
 | 需求调研    | `sdd-research-writer`     | Superpowers `brainstorming` 流程 + Plugin 原生 research 模板            |
 | PRD         | `sdd-prd-writer`          | Superpowers `brainstorming` 流程 + Plugin 原生 PRD 模板；输入 research.md |
-| 需求（spec）| `sdd-spec-writer`         | 读取 PRD 作为输入；调用 Superpowers `brainstorming` 流程；用 Spec-Kit `spec.md` 模板（User Story、Given-When-Then） |
-| 技术设计（TRD） | `sdd-trd-writer`          | Spec-Kit `plan.md` 模板（Technical Context、Constitution Check）        |
+| 需求（spec）| `sdd-spec-writer`         | 读取 PRD 作为输入；调用 Superpowers `brainstorming` 流程；用 Spec-Kit `spec.md` 模板（User Story、Given-When-Then）**融合** Spec-Kit `plan-template.md` 的项目层章节（Technical Context / Constitution Check / Project Structure） |
+| 技术设计（TRD） | `sdd-trd-writer`          | 纯 Superpowers `writing-plans` 风格（文件级任务、TDD 步骤、commit 粒度） |
 | Feature 计划 | `sdd-feature-planner`     | Superpowers `writing-plans` 流程（文件级任务、TDD 步骤、commit 粒度）   |
 | 编码        | `sdd-code-orchestrator`   | Superpowers `subagent-driven-development` + `test-driven-development` + `verification-before-completion` |
 | Bug 修复    | `sdd-bugfix-triage`       | Plugin 内部决策树（见 §7.7）                                            |
@@ -261,18 +261,20 @@ feature-payment.md
 
 1. 读取 `state.json` 与 `docs/vX.Y.Z/prd.md`；若 PRD 未批准则拒绝，并提示「先 `/sdd.prd` 或人工放置 PRD」。
 2. 调用 **Superpowers `brainstorming`** 流程：基于 PRD 抽取 User Story，一次问一个澄清问题，最多 5 个。
-3. 用 Spec-Kit `spec-template.md` 骨架填充：User Story（P1/P2/P3）、Acceptance Scenarios（Given-When-Then）。
-4. **保留引用**：在 `spec.md` 头部写明「输入 PRD：`docs/vX.Y.Z/prd.md`」，确保可追溯。
+3. 用 Spec-Kit `spec-template.md` 骨架填充：User Story（P1/P2/P3）、Acceptance Scenarios（Given-When-Then）、**并融合 Spec-Kit `plan-template.md` 中的项目层章节**（Technical Context / Constitution Check / Project Structure）作为 spec.md 的「项目层元信息」部分。
+4. **保留引用**：在 `spec.md` 头部写明「输入 PRD：`docs/vX.Y.Z/prd.md`」、「输入 research：`docs/vX.Y.Z/research.md`」（如存在），确保可追溯。
 5. 写入 `docs/vX.Y.Z/specs/spec.md`。
 6. 更新 `state.json.artifacts.spec.status = draft`。
 7. **硬门**：用户未明确批准 spec 前，不推进 `phase`。批准后 `status = approved` 并 `phase = SPEC`。
 
 ### 7.4 `sdd-trd-writer`
 
+**职责**：纯 Superpowers `writing-plans` 风格，写「面向零上下文工程师的版本级技术实现步骤」。Spec-Kit 的项目层元信息（Technical Context / Constitution Check / Project Structure）已在 `spec.md` 中包含，**trd 不再重复**。
+
 1. 读取 spec.md；若 spec 未批准则拒绝。
 2. 调用 **Superpowers `writing-plans`** 流程，逐个收集技术决策（一次一个问题）。
-3. 用 Spec-Kit `plan-template.md` 骨架填充（Technical Context、Constitution Check、Project Structure）。
-4. **推荐章节（v0.1 非强制）**：`## Coverage Scope`，列出本版本涉及的关键文件 / 目录（gitignore 风格 glob），便于后续 review 时一眼看清影响面。该章节不写入任何 `state.json` 字段，也**不**作为护栏依据 —— v0.1 不实施路径白名单。
+3. 用 Superpowers writing-plans 骨架填充：文件结构、任务列表（含文件路径）、TDD 步骤、commit 粒度。
+4. **推荐章节（v0.1 非强制）**：`## Coverage Scope`，列出本版本涉及的关键文件 / 目录（gitignore 风格 glob），便于 review 时一眼看清影响面。该章节不写入任何 `state.json` 字段，也**不**作为护栏依据 —— v0.1 不实施路径白名单。
 5. 用户批准后，当至少存在一个 feature plan 时，`phase = FEATURE_PLAN`。
 
 ### 7.5 `sdd-feature-planner`
