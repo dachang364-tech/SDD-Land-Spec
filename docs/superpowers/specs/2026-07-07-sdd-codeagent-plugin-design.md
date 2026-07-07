@@ -143,7 +143,7 @@ NONE ──/sdd.init──▶ INITED ──/sdd.new vX.Y.Z──▶ PRD ──/s
 │   │       ├── 0001-use-postgresql.md  # ADR
 │   │       └── bugfix-0002-fix-null.md # bugfix 记录（轻量 ADR）
 │   └── archive/
-│       └── v1.0.0/                     # 归档快照
+│       └── v1.0.0/                     # 已归档版本（迁移过来，不双份并存）
 │           ├── prd.md
 │           ├── specs/spec.md
 │           ├── plans/
@@ -157,16 +157,21 @@ NONE ──/sdd.init──▶ INITED ──/sdd.new vX.Y.Z──▶ PRD ──/s
 
 ```
 prd.md                  ← 产品层：业务目标 / 用户 / 范围 / 指标（1 份）
-  └─ 抽出 User Story
-spec.md                 ← 功能层：每个 Story 的验收标准（1 份，Spec-Kit Given-When-Then）
+  └─ 拆成 feature
+spec.md                 ← 功能层：每个 feature 的 User Story（P1/P2/P3）与验收标准（Spec-Kit Given-When-Then）（1 份）
   └─ 决定技术选型与覆盖范围
-trd.md                  ← 版本级技术层：vX.Y.Z 整体技术方案（1 份；含覆盖范围）
+trd.md                  ← 版本级技术层：vX.Y.Z 整体技术方案（1 份；含 Coverage Scope）
   └─ 按 feature 拆实现
-feature-login.md        ← 单 feature 实现层：文件级任务 + TDD 步骤（N 份）
+feature-login.md        ← 单 feature 实现层：user story → task，含 TDD 步骤 + commit 粒度（N 份）
 feature-payment.md
   └─ 派给 subagent
 源码 + 提交
 ```
+
+**层级关系**：`feature > user story > task`。
+- 一个 PRD 通常拆成 N 个 feature（如「登录」「支付」）。
+- 一个 feature 含 N 个 user story（spec.md 里 P1/P2/P3 切片）。
+- 一个 user story 拆成 N 个 task（feature-*.md 里的 `[ID] [P?] [Story]`）。
 
 | 维度               | `trd.md`                                                | `feature-<name>.md`                                    |
 | ------------------ | ------------------------------------------------------- | ------------------------------------------------------ |
@@ -243,7 +248,7 @@ feature-payment.md
 1. 读取 spec.md；若 spec 未批准则拒绝。
 2. 调用 **Superpowers `writing-plans`** 流程，逐个收集技术决策（一次一个问题）。
 3. 用 Spec-Kit `plan-template.md` 骨架填充（Technical Context、Constitution Check、Project Structure、Coverage Scope）。
-4. **强制章节**：`## Coverage Scope`，列出本版本允许改动的文件 glob。
+4. **强制章节**：`## Coverage Scope`，列出本版本允许改动的文件清单（使用 gitignore 风格 glob，粗细自定，例如 `src/payment/**`、`src/auth/login.controller.ts`）。
 5. 解析得到的 glob 持久化到 `state.json.guards.trd_covered_modules`。
 6. 用户批准后，当至少存在一个 feature plan 时，`phase = FEATURE_PLAN`。
 
@@ -312,9 +317,9 @@ Plugin 原生。模板如下：
 
 1. 要求 `phase = RELEASE`（由用户手动设置或通过发布 hook 触发）。
 2. 调用 Spec-Kit `/speckit.converge` 检测各 feature plan 中未完成的工作；若有未完成任务，在用户未明确「强制归档」前拒绝。
-3. 创建 `docs/archive/vX.Y.Z/`；把 `spec.md`、所有 `plans/*.md`、所有 `decisions/*.md` **复制**（非移动）进去。
-4. 删除进行中的 `docs/vX.Y.Z/` 目录。
-5. 把 `state.json.phase` 标记为 `ARCHIVED`，清空 `guards`。
+3. **迁移**（非快照）：用 `git mv` 把 `docs/vX.Y.Z/` 整个目录搬到 `docs/archive/vX.Y.Z/`。文档不双份并存。
+4. 把 `state.json.phase` 标记为 `ARCHIVED`，清空 `guards`，版本字段保留 `vX.Y.Z` 作为只读历史。
+5. 归档后 `docs/` 下不再有 `vX.Y.Z/` 同名目录；要查阅历史文档只能从 `docs/archive/vX.Y.Z/` 走。
 
 ### 7.9 `sdd-status-reader`
 
@@ -405,5 +410,5 @@ v0.1 视为完成，当且仅当：
 2. 用户能在一个空白仓库里依次运行 `/sdd.init` → `/sdd.new v0.0.1` → `/sdd.prd`（或手动放置 `prd.md`） → `/sdd.spec` → `/sdd.trd` → `/sdd.feature demo` → `/sdd.code demo`，全程无需人工介入。
 3. 写入超出声明覆盖范围的文件会被硬拦截，并给出明确错误消息。
 4. `/sdd.status` 在每个阶段都准确反映当前状态（包括 PRD 状态）。
-5. `/sdd.archive` 能把 `v0.0.1/` 移到 `archive/v0.0.1/`（包括 `prd.md`）并清空 `state.json.guards`。
+5. `/sdd.archive` 能把 `docs/v0.0.1/` 通过 `git mv` 迁移到 `docs/archive/v0.0.1/`（包括 `prd.md`），原位置不再保留，并清空 `state.json.guards`。
 6. 所有对外部框架（Superpowers / Spec-Kit / OpenSpec）的调用都通过 Skill 编排，不在 Plugin 内部复制实现。
