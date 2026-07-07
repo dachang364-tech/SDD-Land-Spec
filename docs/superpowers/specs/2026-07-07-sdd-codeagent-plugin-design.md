@@ -151,6 +151,39 @@ NONE ──/sdd.init──▶ INITED ──/sdd.new vX.Y.Z──▶ PRD ──/s
 └── （源代码目录，不动）
 ```
 
+### 4.1 文档层级与三层递进
+
+`docs/vX.Y.Z/` 下的文档**不是同层并列**，而是**三层递进**：
+
+```
+prd.md                  ← 产品层：业务目标 / 用户 / 范围 / 指标（1 份）
+  └─ 抽出 User Story
+spec.md                 ← 功能层：每个 Story 的验收标准（1 份，Spec-Kit Given-When-Then）
+  └─ 决定技术选型与覆盖范围
+trd.md                  ← 版本级技术层：vX.Y.Z 整体技术方案（1 份；含覆盖范围）
+  └─ 按 feature 拆实现
+feature-login.md        ← 单 feature 实现层：文件级任务 + TDD 步骤（N 份）
+feature-payment.md
+  └─ 派给 subagent
+源码 + 提交
+```
+
+| 维度               | `trd.md`                                                | `feature-<name>.md`                                    |
+| ------------------ | ------------------------------------------------------- | ------------------------------------------------------ |
+| 数量               | 1 份                                                    | 按需 N 份                                              |
+| 粒度               | 粗：架构、模块、契约、`## Coverage Scope`               | 细：具体文件、具体任务、TDD 步骤、commit 粒度          |
+| 回答的问题         | "vX.Y.Z 整体怎么做？"                                   | "feature-X 这个模块具体怎么落地？"                     |
+| 类比外部框架       | Spec-Kit `/speckit.plan`                                | Superpowers `writing-plans`                            |
+| 覆盖范围归属       | `## Coverage Scope` 在此定义，写入 `state.json.guards`  | 必须落在 `trd.md` 覆盖范围之内                         |
+| 任务列表           | 只列 feature 名，不展开任务                             | 详细任务列表（`[ID] [P?] [Story] <描述>`）              |
+| 谁执行             | `/sdd.trd`                                              | `/sdd.feature <name>`                                  |
+
+**撰写约定**：
+- `trd.md` 在「模块拆分」一节列出本版本包含的所有 feature，作为 `feature-*.md` 列表的来源。
+- 每个 `feature-*.md` 顶部显式引用 `> 上游：docs/vX.Y.Z/plans/trd.md 第 N 节`，确保可追溯。
+- 护栏（PreToolUse Hook）的依据是 `trd.md` 的 `## Coverage Scope`，但**任务粒度的执行细节**在 `feature-*.md` 里。
+- 不允许跨 feature 互相改动对方的文件 —— 必须在 `trd.md` 里先扩大覆盖范围，再写新 feature 计划。
+
 ## 5. 命令与 Skill 对应
 
 | 命令              | 内部 Skill                  | 写入路径                                              | 前置条件                |
