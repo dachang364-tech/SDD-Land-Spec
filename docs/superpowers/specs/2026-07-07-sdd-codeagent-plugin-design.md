@@ -203,8 +203,8 @@ feature-payment.md
 
 | 命令               | 内部 Skill                  | 写入路径                                              | 前置条件                |
 | ------------------ | --------------------------- | ----------------------------------------------------- | ----------------------- |
-| `/sdd.init`        | `sdd-init`                  | `.sdd/`、`docs/`                                      | —                       |
-| `/sdd.new vX.Y.Z`  | `sdd-new-version`           | `docs/vX.Y.Z/{research.md,prd.md,specs,plans,decisions}/`、`state.json` | 项目已初始化         |
+| `/sdd.init`        | `sdd-init-runner`          | `.sdd/`、`docs/`                                      | —                       |
+| `/sdd.new vX.Y.Z`  | `sdd-new-version-bootstrapper` | `docs/vX.Y.Z/{research.md,prd.md,specs,plans,decisions}/`、`state.json` | 项目已初始化         |
 | `/sdd.research`    | `sdd-research-writer`       | `docs/vX.Y.Z/research.md`                             | phase ≥ INITED          |
 | `/sdd.prd`         | `sdd-prd-writer`            | `docs/vX.Y.Z/prd.md`                                  | research approved（推荐） |
 | `/sdd.spec`        | `sdd-spec-writer`           | `docs/vX.Y.Z/specs/spec.md`                           | prd 存在且符合规范     |
@@ -231,14 +231,34 @@ feature-payment.md
 | 技术设计（TRD） | `sdd-trd-writer`          | 纯 Superpowers `writing-plans` 风格（文件级任务、TDD 步骤、commit 粒度） |
 | Feature 计划 | `sdd-feature-planner`     | Superpowers `writing-plans` 流程（文件级任务、TDD 步骤、commit 粒度）   |
 | 编码        | `sdd-code-orchestrator`   | Superpowers `subagent-driven-development` + `test-driven-development` + `verification-before-completion` |
-| Bug 修复    | `sdd-bugfix-triage`       | Plugin 内部决策树（见 §7.7）                                            |
+| Bug 修复    | `sdd-bugfix-triage`       | Plugin 内部决策树（见 §7.8）                                            |
 | ADR         | `sdd-adr-writer`          | Plugin 原生（MADR 风格模板）                                            |
 | 状态        | `sdd-status-reader`       | Plugin 原生                                                              |
 | 归档        | `sdd-archiver`            | Spec-Kit `/speckit.converge` 查漏 + OpenSpec 归档模型                    |
+| 诊断        | `sdd-doctor-runner`       | 不调外部框架；纯 Plugin 原生只读自检（详见 §7.12）                       |
 
 ## 7. 关键 Skill — 内部行为
 
-### 7.1 `sdd-research-writer`
+> 编号自 7.0 起按仓库 `skills/` 目录的字典序编排。`sdd-init-runner`（7.0）、`sdd-new-version-bootstrapper`（7.1）属于项目级启动 Skill；`sdd-research-writer`～`sdd-doctor-runner`（7.2～7.13）属于版本级阶段 Skill。**13 个 Skill 一一对应 §11 列出的 13 个目录**。
+
+### 7.0 `sdd-init-runner`
+
+1. 检测当前项目是否已初始化（`.sdd/state.json` 是否存在）。若已存在 → 拒绝并提示「已初始化，请用 `/sdd.status` 查看当前状态」。
+2. 创建 `.sdd/` 目录与 `state.json` 初始骨架（`version = "0.0.0"`、`phase = "INITED"`、`artifacts = {}`）。
+3. 创建 `docs/` 目录结构。
+4. **不**预创建任何版本目录；版本目录由 `/sdd.new` 启动。
+5. 若项目根不是 git 仓库，**不强制** git init，但提示「建议先 `git init` 以便后续归档写入 commit」。
+
+### 7.1 `sdd-new-version-bootstrapper`
+
+1. 要求项目已初始化（`state.json.version != "0.0.0"` 或 `phase = "INITED"`）。
+2. 解析用户提供的版本号（`/sdd.new vX.Y.Z`），校验 semver。
+3. 创建 `docs/vX.Y.Z/{research,specs,plans,decisions}/` 四个子目录。
+4. 初始化各 artifacts 占位为 `missing`（research / prd / spec / trd / features / adrs）。
+5. `state.json.version = "vX.Y.Z"`、`phase = "RESEARCH"`。
+6. 创建 `git checkout -b feat/vX.Y.Z-<name>`（若项目是 git 仓库；非 git 项目跳过，仅提示）。
+
+### 7.2 `sdd-research-writer`
 
 1. 读取 `state.json`。若 `phase < INITED`，直接拒绝。
 2. 调用 **Superpowers `brainstorming`** 流程：一次问一个澄清问题，围绕「要解决什么问题、用户是谁、用户痛点、竞品现状、初步范围」。
@@ -248,7 +268,7 @@ feature-payment.md
 6. **硬门**：用户未明确批准 research 前不推进 phase。批准后 `status = approved` 且 `phase = RESEARCH`。
 7. 用户也可跳过本命令，自行编写 `research.md`（自由格式）。`/sdd.prd` 会做轻量校验：缺关键章节时提示补齐，但不强制。
 
-### 7.2 `sdd-prd-writer`
+### 7.3 `sdd-prd-writer`
 
 1. 读取 `state.json`。若 `phase < INITED`，直接拒绝。
 2. 调用 **Superpowers `brainstorming`** 流程：一次问一个澄清问题，最多 5 个，围绕「要解决什么问题、为谁、成功的标准、范围边界」。
@@ -258,7 +278,7 @@ feature-payment.md
 6. **硬门**：用户未明确批准 PRD 前，不推进 `phase`。批准后 `status = approved` 且 `phase = PRD`。
 7. PRD 既可由本命令生成，也可由人工提前放置（状态为 `approved`）。`/sdd.spec` 不区分 PRD 来源。
 
-### 7.3 `sdd-spec-writer`
+### 7.4 `sdd-spec-writer`
 
 1. 读取 `state.json` 与 `docs/vX.Y.Z/prd.md`；若 PRD 未批准则拒绝，并提示「先 `/sdd.prd` 或人工放置 PRD」。
 2. 调用 **Superpowers `brainstorming`** 流程：基于 PRD 抽取 User Story，一次问一个澄清问题，最多 5 个。
@@ -268,7 +288,7 @@ feature-payment.md
 6. 更新 `state.json.artifacts.spec.status = draft`。
 7. **硬门**：用户未明确批准 spec 前，不推进 `phase`。批准后 `status = approved` 并 `phase = SPEC`。
 
-### 7.4 `sdd-trd-writer`
+### 7.5 `sdd-trd-writer`
 
 **职责**：纯 Superpowers `writing-plans` 风格，写「面向零上下文工程师的版本级技术实现步骤」。Spec-Kit 的项目层元信息（Technical Context / Constitution Check / Project Structure）已在 `spec.md` 中包含，**trd 不再重复**。
 
@@ -278,7 +298,7 @@ feature-payment.md
 4. **推荐章节（v0.1 非强制）**：`## Coverage Scope`，列出本版本涉及的关键文件 / 目录（gitignore 风格 glob），便于 review 时一眼看清影响面。该章节不写入任何 `state.json` 字段，也**不**作为护栏依据 —— v0.1 不实施路径白名单。
 5. 用户批准后，当至少存在一个 feature plan 时，`phase = FEATURE_PLAN`。
 
-### 7.5 `sdd-feature-planner`
+### 7.6 `sdd-feature-planner`
 
 1. 读取 trd.md；若 trd 未批准则拒绝。
 2. 针对命名的 feature 调用 **Superpowers `writing-plans`** 全流程。
@@ -290,7 +310,7 @@ feature-payment.md
 4. **不另起 `tasks.md`** —— 任务内嵌在 plan 文档里，与 Superpowers 约定一致。
 5. 用户批准后，把 `artifacts.features[name].status` 标记为 `planned`。
 
-### 7.6 `sdd-code-orchestrator`
+### 7.7 `sdd-code-orchestrator`
 
 **进度基线**：直接沿用 Superpowers `subagent-driven-development` 的三个反上下文爆炸机制 —— **Fresh subagent per task** + **Ledger 持久化进度** + **文件交接而非粘贴文本**。本节仅记录我们与 Superpowers 的差异点。
 
@@ -311,7 +331,7 @@ feature-payment.md
 7. **state.json 同步**：subagent 与主 Agent **不共享** `state.json`。implementer 报告由 ledger 持久化（`progress.md` 才是真账），主 Agent 仅在 feature 整体完成时把 `artifacts.features[name].status` 推进到 `done`，并把任何跨 task 遗漏写进 `compaction_snapshot`。
 8. **崩溃恢复**：主 Agent 下次 `SessionStart` 触发 `sdd-status-reader`，扫描 `progress.md` + `git log` 识别「最近完成行」之后的未完成 task，提示「之前中断，从 Task N 继续？」。**信任 ledger 与 git log，不信任自己的会话记忆**。
 
-### 7.7 `sdd-bugfix-triage`
+### 7.8 `sdd-bugfix-triage`
 
 **职责范围**：本 Skill 只做「流程路由」（决定走哪条分支、生成什么记录），不替代 Superpowers `systematic-debugging` 做根因诊断。
 
@@ -338,7 +358,7 @@ Q2（若是规范 bug）：本次修复是否改变 TRD 覆盖范围？
   - 若覆盖范围变化，更新 `trd.md` 并重新解析 `state.json.guards.trd_covered_modules`。
   - 对受影响的 feature 继续走 `/sdd.code` 流程。
 
-### 7.8 `sdd-adr-writer`
+### 7.9 `sdd-adr-writer`
 
 Plugin 原生。模板如下：
 
@@ -352,7 +372,7 @@ Plugin 原生。模板如下：
 - 后果：<正面、负面、后续行动>
 ```
 
-### 7.9 `sdd-archiver`
+### 7.10 `sdd-archiver`
 
 1. 要求 `phase = RELEASE`（由用户手动设置或通过发布 hook 触发）。
 2. 调用 Spec-Kit `/speckit.converge` 检测各 feature plan 中未完成的工作；若有未完成任务，在用户未明确「强制归档」前拒绝。
@@ -365,11 +385,11 @@ Plugin 原生。模板如下：
 
 **为什么这么设计**：v0.1 不强制项目必须是 git 仓库（虽然 init 时会鼓励 `git init`）。归档路径语义在两种模式下完全一致 —— 「目录物理迁移到 archive」，唯一的差异是有 git 时由 git 负责记录历史，无 git 时由文件系统负责。
 
-### 7.10 `sdd-status-reader`
+### 7.11 `sdd-status-reader`
 
 报告：当前 `version`、`phase`、缺失的产物、`proposed` 状态的 ADR、下一步推荐的斜杠命令。
 
-### 7.11 `sdd-doctor-runner`
+### 7.12 `sdd-doctor-runner`
 
 **职责**：只读诊断命令，输出统一清单。**不**自动修复，**不**改变 `state.json.phase`。横切命令（见 §5）。
 
@@ -380,7 +400,7 @@ Plugin 原生。模板如下：
 | 检查项                              | 通过条件                                                                 |
 | ----------------------------------- | ------------------------------------------------------------------------ |
 | Plugin manifest                     | `.claude-plugin/plugin.json` 存在，`name` / `version` / `description` 字段非空 |
-| 12 个 Skill 目录                    | `skills/sdd-{init-runner,new-version-bootstrapper,research-writer,prd-writer,spec-writer,trd-writer,feature-planner,code-orchestrator,bugfix-triage,adr-writer,archiver,status-reader,doctor-runner}/SKILL.md` 全部存在 |
+| 13 个 Skill 目录                    | `skills/sdd-{init-runner,new-version-bootstrapper,research-writer,prd-writer,spec-writer,trd-writer,feature-planner,code-orchestrator,bugfix-triage,adr-writer,archiver,status-reader,doctor-runner}/SKILL.md` 全部存在 |
 | 13 个 command 文件                  | `commands/sdd.{init,new,research,prd,spec,trd,feature,code,bugfix,adr,status,archive,doctor}.md` 全部存在 |
 | Hooks 配置                          | `hooks/hooks.json` 合法 JSON，四个事件都注册（SessionStart / PreToolUse / PostToolUse / PreCompact） |
 | Templates 齐备                      | `templates/{research,prd,spec,trd,feature-plan,adr,bugfix}.md.tmpl` 全部存在 |
@@ -403,7 +423,7 @@ Plugin 原生。模板如下：
 
 Plugin 自身安装
   ✅ .claude-plugin/plugin.json
-  ✅ 12 个 Skill 目录
+  ✅ 13 个 Skill 目录
   ⚠️ commands/sdd.doctor.md 缺失（新增命令后忘了同步 commands/）
   ✅ hooks/hooks.json
   ✅ Templates 齐备
@@ -477,7 +497,7 @@ sdd-codeagent-plugin/
 │   ├── sdd.adr.md
 │   ├── sdd.status.md
 │   └── sdd.archive.md
-├── skills/                          # 12 个 Skill，每个 Skill 一个目录
+├── skills/                          # 13 个 Skill，每个 Skill 一个目录
 │   ├── sdd-init-runner/
 │   ├── sdd-new-version-bootstrapper/
 │   ├── sdd-research-writer/
