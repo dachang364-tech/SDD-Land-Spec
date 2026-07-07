@@ -291,14 +291,24 @@ feature-payment.md
 
 ### 7.6 `sdd-code-orchestrator`
 
+**进度基线**：直接沿用 Superpowers `subagent-driven-development` 的三个反上下文爆炸机制 —— **Fresh subagent per task** + **Ledger 持久化进度** + **文件交接而非粘贴文本**。本节仅记录我们与 Superpowers 的差异点。
+
 1. 确认 `feature-<name>.md` 存在且已批准。
-2. 调用 **Superpowers `subagent-driven-development`**，把 plan 派发给 subagent。
-3. Subagent 循环：
-   - 对每个任务：写失败测试 → 实现 → 通过测试 → 提交。
-   - 每次提交前调用 `verification-before-completion`。
-4. **PreToolUse Hook**（v0.1）不拦截源码路径；只对 `docs/vX.Y.Z/**` 文档路径做阶段许可检查。subagent 写源码时**无路径白名单约束**。
-5. **subagent 状态同步**：subagent 与主 Agent **不共享** `state.json`。subagent 完成后必须返回结构化总结：`{ 完成的任务 IDs、commit hashes、测试输出、未完成原因 }`；主 Agent 据此把 `artifacts.features[name].status = done`，并把任何遗漏写进 `compaction_snapshot`。
-6. 若 subagent 中途未返回总结（崩溃/超时），主 Agent 下次 `SessionStart` 触发 `sdd-status-reader`，识别 `status = coding` 但无最近 commit 时主动提示「上一次 subagent 可能中断，是否重新调度」。
+2. 调用 **Superpowers `subagent-driven-development`**，**不拆 plan**，逐 task 派发单 subagent。
+3. 任务级别循环（每个 task 独立走完整轮）：
+   - Implementer subagent：写失败测试 → 实现 → 通过测试 → 提交。
+   - Task reviewer subagent：spec ✅ + 质量 ✅ → 写完成行到 ledger。
+   - 每次提交前 / 提交后调用 `verification-before-completion`。
+4. **Ledger 持久化**（核心新增，复用 Superpowers 机制、换路径）：
+   - 路径：`<repo>/.sdd/progress.md`（**不**复用 `.superpowers/sdd/progress.md`，避免与 Superpowers 自身命名冲突 —— 见 K10）。
+   - Skill 启动时 `cat` 该文件，**已完成 task 一律跳过**，避免重派（来源：Superpowers 「real session 一次性把整段 task 序列重派」是真实失败案例）。
+   - 每个 task 的 review 通过后追加一行：`Task <N>: complete (commits <base7>..<head7>, review clean)`。
+5. **文件交接优于文本粘贴**（沿用 Superpowers 约束）：
+   - dispatch prompt 仅含：(a) 一句话项目背景；(b) 用 `task-brief PLAN_FILE N` 抽取的 brief 文件路径；(c) 上游任务产出的接口 / 决策摘要；(d) report 文件路径与回执契约。
+   - **禁止**在 dispatch prompt 中粘贴累积历史（来源：Superpowers 「真实 session dispatch 42k 字符，其中 99% 是粘贴历史」）。
+6. **PreToolUse Hook**（v0.1）不拦截源码路径；只对 `docs/vX.Y.Z/**` 文档路径做阶段许可检查。subagent 写源码时**无路径白名单约束**。
+7. **state.json 同步**：subagent 与主 Agent **不共享** `state.json`。implementer 报告由 ledger 持久化（`progress.md` 才是真账），主 Agent 仅在 feature 整体完成时把 `artifacts.features[name].status` 推进到 `done`，并把任何跨 task 遗漏写进 `compaction_snapshot`。
+8. **崩溃恢复**：主 Agent 下次 `SessionStart` 触发 `sdd-status-reader`，扫描 `progress.md` + `git log` 识别「最近完成行」之后的未完成 task，提示「之前中断，从 Task N 继续？」。**信任 ledger 与 git log，不信任自己的会话记忆**。
 
 ### 7.7 `sdd-bugfix-triage`
 
@@ -358,7 +368,7 @@ Plugin 原生。模板如下：
 | Hook                    | 触发时机                  | 动作                                                                       |
 | ----------------------- | ------------------------- | -------------------------------------------------------------------------- |
 | `SessionStart`          | Agent 启动 / 恢复会话     | 读取 `state.json`，把摘要 `<plugin>active version=...phase=...missing=[...] next=/sdd.<x>` 注入 context（Claude Code 的 `hookSpecificOutput.additionalContext`）。 |
-| `PreToolUse Write/Edit` | 即将写入                  | **仅检查文档类路径**：目标路径命中 `docs/vX.Y.Z/**` → 走「阶段许可」检查：`research.md` 只在 RESEARCH 阶段可写；`prd.md` 只在 PRD 阶段可写；`specs/spec.md` 只在 SPEC 阶段可写；`plans/trd.md` 只在 TRD 阶段可写；`plans/feature-*.md` 只在 FEATURE_PLAN/CODE 阶段可写；`decisions/**` 在所有阶段可写（ADR/bugfix 是横切产物）。越阶段 → 退出码 2 + 「请运行 /sdd.<对应阶段>」。**v0.1 不拦截源码路径**。 |
+| `PreToolUse Write/Edit` | 即将写入                  | **仅检查文档类路径**：目标路径命中 `docs/vX.Y.Z/**` 时，按路径查「该路径对应的合法阶段集合」是否包含 `state.json.phase`。<br>- `research.md` ↔ `RESEARCH`<br>- `prd.md` ↔ `PRD`<br>- `specs/spec.md` ↔ `SPEC`<br>- `plans/trd.md` ↔ `TRD`<br>- `plans/feature-*.md` ↔ `FEATURE_PLAN`、`CODE`<br>- `decisions/**` ↔ 任何阶段（ADR/bugfix 是横切产物）<br>**phase 上下跳的处理**：用户想从 SPEC 阶段回跳改 `prd.md`，**不能**直接 Edit —— 必须调用 `/sdd.prd` 等命令入口。该命令入口在内部把 `phase` 切到目标阶段后，再调起对应的 Skill 写文档；Hook 始终读到的是**已稳定**的 phase，不会看到「写之前的瞬态切换」。<br>越阶段 → 退出码 2 + 提示「请运行 `/sdd.<对应阶段>`」。**v0.1 不拦截源码路径**。 |
 | `PostToolUse Write/Edit`| 写入完成                  | ① 文档路径命中 `docs/vX.Y.Z/**` → 更新对应 `artifacts.<name>.status = draft`、`updated_at` 时间戳。<br>② 源码路径 → 更新 `state.json.last_modified`；若新增了顶层模块，提示「建议补一条 ADR」。 |
 | `PreCompact`            | 会话压缩                  | 把当前阶段产物路径快照写入 `state.json.compaction_snapshot`。下次 `SessionStart` 会重新注入，使被压缩过的 context 能找回这些文件路径。 |
 
@@ -423,6 +433,8 @@ Plugin 根目录下的 `build.sh`：
 - **v0.3+**：按需求追加 CodeX、Cursor、Copilot CLI。
 
 ## 12. 开放问题 / 后续工作
+
+- **state.json 并发**：v0.1 假定**主 Agent 是 state.json 的唯一写者**，subagent 通过 `.sdd/progress.md` 间接表达进度。**v0.1 不处理跨会话并发**（两个终端同时动 state.json）—— 不加文件锁、不做乐观合并。如果未来出现跨会话需求，再决定加 `.sdd/state.lock`（fcntl / Windows 兼容）还是改成 event-sourced。
 
 - **Hook 脚本语言**：Claude Code 同时支持 bash 与 node hook，OpenCode 可能不同。逐 adapter 决定而非一刀切。
 - **Bugfix 自动分类**：当前由 Skill 内部走决策树。若用户觉得过于严格，后续可加启发式规则（文件数量、变更行数、是否触及 spec 表面）做预分类。
