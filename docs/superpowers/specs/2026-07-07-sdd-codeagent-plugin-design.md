@@ -1,96 +1,76 @@
-# SDD CodeAgent Plugin — Design
+# SDD CodeAgent Plugin — 设计文档
 
-- **Date**: 2026-07-07
-- **Status**: Approved (brainstorming complete)
-- **Owner**: Dachang (@dachang364-tech)
-- **Repository**: `SDD-Land-Spec` (root of this repo)
-- **Implementation language**: 中文（zh-CN）— 所有用户可见的文案、模板、命令输出、状态信息、文档示例、错误提示、commit 模板均使用中文。命令名、文件路径、技术术语、配置键保留英文。
+- **日期**：2026-07-07
+- **状态**：已批准（brainstorming 阶段完成）
+- **作者**：Dachang (@dachang364-tech)
+- **仓库**：`SDD-Land-Spec`（本仓库根目录）
+- **实现语言**：简体中文（zh-CN）—— 所有面向用户的文案、模板、命令输出、状态信息、文档示例、错误提示、commit 模板均使用中文。命令名、文件路径、glob 模式、配置键、技术术语保留英文。
 
-## 1. Purpose & Context
+## 1. 目的与背景
 
-Build a CodeAgent plugin (manifest-based) that encapsulates the author's
-spec-driven development (SDD) workflow as a set of Skills, Commands, Hooks,
-and runtime state. The plugin is a **process orchestrator**, not a
-methodology re-implementation: it composes the best parts of existing
-frameworks (Superpowers, Spec-Kit, OpenSpec) and glues them together with
-project-local conventions.
+构建一个 CodeAgent Plugin（manifest 形式），把作者本人「规范驱动开发」（Spec-Driven Development，SDD）的工作流封装成 Skills、Commands、Hooks 和运行时状态。该 Plugin 是一个**流程编排器**，不是方法论的重新实现 —— 它从现有框架（Superpowers、Spec-Kit、OpenSpec）中取其精华，与项目本地约定做胶水整合。
 
-### Goals
+### 1.1 目标
 
-- Drive projects from **requirement → shipped & archived** via a small set
-  of explicit slash commands and natural-language triggers.
-- Treat documentation (`spec.md`, `trd.md`, `feature plans`, `ADRs`) as
-  first-class artifacts under `docs/vX.Y.Z/`.
-- Enforce a **TRD-bounded** guard rail: code that does not violate the
-  current version's `trd.md` coverage scope is allowed freely (Superpowers
-  TDD takes over); code that steps out of scope is **hard-blocked** at the
-  write hook.
-- Run on **Claude Code** first, with explicit adapter layers for OpenCode,
-  CodeX, and other CodeAgents later.
+- 通过一组明确的斜杠命令与自然语言触发器，把项目从**需求 → 上线 → 归档**完整跑下来。
+- 把文档（`spec.md`、`trd.md`、feature plan、ADR）作为一等资产，存放在 `docs/vX.Y.Z/` 之下。
+- 实施 **TRD 边界护栏**：在不违反当前版本 `trd.md` 覆盖范围的代码改动允许自由进行（由 Superpowers 的 TDD 接管）；一旦越出范围，在写入 Hook 处**硬拦截**。
+- 优先在 **Claude Code** 上跑通，对 OpenCode、CodeX 等其他 CodeAgent 通过显式的适配层接入。
 
-### Non-Goals
+### 1.2 非目标
 
-- Re-implement brainstorming, TDD, or verification — those are
-  consumed from Superpowers.
-- Re-implement spec / plan / tasks templates from scratch — those are
-  borrowed from Spec-Kit (and customised minimally).
-- Build a cross-platform runtime abstraction. Each platform gets its own
-  thin adapter directory.
+- 不重新实现 brainstorming、TDD、verification —— 这些直接消费 Superpowers。
+- 不从零写 spec / plan / tasks 模板 —— 借自 Spec-Kit（只做最小化定制）。
+- 不构建跨平台运行时抽象层。每个平台单独一份薄薄的 adapter 目录。
 
-### Implementation Language
+### 1.3 实现语言约束
 
-All user-facing strings inside the Plugin — Skill bodies, command
-output, status reports, templates (`spec.md`, `trd.md`, `feature-*.md`,
-ADR, bugfix record), error messages, git commit-message suggestions —
-are written in **Simplified Chinese**. The following remain in English
-on purpose:
+Plugin 内部所有面向用户的字符串 —— Skill 正文、命令输出、状态报告、模板（`spec.md`、`trd.md`、`feature-*.md`、ADR、bugfix 记录）、错误消息、commit-message 建议 —— 一律使用**简体中文**。以下内容保留英文：
 
-- Slash-command names (`/sdd.*`) — they are identifiers typed by the user.
-- File paths, glob patterns, manifest keys.
-- Code identifiers, configuration keys, technical terms commonly used
-  in English (`ADR`, `JSON`, `glob`, etc.).
-- Direct quotes from external framework docs (e.g. Superpowers Skill
-  titles) when used verbatim.
+- 斜杠命令名（`/sdd.*`）—— 是用户输入的标识符。
+- 文件路径、glob 模式、manifest 键。
+- 代码标识符、配置键、约定俗成的英文技术术语（如 `ADR`、`JSON`、`glob` 等）。
+- 外部框架文档中的原文引用（如 Superpowers Skill 的标题）。
 
-## 2. Architecture Overview
+## 2. 架构总览
 
 ```
 ┌────────────────────────────────────────────────────────────┐
-│            SDD CodeAgent Plugin (manifest-based)            │
+│            SDD CodeAgent Plugin（manifest 形式）            │
 ├────────────────────────────────────────────────────────────┤
-│  Commands (thin aliases into Skills)                        │
+│  Commands（指向 Skills 的薄别名）                            │
 │   /sdd.init /sdd.new /sdd.spec /sdd.trd                    │
 │   /sdd.feature /sdd.code /sdd.bugfix /sdd.adr              │
 │   /sdd.status /sdd.archive                                 │
 ├────────────────────────────────────────────────────────────┤
-│  Skills (the actual methodology)                            │
+│  Skills（承载实际方法论）                                    │
 │   sdd-init / sdd-new-version                               │
 │   sdd-spec-writer / sdd-trd-writer                         │
 │   sdd-feature-planner / sdd-code-orchestrator              │
 │   sdd-bugfix-triage / sdd-adr-writer                       │
 │   sdd-status-reader / sdd-archiver                         │
 ├────────────────────────────────────────────────────────────┤
-│  Hooks (path / state guards)                                │
-│   SessionStart        — inject project state into context  │
-│   PreToolUse Write/Edit  — enforce TRD coverage            │
-│   PostToolUse Write/Edit — bump state.json timestamps       │
-│   PreCompact          — snapshot current phase artifacts   │
+│  Hooks（路径 / 状态守卫）                                    │
+│   SessionStart         — 向 context 注入项目状态             │
+│   PreToolUse Write/Edit — 强制 TRD 覆盖范围                  │
+│   PostToolUse Write/Edit — 更新 state.json 时间戳             │
+│   PreCompact           — 快照当前阶段产物路径                 │
 ├────────────────────────────────────────────────────────────┤
-│  State (.sdd/state.json)                                    │
+│  状态（.sdd/state.json）                                     │
 │   version, phase, branch, artifacts, guards, adr_pending    │
 └────────────────────────────────────────────────────────────┘
-           ↓ consumes ↓
+           ↓ 调用 ↓
 ┌────────────────────────────────────────────────────────────┐
-│  External frameworks (not re-implemented)                   │
+│  外部框架（不重新实现）                                       │
 │   Superpowers: brainstorming / writing-plans / TDD /        │
 │                verification-before-completion /             │
 │                subagent-driven-development                  │
-│   Spec-Kit:    specify / plan / tasks / converge templates  │
-│   OpenSpec:    archive / change-management model            │
+│   Spec-Kit:    specify / plan / tasks / converge 模板        │
+│   OpenSpec:    archive / 变更管理模型                        │
 └────────────────────────────────────────────────────────────┘
 ```
 
-## 3. State Machine
+## 3. 状态机
 
 ```
 NONE ──/sdd.init──▶ INITED ──/sdd.new vX.Y.Z──▶ SPEC
@@ -99,7 +79,7 @@ NONE ──/sdd.init──▶ INITED ──/sdd.new vX.Y.Z──▶ SPEC
                                                TRD
                                                  │
                                                  ▼
-                                       (per feature)
+                                       （逐个 feature）
                                           FEATURE_PLAN ──/sdd.code──▶ CODE
                                                                       │
                                                                       │ /sdd.bugfix
@@ -113,10 +93,7 @@ NONE ──/sdd.init──▶ INITED ──/sdd.new vX.Y.Z──▶ SPEC
                                                                   ARCHIVED
 ```
 
-Phases can be re-entered (e.g. editing `spec.md` from `TRD` phase writes a
-new revision without resetting downstream artifacts). `state.json.phase`
-records the highest reached phase; the relevant artifact statuses live
-in `state.json.artifacts.<name>.status`.
+阶段可以重复进入（例如在 `TRD` 阶段回头编辑 `spec.md` 会写一个新版本，不会重置下游产物）。`state.json.phase` 记录达到的最高阶段；各产物的具体状态存放在 `state.json.artifacts.<name>.status`。
 
 ### 3.1 `.sdd/state.json` schema
 
@@ -129,8 +106,8 @@ in `state.json.artifacts.<name>.status`.
     "spec":  { "path": "docs/v1.0.1/specs/spec.md",  "status": "approved", "updated_at": "2026-07-07T10:00:00Z" },
     "trd":   { "path": "docs/v1.0.1/plans/trd.md",   "status": "draft",    "updated_at": "2026-07-07T11:00:00Z" },
     "features": [
-      { "name": "feature-login",  "path": "docs/v1.0.1/plans/feature-login.md",  "status": "planned" },
-      { "name": "feature-payment","path": "docs/v1.0.1/plans/feature-payment.md","status": "coding" }
+      { "name": "feature-login",   "path": "docs/v1.0.1/plans/feature-login.md",   "status": "planned" },
+      { "name": "feature-payment", "path": "docs/v1.0.1/plans/feature-payment.md", "status": "coding" }
     ],
     "adrs": [
       { "id": "0001-use-postgresql", "path": "docs/v1.0.1/decisions/0001-use-postgresql.md", "status": "accepted" }
@@ -144,286 +121,237 @@ in `state.json.artifacts.<name>.status`.
 }
 ```
 
-## 4. Directory Layout
+## 4. 目录结构
 
 ```
 <project root>/
 ├── .sdd/
 │   └── state.json
 ├── docs/
-│   ├── vX.Y.Z/                         # current in-flight version
+│   ├── vX.Y.Z/                         # 当前进行中的版本
 │   │   ├── specs/
-│   │   │   └── spec.md                 # pure requirements (Spec-Kit style)
+│   │   │   └── spec.md                 # 纯需求（Spec-Kit 风格）
 │   │   ├── plans/
-│   │   │   ├── trd.md                  # version-level tech design
-│   │   │   ├── feature-login.md        # per-feature impl plan
+│   │   │   ├── trd.md                  # 版本级技术设计
+│   │   │   ├── feature-login.md        # 单 feature 实现计划
 │   │   │   └── feature-payment.md
 │   │   └── decisions/
 │   │       ├── 0001-use-postgresql.md  # ADR
-│   │       └── bugfix-0002-fix-null.md # bugfix record (lightweight ADR)
+│   │       └── bugfix-0002-fix-null.md # bugfix 记录（轻量 ADR）
 │   └── archive/
-│       └── v1.0.0/                     # archived snapshot
+│       └── v1.0.0/                     # 归档快照
 │           ├── specs/spec.md
 │           ├── plans/
 │           └── decisions/
-└── (source code, untouched)
+└── （源代码目录，不动）
 ```
 
-## 5. Commands & Skill Mapping
+## 5. 命令与 Skill 对应
 
-| Command          | Internal Skill                | Writes to                                            | Pre-req                |
-| ---------------- | ----------------------------- | ---------------------------------------------------- | ---------------------- |
-| `/sdd.init`      | `sdd-init`                    | `.sdd/`, `docs/`                                     | —                      |
-| `/sdd.new vX.Y.Z`| `sdd-new-version`             | `docs/vX.Y.Z/{specs,plans,decisions}/`, `state.json`| project initialised    |
-| `/sdd.spec`      | `sdd-spec-writer`             | `docs/vX.Y.Z/specs/spec.md`                          | phase ≥ INITED         |
-| `/sdd.trd`       | `sdd-trd-writer`              | `docs/vX.Y.Z/plans/trd.md` + `state.json.guards`     | spec approved          |
-| `/sdd.feature X` | `sdd-feature-planner`         | `docs/vX.Y.Z/plans/feature-X.md`                     | trd approved           |
-| `/sdd.code X`    | `sdd-code-orchestrator`       | source files (via subagent + TDD)                    | `feature-X.md` exists  |
-| `/sdd.bugfix`    | `sdd-bugfix-triage`           | `decisions/bugfix-*.md` + code                       | phase = CODE           |
-| `/sdd.adr`       | `sdd-adr-writer`              | `docs/vX.Y.Z/decisions/NNNN-*.md`                    | —                      |
-| `/sdd.status`    | `sdd-status-reader`           | (none)                                               | —                      |
-| `/sdd.archive`   | `sdd-archiver`                | `docs/archive/vX.Y.Z/`                               | phase = RELEASE        |
+| 命令              | 内部 Skill                  | 写入路径                                              | 前置条件                |
+| ----------------- | --------------------------- | ----------------------------------------------------- | ----------------------- |
+| `/sdd.init`       | `sdd-init`                  | `.sdd/`、`docs/`                                      | —                       |
+| `/sdd.new vX.Y.Z` | `sdd-new-version`           | `docs/vX.Y.Z/{specs,plans,decisions}/`、`state.json`  | 项目已初始化            |
+| `/sdd.spec`       | `sdd-spec-writer`           | `docs/vX.Y.Z/specs/spec.md`                           | phase ≥ INITED          |
+| `/sdd.trd`        | `sdd-trd-writer`            | `docs/vX.Y.Z/plans/trd.md` + `state.json.guards`      | spec 已批准             |
+| `/sdd.feature X`  | `sdd-feature-planner`       | `docs/vX.Y.Z/plans/feature-X.md`                      | trd 已批准              |
+| `/sdd.code X`     | `sdd-code-orchestrator`     | 源文件（通过 subagent + TDD）                         | `feature-X.md` 存在     |
+| `/sdd.bugfix`     | `sdd-bugfix-triage`         | `decisions/bugfix-*.md` + 代码                        | phase = CODE            |
+| `/sdd.adr`        | `sdd-adr-writer`            | `docs/vX.Y.Z/decisions/NNNN-*.md`                     | —                       |
+| `/sdd.status`     | `sdd-status-reader`         | （无）                                                | —                       |
+| `/sdd.archive`    | `sdd-archiver`              | `docs/archive/vX.Y.Z/`                                | phase = RELEASE         |
 
-Every Skill is also reachable through natural language: the Skill's
-`description` field is written to match likely user phrasings, so a user
-who says "write the spec for the payment feature" reaches
-`sdd-spec-writer` without typing a slash command.
+每个 Skill 同时支持自然语言触发：Skill 的 `description` 字段按用户可能的说法撰写，所以用户即使说「帮我写一下支付功能的 spec」，也能命中 `sdd-spec-writer`，不必输入斜杠命令。
 
-## 6. Stage-by-Stage Framework Composition
+## 6. 各阶段外部框架组合
 
-| Stage              | Plugin Skill           | External framework layer                              |
-| ------------------ | ---------------------- | ----------------------------------------------------- |
-| Requirements       | `sdd-spec-writer`      | Superpowers `brainstorming` flow + Spec-Kit spec.md   |
-|                    |                        | template (User Story, Given-When-Then)                |
-| Tech design (TRD)  | `sdd-trd-writer`       | Spec-Kit `plan.md` template (Technical Context,       |
-|                    |                        | Constitution Check, Coverage Scope)                   |
-| Feature plan       | `sdd-feature-planner`  | Superpowers `writing-plans` flow (file-level tasks,   |
-|                    |                        | TDD steps, commit granularity)                        |
-| Coding             | `sdd-code-orchestrator`| Superpowers `subagent-driven-development` +           |
-|                    |                        | `test-driven-development` + `verification-before-     |
-|                    |                        | completion`                                           |
-| Bugfix             | `sdd-bugfix-triage`    | Plugin decision tree (see §7.2)                       |
-| ADR                | `sdd-adr-writer`       | (plugin-native; follows MADR-style template)          |
-| Status             | `sdd-status-reader`    | (plugin-native)                                       |
-| Archive            | `sdd-archiver`         | Spec-Kit `/speckit.converge` for gap check +          |
-|                    |                        | OpenSpec archive model for layout                     |
+| 阶段        | Plugin Skill              | 外部框架层                                                              |
+| ----------- | ------------------------- | ----------------------------------------------------------------------- |
+| 需求        | `sdd-spec-writer`         | Superpowers `brainstorming` 流程 + Spec-Kit `spec.md` 模板（User Story、Given-When-Then） |
+| 技术设计（TRD） | `sdd-trd-writer`          | Spec-Kit `plan.md` 模板（Technical Context、Constitution Check、Coverage Scope） |
+| Feature 计划 | `sdd-feature-planner`     | Superpowers `writing-plans` 流程（文件级任务、TDD 步骤、commit 粒度）   |
+| 编码        | `sdd-code-orchestrator`   | Superpowers `subagent-driven-development` + `test-driven-development` + `verification-before-completion` |
+| Bug 修复    | `sdd-bugfix-triage`       | Plugin 内部决策树（见 §7.5）                                            |
+| ADR         | `sdd-adr-writer`          | Plugin 原生（MADR 风格模板）                                            |
+| 状态        | `sdd-status-reader`       | Plugin 原生                                                              |
+| 归档        | `sdd-archiver`            | Spec-Kit `/speckit.converge` 查漏 + OpenSpec 归档模型                    |
 
-## 7. Key Skills — Internal Behaviour
+## 7. 关键 Skill — 内部行为
 
 ### 7.1 `sdd-spec-writer`
 
-1. Read `state.json`. Refuse if `phase < INITED`.
-2. Invoke **Superpowers `brainstorming`** flow: ask one clarifying
-   question at a time, max 5.
-3. Fill Spec-Kit `spec-template.md` skeleton: User Stories (P1/P2/P3),
-   Acceptance Scenarios (Given-When-Then).
-4. Write `docs/vX.Y.Z/specs/spec.md`.
-5. Update `state.json.artifacts.spec.status = draft`.
-6. **Hard gate**: do not advance `phase` until user explicitly approves
-   the spec. Approval bumps `status = approved` and `phase = TRD`.
+1. 读取 `state.json`。若 `phase < INITED`，直接拒绝。
+2. 调用 **Superpowers `brainstorming`** 流程：一次问一个澄清问题，最多 5 个。
+3. 用 Spec-Kit `spec-template.md` 骨架填充：User Story（P1/P2/P3）、Acceptance Scenarios（Given-When-Then）。
+4. 写入 `docs/vX.Y.Z/specs/spec.md`。
+5. 更新 `state.json.artifacts.spec.status = draft`。
+6. **硬门**：用户未明确批准 spec 前，不推进 `phase`。批准后 `status = approved` 并 `phase = TRD`。
 
 ### 7.2 `sdd-trd-writer`
 
-1. Read spec.md; refuse if not approved.
-2. Invoke **Superpowers `writing-plans`** flow to collect technical
-   decisions (one question at a time).
-3. Populate Spec-Kit `plan-template.md` skeleton (Technical Context,
-   Constitution Check, Project Structure, Coverage Scope).
-4. **Mandatory** section: `## Coverage Scope` listing file globs
-   this version is allowed to modify.
-5. Persist parsed globs to `state.json.guards.trd_covered_modules`.
-6. On approval, `phase = FEATURE_PLAN` is reached once at least one
-   feature plan exists.
+1. 读取 spec.md；若 spec 未批准则拒绝。
+2. 调用 **Superpowers `writing-plans`** 流程，逐个收集技术决策（一次一个问题）。
+3. 用 Spec-Kit `plan-template.md` 骨架填充（Technical Context、Constitution Check、Project Structure、Coverage Scope）。
+4. **强制章节**：`## Coverage Scope`，列出本版本允许改动的文件 glob。
+5. 解析得到的 glob 持久化到 `state.json.guards.trd_covered_modules`。
+6. 用户批准后，当至少存在一个 feature plan 时，`phase = FEATURE_PLAN`。
 
 ### 7.3 `sdd-feature-planner`
 
-1. Read trd.md; refuse if not approved.
-2. Invoke **Superpowers `writing-plans`** full flow for the named
-   feature.
-3. Produce `docs/vX.Y.Z/plans/feature-<name>.md` with sections:
-   - File structure (precise files to touch)
-   - Task list `[ID] [P?] [Story] <description with file paths>`
-   - TDD steps per task (test → fail → impl → pass → commit)
-   - Commit granularity suggestions
-4. **No separate `tasks.md` is created** — tasks live inside the plan
-   document, per Superpowers convention.
-5. On user approval, mark `artifacts.features[name].status = planned`.
+1. 读取 trd.md；若 trd 未批准则拒绝。
+2. 针对命名的 feature 调用 **Superpowers `writing-plans`** 全流程。
+3. 产出 `docs/vX.Y.Z/plans/feature-<name>.md`，包含以下章节：
+   - 文件结构（具体到要改的文件清单）
+   - 任务列表 `[ID] [P?] [Story] <带文件路径的描述>`
+   - 每个任务的 TDD 步骤（写测试 → 看红 → 写实现 → 看绿 → 提交）
+   - Commit 粒度建议
+4. **不另起 `tasks.md`** —— 任务内嵌在 plan 文档里，与 Superpowers 约定一致。
+5. 用户批准后，把 `artifacts.features[name].status` 标记为 `planned`。
 
 ### 7.4 `sdd-code-orchestrator`
 
-1. Confirm `feature-<name>.md` exists and is approved.
-2. Invoke **Superpowers `subagent-driven-development`**: dispatch the
-   plan to a subagent.
-3. Subagent loop:
-   - For each task: write failing test → implement → pass → commit.
-   - Before each commit: invoke `verification-before-completion`.
-4. **PreToolUse hook** checks every `Write/Edit` against
-   `state.json.guards.trd_covered_modules`. Writes outside scope are
-   refused with exit code 2.
-5. On task completion, mark `artifacts.features[name].status = coding`
-   → `done`.
+1. 确认 `feature-<name>.md` 存在且已批准。
+2. 调用 **Superpowers `subagent-driven-development`**，把 plan 派发给 subagent。
+3. Subagent 循环：
+   - 对每个任务：写失败测试 → 实现 → 通过测试 → 提交。
+   - 每次提交前调用 `verification-before-completion`。
+4. **PreToolUse Hook** 检查每一次 `Write/Edit` 是否在 `state.json.guards.trd_covered_modules` 之内。越界即以退出码 2 拒绝。
+5. 任务完成后，把 `artifacts.features[name].status` 从 `coding` 改为 `done`。
 
 ### 7.5 `sdd-bugfix-triage`
 
-Decision tree (executed by Skill body, not by user):
+决策树（由 Skill 内部执行，不是用户驱动）：
 
 ```
-Q1: Does the fix change spec-defined behaviour or acceptance criteria?
-    Yes → Spec bug → offer ADR
-    No  → Code bug → lightweight bugfix record
+Q1：本次修复是否改变 spec 定义的行为或验收标准？
+    是 → 规范 bug → 提议写 ADR
+    否 → 代码 bug → 写轻量 bugfix 记录
 
-Q2 (if spec bug): does the fix change TRD coverage scope?
-    Yes → update trd.md first
-    No  → spec.md diff only
+Q2（若是规范 bug）：本次修复是否改变 TRD 覆盖范围？
+    是 → 先更新 trd.md
+    否 → 仅更新 spec.md（diff 段）
 ```
 
-Outcomes:
+处置路径：
 
-- **Code bug (lightweight)**
-  - Write `docs/vX.Y.Z/decisions/bugfix-NNNN-<title>.md` (MADR-style
-    but with a Symptom / Root Cause / Fix / Impact layout).
-  - Apply code fix via TDD loop; append the task to the relevant
-    feature plan's task list.
-- **Spec bug (full)**
-  - Create ADR `000N-<title>.md`.
-  - Update `spec.md` with an explicit `[CHANGED]` diff block.
-  - If coverage scope shifts, update `trd.md` and re-parse
-    `state.json.guards.trd_covered_modules`.
-  - Continue through `/sdd.code` for the affected feature.
+- **代码 bug（轻量）**
+  - 写 `docs/vX.Y.Z/decisions/bugfix-NNNN-<title>.md`（MADR 风格，但使用「现象 / 根因 / 修复 / 影响」布局）。
+  - 通过 TDD 循环修复代码；把对应任务追加到相关 feature plan 的任务列表中。
+- **规范 bug（完整）**
+  - 写 ADR `000N-<title>.md`。
+  - 用显式的 `[CHANGED]` diff 块更新 `spec.md`。
+  - 若覆盖范围变化，更新 `trd.md` 并重新解析 `state.json.guards.trd_covered_modules`。
+  - 对受影响的 feature 继续走 `/sdd.code` 流程。
 
 ### 7.6 `sdd-adr-writer`
 
-Native to plugin. Template:
+Plugin 原生。模板如下：
 
 ```md
-# ADR NNNN: <Title>
+# ADR NNNN：<标题>
 
-- Status: proposed | accepted | deprecated
-- Date: YYYY-MM-DD
-- Context: <forces at play>
-- Decision: <what we chose>
-- Consequences: <positive, negative, follow-ups>
+- 状态：proposed | accepted | deprecated
+- 日期：YYYY-MM-DD
+- 背景：<当前的约束与驱动力>
+- 决策：<我们选择了什么>
+- 后果：<正面、负面、后续行动>
 ```
 
 ### 7.7 `sdd-archiver`
 
-1. Require `phase = RELEASE` (set manually by user or via release hook).
-2. Invoke Spec-Kit `/speckit.converge` to detect unbuilt work in any
-   feature plan; refuse if any task is incomplete unless user
-   explicitly confirms archival.
-3. Create `docs/archive/vX.Y.Z/`; copy (not move) `spec.md`, all
-   `plans/*.md`, all `decisions/*.md` into it.
-4. Delete the in-flight `docs/vX.Y.Z/` directory.
-5. Mark `state.json.phase = ARCHIVED` and clear `guards`.
+1. 要求 `phase = RELEASE`（由用户手动设置或通过发布 hook 触发）。
+2. 调用 Spec-Kit `/speckit.converge` 检测各 feature plan 中未完成的工作；若有未完成任务，在用户未明确「强制归档」前拒绝。
+3. 创建 `docs/archive/vX.Y.Z/`；把 `spec.md`、所有 `plans/*.md`、所有 `decisions/*.md` **复制**（非移动）进去。
+4. 删除进行中的 `docs/vX.Y.Z/` 目录。
+5. 把 `state.json.phase` 标记为 `ARCHIVED`，清空 `guards`。
 
 ### 7.8 `sdd-status-reader`
 
-Reports: current `version`, `phase`, missing artifacts, open
-`proposed` ADRs, and the next recommended slash command.
+报告：当前 `version`、`phase`、缺失的产物、`proposed` 状态的 ADR、下一步推荐的斜杠命令。
 
 ## 8. Hooks
 
-| Hook                      | Trigger                     | Action                                                                |
-| ------------------------- | --------------------------- | --------------------------------------------------------------------- |
-| `SessionStart`            | Agent start / resume        | Read `state.json`; inject summary `<plugin>active version=...phase=...missing=[...] next=/sdd.<x>` into context (Claude Code `hookSpecificOutput.additionalContext`). |
-| `PreToolUse Write/Edit`   | About to write source       | Compare target file path against `state.json.guards.trd_covered_modules`. In scope → allow. Out of scope → exit 2 + message `"<path> is outside vX.Y.Z coverage scope. Update trd.md or run /sdd.spec to extend scope."`. |
-| `PostToolUse Write/Edit`  | Source write completed      | Update `state.json.last_modified`; if the file adds a new top-level module, post a hint to add an ADR. |
-| `PreCompact`              | Conversation compaction     | Snapshot current phase artifact paths into `state.json.compaction_snapshot`. `SessionStart` re-injects this snapshot on the next session so a compacted context can recover the file paths it lost. |
+| Hook                    | 触发时机                  | 动作                                                                       |
+| ----------------------- | ------------------------- | -------------------------------------------------------------------------- |
+| `SessionStart`          | Agent 启动 / 恢复会话     | 读取 `state.json`，把摘要 `<plugin>active version=...phase=...missing=[...] next=/sdd.<x>` 注入 context（Claude Code 的 `hookSpecificOutput.additionalContext`）。 |
+| `PreToolUse Write/Edit` | 即将写入源码              | 把目标文件路径与 `state.json.guards.trd_covered_modules` 比对。在范围内 → 放行；越界 → 退出码 2 + 提示 `"<path> 不在 vX.Y.Z 覆盖范围内。请更新 trd.md 或运行 /sdd.spec 扩展范围。"`。 |
+| `PostToolUse Write/Edit`| 源码写入完成              | 更新 `state.json.last_modified`；若新增了顶层模块，提示「建议补一条 ADR」。 |
+| `PreCompact`            | 会话压缩                  | 把当前阶段产物路径快照写入 `state.json.compaction_snapshot`。下次 `SessionStart` 会重新注入，使被压缩过的 context 能找回这些文件路径。 |
 
-The hooks **do not** second-guess methodology (no quality checks on
-spec prose, no TDD enforcement — those live inside Skills). They only
-enforce path and state-machine invariants.
+Hooks **不**对方法论本身做二次判断（不审 spec 文字、不做 TDD 强制 —— 这些都在 Skill 里）。Hooks 只守护路径合法性与状态机一致性。
 
-## 9. Error Handling
+## 9. 错误处理
 
-| Failure                              | Surface to user                                                       | Recovery                                                  |
-| ------------------------------------ | --------------------------------------------------------------------- | --------------------------------------------------------- |
-| `state.json` missing / malformed     | "Project not initialised. Run `/sdd.init`."                           | `/sdd.init`                                               |
-| Phase jump (e.g. `/sdd.trd` w/o spec) | Command refuses with reason.                                          | Run pre-req command.                                      |
-| `trd.md` missing `## Coverage Scope`  | `/sdd.trd` refuses completion.                                        | Edit `trd.md` to include the section.                      |
-| Write outside coverage               | PreToolUse exit 2 with message.                                       | Edit `trd.md` or run `/sdd.spec` to extend.               |
-| Archive with open tasks              | `/sdd.archive` refuses + lists unbuilt tasks.                         | Finish or explicitly confirm "archive anyway".            |
-| IO / network failure in script       | Surface error, do **not** corrupt `state.json`.                       | Re-run; consider restoring from `compaction_snapshot`.    |
+| 失败场景                            | 用户可见的表现                                                | 恢复方式                                                   |
+| ----------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------- |
+| `state.json` 缺失 / 损坏            | 「项目未初始化。请运行 `/sdd.init`。」                        | 运行 `/sdd.init`                                           |
+| 阶段跳跃（例如无 spec 直接 `/sdd.trd`） | 命令拒绝并说明原因                                            | 运行前置命令                                               |
+| `trd.md` 缺少 `## Coverage Scope`   | `/sdd.trd` 拒绝完成                                            | 编辑 `trd.md` 补全该章节                                   |
+| 写入超出覆盖范围                    | PreToolUse 退出码 2 并提示                                     | 更新 `trd.md` 或运行 `/sdd.spec` 扩展范围                  |
+| 归档时仍有未完成任务                | `/sdd.archive` 拒绝并列出未完成项                              | 完成对应任务，或明确确认「仍然归档」                       |
+| 脚本 IO / 网络失败                  | 抛出错误，**不破坏** `state.json`                             | 重跑；必要时从 `compaction_snapshot` 恢复                  |
 
-## 10. Testing Strategy
+## 10. 测试策略
 
-| Layer                          | What is tested                                       | Tooling                                      |
-| ------------------------------ | ---------------------------------------------------- | -------------------------------------------- |
-| Templates                      | Required sections exist (e.g. `## Coverage Scope`).  | Plain `bash` / `node` snapshot script.       |
-| Hook & archive scripts         | Unit-level behaviour.                                | `bats` / `shunit2`.                          |
-| Skill behaviour (E2E)          | Mock `state.json`, feed user input, assert outputs.  | Claude Code headless invocation; assert    |
-|                                |                                                      | generated files against golden snapshots.   |
-| Hook behaviour (integration)   | Prepare a temp repo, drive a Write, assert refused.  | `bats` driving a real agent subprocess.      |
-| Cross-platform adapter smoke   | Generate each adapter, run its consumer's loader.   | Manual for v0.1; CI scripts later.           |
+| 层                              | 测试目标                                                       | 工具                                                       |
+| ------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------- |
+| 模板                            | 检查必要章节存在（如 `## Coverage Scope`）                     | `bash` / `node` 快照对比脚本                                |
+| Hook 与归档脚本                 | 单元级行为                                                     | `bats` / `shunit2`                                         |
+| Skill 行为（端到端）            | 准备 mock `state.json`，注入用户输入，断言输出                 | Claude Code headless 调用；将产物与 golden snapshot 对比   |
+| Hook 行为（集成）               | 准备临时仓库，驱动 Write 工具，断言被拒绝                      | `bats` 驱动真实的 agent 子进程                             |
+| 跨平台 adapter smoke            | 为每个 adapter 生成产物，跑对应宿主加载器                       | v0.1 阶段人工验收；后续补 CI 脚本                          |
 
-**YAGNI**: no abstract platform mock layer; no test coverage targets
-beyond the above matrix.
+**YAGNI**：不做平台 mock 抽象层；不额外设置超出上表的覆盖率指标。
 
-## 11. Platform Adapter Strategy
+## 11. 平台适配策略
 
-Source-of-truth content lives in `sources/`. Each platform gets a thin
-adapter that re-shapes that content for its expected layout.
+真源内容放在 `sources/` 下，每个平台拿到一份薄薄的 adapter，把同一份内容重塑为该平台期望的目录布局。
 
 ```
 sources/
-├── skills/        (the 10 Skills, one per directory)
-├── templates/     (spec / trd / feature-plan / adr / bugfix)
-├── hooks/         (session-start, pre-write-guard, post-write-track)
-└── scripts/       (init, archive, status)
+├── skills/        （10 个 Skill，每个 Skill 一个目录）
+├── templates/     （spec / trd / feature-plan / adr / bugfix）
+├── hooks/         （session-start、pre-write-guard、post-write-track）
+└── scripts/       （init、archive、status）
 
 adapters/
 ├── claude-code/
 │   ├── .claude-plugin/plugin.json
-│   ├── commands/                   # thin /sdd.* aliases into Skills
+│   ├── commands/                   # /sdd.* 的薄别名
 │   └── hooks/hooks.json
 ├── opencode/
-│   └── loadout.json                # OpenCode loadout definition
+│   └── loadout.json                # OpenCode loadout 定义
 └── codex/
-    └── (CodeX-specific layout)
+    └── （CodeX 专属布局）
 ```
 
-A `build.sh` script in the Plugin root:
-1. Copies `sources/skills/` to each adapter's expected location.
-2. Generates each platform's manifest / config.
-3. Renders `sources/templates/` to `docs/vX.Y.Z/` when a Skill
-   actually needs them at runtime.
-4. Runs smoke tests.
+Plugin 根目录下的 `build.sh`：
 
-### 11.1 Versioning of adapters
+1. 把 `sources/skills/` 复制到各 adapter 的目标位置。
+2. 生成各平台的 manifest / 配置文件。
+3. 在 Skill 实际运行时，把 `sources/templates/` 渲染到 `docs/vX.Y.Z/`。
+4. 跑 smoke 测试。
 
-- v0.1 — Claude Code only.
-- v0.2 — OpenCode adapter (validate that loadout model supports the
-  required Skills / Hooks; if not, restrict the Plugin's surface for
-  that platform).
-- v0.3+ — CodeX, Cursor, Copilot CLI as demand warrants.
+### 11.1 适配器版本节奏
 
-## 12. Open Questions / Future Work
+- **v0.1**：仅 Claude Code。
+- **v0.2**：OpenCode adapter（验证 loadout 模型是否支持所需 Skills / Hooks；若不支持，缩减该平台暴露的功能面）。
+- **v0.3+**：按需求追加 CodeX、Cursor、Copilot CLI。
 
-- **Hook script language**: Claude Code supports both bash and node
-  hooks; OpenCode may differ. Decide per adapter rather than picking
-  globally.
-- **Bugfix auto-classification**: today the Skill body asks the
-  decision tree. If users find it too rigid, future revision can add
-  a heuristic (file count, LOC, spec surface match) to pre-classify.
-- **Multi-version in flight**: design currently assumes one active
-  version at a time. If parallel maintenance branches appear, the
-  state model will need to key `guards` by `version`.
-- **Plugin distribution**: target a public plugin marketplace
-  (Claude Code's `claude-plugins-official`, OpenCode's loadout
-  registry) once v0.1 stabilises.
+## 12. 开放问题 / 后续工作
 
-## 13. Acceptance Criteria
+- **Hook 脚本语言**：Claude Code 同时支持 bash 与 node hook，OpenCode 可能不同。逐 adapter 决定而非一刀切。
+- **Bugfix 自动分类**：当前由 Skill 内部走决策树。若用户觉得过于严格，后续可加启发式规则（文件数量、变更行数、是否触及 spec 表面）做预分类。
+- **多版本并行**：当前设计假定同一时间只有一个活跃版本。若出现并行维护分支，`guards` 需要按 `version` 区分。
+- **Plugin 分发**：v0.1 稳定后，对接公开 plugin 市场（Claude Code 的 `claude-plugins-official`、OpenCode 的 loadout registry）。
 
-- v0.1 is considered done when:
-  1. The Plugin installs into Claude Code from this repo.
-  2. A user can run `/sdd.init` → `/sdd.new v0.0.1` → `/sdd.spec` →
-     `/sdd.trd` → `/sdd.feature demo` → `/sdd.code demo` on a
-     scratch repo without manual intervention.
-  3. Writing a file outside the declared coverage scope is hard-blocked
-     with a clear error message.
-  4. `/sdd.status` accurately reflects the state at every phase.
-  5. `/sdd.archive` moves `v0.0.1/` to `archive/v0.0.1/` and clears
-     `state.json.guards`.
-- All external framework calls (Superpowers / Spec-Kit / OpenSpec) are
-  composed through Skills, never duplicated inside the Plugin.
+## 13. 验收标准
 
+v0.1 视为完成，当且仅当：
+
+1. Plugin 能从本仓库安装进 Claude Code。
+2. 用户能在一个空白仓库里依次运行 `/sdd.init` → `/sdd.new v0.0.1` → `/sdd.spec` → `/sdd.trd` → `/sdd.feature demo` → `/sdd.code demo`，全程无需人工介入。
+3. 写入超出声明覆盖范围的文件会被硬拦截，并给出明确错误消息。
+4. `/sdd.status` 在每个阶段都准确反映当前状态。
+5. `/sdd.archive` 能把 `v0.0.1/` 移到 `archive/v0.0.1/` 并清空 `state.json.guards`。
+6. 所有对外部框架（Superpowers / Spec-Kit / OpenSpec）的调用都通过 Skill 编排，不在 Plugin 内部复制实现。
