@@ -108,8 +108,6 @@ flowchart TD
 
 **变更路径**（任何阶段的可选变更，详见 §3.2）：自然语言 + `/sdd.<目标阶段>` + `/sdd.plan <name>` 都走同一套流程 —— Skill 内部判断 `patch` / `breaking`，`breaking` 时给受影响的下游打 `needs_rework` 标记。subagent 在 dispatch 时若发现自身 plan 的上游在 `needs_rework` 列表里，**主动告警**但不自动重启。
 
-**为什么去掉 `/sdd.bugfix` 命令**：bugfix 是一种「代码变更」，代码变更是变更流程的一种。强制用户区分「bug」与「feature」是虚假的强约束；现实中重构、bug 修复、新增能力往往交织在一起。
-
 **回跳语义**：任意阶段都可通过 `/sdd.<目标阶段>` 命令回跳到上游阶段（详见 §8 PreToolUse Hook 与 §7 各 Skill 的命令入口）。`state.json.phase` 写入由**命令入口**而非 Hook 完成，因此 Hook 看到的总是已稳定的 phase。
 
 阶段可以重复进入（例如在 `FEATURE_PLAN` 阶段回头编辑 `spec.md`，phase 临时跳回 `SPEC`，改完后回到 `FEATURE_PLAN`）。`state.json.phase` 是**当前活动阶段**，不是历史最高。各产物的具体状态存放在 `state.json.artifacts.<name>.status`。
@@ -174,13 +172,11 @@ flowchart TD
 - `needs_rework`：受本次变更影响的下游 feature name 列表（`/sdd.plan <name>` 的 name）。只在 `last_change_type = "breaking"` 时填充；`patch` 时为空数组。
 - `rework_since`：标 `needs_rework` 的时间。`patch` 时为 `null`。
 
-**v0.1 不引入 `active_bugfix` 字段**：bugfix 既然合并进变更流程，「当前正在进行的 bugfix」与「当前正在进行的 feature」在 state.json 里没有区分必要 —— `features[name=bugfix-<ID>].status = "coding"` 已经能标识。
-
 **v0.1 不引入 `guards` 字段**：v0.1 阶段不实施「Coverage Scope 路径白名单」护栏。Hook 退化为「阶段许可」（详见 §8）。后续版本如需恢复路径白名单，作为不破坏 schema 的扩展字段加回。
 
 ### 3.2 变更流程与修订元数据
 
-**v0.1 取消独立的 `/sdd.bugfix` 命令**：所有变更（PRD / spec / plan / 代码）都走**统一的「变更流程」**。入口有三种形式：
+所有变更（PRD / spec / plan / 代码）走**统一的「变更流程」**，与「首次写」共用入口：
 
 ```
 自然语言触发      :  "帮我在 spec 里加一条验收标准" / "修 payment 的 bug"
@@ -222,8 +218,6 @@ flowchart TD
 
 变更流程不污染产物文件本身（不改 git diff 的语义），只更新 state.json 的索引。`/sdd.doctor` 检查 needs_rework 列表是否仍有未关闭项，并提醒。
 
-**为什么完全去掉 `/sdd.bugfix`**：bugfix 是一种「代码变更」，代码变更是变更流程的一种。强制用户区分「bug」与「feature」是虚假的强约束；现实中重构、bug 修复、新增能力往往交织在一起。统一入口后 Skill 内部用自然语言识别即可。
-
 ## 4. 目录结构
 
 ```
@@ -255,7 +249,7 @@ flowchart TD
 
 ### 4.1 文档层级与递进
 
-`docs/vX.Y.Z/` 下的文档**不是同层并列**，而是**四层递进**（去掉 TRD 后，spec.md 已融合 Spec-Kit 的项目层元信息，详见 §7.4）：
+`docs/vX.Y.Z/` 下的文档**不是同层并列**，而是**四层递进**（详见 §7.4）：
 
 ```
 research.md            <- 需求调研：问题陈述 / 用户 / 痛点 / 竞品 / 范围 / 目标（Plugin 模板）
@@ -377,7 +371,7 @@ bugfix-<ID>.md         <- bugfix 实现层：由变更流程触发，结构同 f
 
 ### 7.5 `sdd-plan-writer`
 
-**职责**：生成 per-feature 或 per-bugfix 的 plan，与 Superpowers `writing-plans` 机制 1:1 对齐。Spec-Kit 项目层元信息（Technical Context / Constitution Check / Project Structure）已在 `spec.md` 中包含（见 §7.4），plan 不再重复。
+**职责**：生成 per-feature 或 per-bugfix 的 plan，与 Superpowers `writing-plans` 机制 1:1 对齐。Spec-Kit 项目层元信息（Technical Context / Constitution Check / Project Structure）已在 `spec.md` 中包含（见 §7.4）。
 
 **两种模式**（依据用户输入的 `<name>` 前缀自动判定）：
 
@@ -392,7 +386,7 @@ bugfix-<ID>.md         <- bugfix 实现层：由变更流程触发，结构同 f
   1. 读取 spec.md 与对应 `decisions/bugfix-<ID>.md`（后者由变更流程识别「是 bug」时自动创建）。
   2. 调用 **Superpowers `writing-plans`** 流程（同 feature 模式），但任务围绕 bug 修复。
   3. 写入 `docs/vX.Y.Z/plans/bugfix-<ID>.md`。
-  4. 用户批准后，`artifacts.features[name=bugfix-<ID>].status = planned`。**不**再设独立 `state.json.active_bugfix` 字段 —— bugfix 与 feature 共用 `features[*].status = "coding"` 表达「进行中」。
+  4. 用户批准后，`artifacts.features[name=bugfix-<ID>].status = planned`。bugfix 与 feature 共用 `features[*].status = "coding"` 表达「进行中」。
 
 **推荐章节（v0.1 非强制）**：每份 plan 都可加 `## Coverage Scope`，列出本 feature / bugfix 涉及的关键文件 / 目录（gitignore 风格 glob）。该章节不写入任何 `state.json` 字段，也**不**作为护栏依据 —— v0.1 不实施路径白名单。
 
