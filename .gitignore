@@ -42,3 +42,6 @@ coverage/
 
 # Local spec scratch (adjust as needed)
 spec/drafts/
+
+# Local worktrees
+.worktrees/
