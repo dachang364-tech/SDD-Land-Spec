@@ -20,6 +20,8 @@ assert_contains "scripts/install-deps.sh" 'claude plugin install "claude-plugins
 assert_file_exists "hooks/hooks.json"
 assert_contains "hooks/hooks.json" "PreToolUse"
 assert_contains "hooks/hooks.json" "SessionStart"
+assert_contains "hooks/hooks.json" '${CLAUDE_PLUGIN_ROOT}/scripts/hooks/pre-tool-use.sh'
+assert_contains "hooks/hooks.json" '${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-start.sh'
 assert_file_exists "scripts/hooks/pre-tool-use.sh"
 assert_file_exists "scripts/hooks/session-start.sh"
 
