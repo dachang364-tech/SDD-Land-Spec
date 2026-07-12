@@ -14,7 +14,7 @@
 
 - 通过一组明确的斜杠命令与自然语言触发器，把项目从**需求 → 上线 → 归档**完整跑下来。
 - 把文档（`spec.md`、`feature-*.md`、`fix-*.md`、DR、PRD）作为一等资产，存放在 `docs/vX.Y.Z/` 之下。
-- 通过**阶段许可护栏**：Agent 在错误阶段试图改不该改的文档（如在 FEATURE_PLAN 阶段写 `prd.md`）会被硬拦截，引导回正确阶段。源码本身不设路径白名单 —— 边界纪律由「文档即契约」+ Superpowers TDD 共同保证。
+- 通过**阶段许可护栏**：Agent 在错误阶段试图改不该改的文档（如在 FEATURE_PLAN 阶段写 `prd.md`）会被硬拦截，引导回正确阶段。源码本身不设路径白名单 —— 边界纪律由「**文档即契约**」保证，`spec.md` 是真理来源，code 必须符合 spec。
 - 优先在 **Claude Code** 上跑通，对 OpenCode、CodeX 等其他 CodeAgent 通过显式的适配层接入。
 
 ### 1.2 非目标
@@ -147,7 +147,12 @@ flowchart TD
       "tag": "fix",
       "path": "docs/v1.0.1/decisions/fix-0001-payment-null.md",
       "title": "payment-null-bug",
-      "status": "coded",
+      "status": "closed",
+      "closed_reason": "committed",
+      "closed_via": "code",
+      "committing": false,
+      "commit_attempt": 0,
+      "affects_frozen": true,
       "affects": {
         "specs":    ["specs/spec.md"],
         "features": ["feature-payment"]
@@ -155,14 +160,18 @@ flowchart TD
       "supersedes": [],
       "superseded_by": null,
       "created_at":  "2026-07-08T10:00:00Z",
-      "accepted_at": "2026-07-08T11:00:00Z",
       "closed_at":   "2026-07-09T12:00:00Z"
     },
     "spec-0007-clarify-email": {
       "tag": "spec",
       "path": "docs/v1.0.1/decisions/spec-0007-clarify-email.md",
       "title": "clarify-email-format",
-      "status": "merged",
+      "status": "closed",
+      "closed_reason": "committed",
+      "closed_via": "doc",
+      "committing": false,
+      "commit_attempt": 0,
+      "affects_frozen": true,
       "affects": {
         "specs":    ["specs/spec.md"],
         "features": []
@@ -170,7 +179,6 @@ flowchart TD
       "supersedes": [],
       "superseded_by": null,
       "created_at":  "2026-07-12T09:00:00Z",
-      "accepted_at": "2026-07-12T10:00:00Z",
       "closed_at":   "2026-07-12T11:00:00Z"
     }
   },
@@ -182,11 +190,14 @@ flowchart TD
 
 - `artifacts.<name>.status`：`missing` | `draft` | `approved` | `deprecated`。`/sdd.new` 不预创建 `prd.md`，因此新建版本后 `artifacts.prd.status = "missing"`；`/sdd.prd` 完成后变 `draft`，用户批准后变 `approved`。`spec` / `features.*` 同理。
 - `features[*].status`：`draft` | `planned` | `coding` | `done` | `deprecated`。**plan 文件名以 `fix-` 开头时**（由 `fix` 类 DR 触发），其 name 与 DR ID 同名，例如 `fix-0001-payment-null`。feature 数组同时承载 feature plan 与 fix plan。
-- `drs[*].status`：
-  - 影响代码的 DR：`proposed` → `accepted` → `coded` → (`superseded` | `dismissed`)
-  - 不影响代码的 DR：`proposed` → `accepted` → `merged` → (`superseded` | `dismissed`)
+- `drs[*].status`：`open` → (`committing`) → `closed`。
+  - `closed` 时必填 `closed_reason`：`committed` | `superseded` | `dismissed`。
+  - `closed_reason = committed` 时必填 `closed_via`：`code`（走 `/sdd.code` 完成） | `doc`（直接改文档 + git commit）。
+  - `committing: true` 表示 DR 处于「关闭流程进行中」过渡态——下游（`/sdd.code` / 文档 commit）未完成。
+  - `affects_frozen: true` 表示 `affects` 字段已冻结（`committing` 起冻结；`open` 阶段为 false）。
+  - `commit_attempt: int` 表示第几次尝试 close（首次 0），失败重试时递增。
 
-**`merged` 而非 `committed` 的原因**：与 git 的 `git merge` / GitHub PR `merged` 语义对齐，避免与 `git commit` 含义混淆（committed 听起来像 git 已 commit，merged 听起来像已被合入分支）。
+**`committed` 统一终态命名**：影响代码（fix/feat/chg/arch）与不影响代码（spec/doc/typo）的 DR 都用 `committed` 作为关闭理由——前者由 `/sdd.code` 完成触发，后者由 git commit 触发，通过 `closed_via` 字段区分路径。
 
 **`artifacts.<name>.drs`**：受本资产影响的 DR ID 列表。**双向映射的 spec 侧**——通过它 0(1) 反查「这份 spec 受哪些 DR 影响」。
 
@@ -200,7 +211,7 @@ flowchart TD
 
 #### DR 类型（前缀 tag）
 
-**影响代码的 DR**（终态 = `coded`）：
+**影响代码的 DR**（`closed_via = code`）：
 
 | tag   | 含义                             | 文件名示例                          |
 | ----- | -------------------------------- | ----------------------------------- |
@@ -209,34 +220,46 @@ flowchart TD
 | chg   | 功能修改（已有行为调整）         | `chg-0003-payment-retry-policy.md`  |
 | arch  | 架构、依赖、库选型调整           | `arch-0004-axios-to-fetch.md`       |
 
-**不影响代码的 DR**（终态 = `merged`）：
+**不影响代码的 DR**（`closed_via = doc`）：
 
 | tag   | 含义                             | 文件名示例                          |
 | ----- | -------------------------------- | ----------------------------------- |
-| spec  | spec.md 表达修订，行为不变       | `spec-0001-clarify-email-rule.md`   |
-| doc   | 文档结构调整 / 重写，语义不变    | `doc-0002-restructure-decisions.md` |
-| typo  | typo / 错别字 / 缺失标点         | `typo-0003-fix-section-header.md`   |
+| spec  | spec.md 表达修订，行为不变       | `spec-0005-clarify-email-rule.md`   |
+| doc   | 文档结构调整 / 重写，语义不变    | `doc-0006-restructure-decisions.md` |
+| typo  | typo / 错别字 / 缺失标点         | `typo-0007-fix-section-header.md`   |
 
+> **NNNN 跨 tag 共享同一序号池**：`fix-0001`、`spec-0005` 共用全局递增（`max(existing) + 1`）。
 > 默认不加 `mig`（migration）、`meta`（仓库元数据）等边缘 tag。出现时再扩展。
 
 #### 状态机
 
 ```
-影响代码 DR：
-  proposed ──accept──> accepted ──coded──> coded
-                                          ├─supersede──> superseded
-                                          └─dismiss───> dismissed
-
-不影响代码 DR：
-  proposed ──accept──> accepted ──merged──> merged
-                                           ├─supersede──> superseded
-                                           └─dismiss───> dismissed
+                            ┌──────────────── dismiss ────────────────┐
+                            │                                         │
+  (无) ──/sdd.dr──> open ──┴── accept ──> committing ──成功──> closed (committed)
+                            │                  │
+                            │                  └─失败──> open（保留草稿）
+                            │
+                            └── dismiss ──> closed (dismissed)
 ```
 
-**`merged` 而非 `committed`**：与 git 的 merge 语义对齐（避开与 `git commit` 混淆）。
+**字段语义**：
 
-**`proposed` → `accepted` 的关口**：用户确认 tag 与 `affects`（影响哪些 spec / feature）。
-**`accepted` → `coded` / `merged` 的关口**：分别对应代码已合入且测试通过 / 文档修订已合入。
+| 字段 | 取值 | 说明 |
+| ---- | ---- | ---- |
+| `status` | `open` \| `committing` \| `closed` | 状态机当前态 |
+| `closed_reason` | `committed` \| `superseded` \| `dismissed` \| `null` | 关闭原因；`open` 阶段为 null |
+| `closed_via` | `code` \| `doc` \| `null` | 仅 `closed_reason = committed` 必填 |
+| `committing` | `true` \| `false` | `committing` 阶段为 true，表示关闭流程进行中 |
+| `affects_frozen` | `true` \| `false` | `open` 阶段 false（可改）；`committing` 后 true（冻结） |
+
+**关口语义**：
+
+- **`open → committing`**：用户调 `/sdd.dr accept <id>`，确认 tag 与 `affects`。
+- **`committing → closed (committed)`**：影响代码 → `/sdd.code` 完成；不影响代码 → 文档 commit + 章节变更履历 append。
+- **`committing → open`**：关闭流程中途失败，回退（保留 DR 文件草稿 + `affects` 字段；只重置 `committing=false` + `commit_attempt+=1`）。章节变更履历**不**append（避免污染）。
+- **`open → closed (dismissed)`**：用户判断偏差不成立。`committing` 与 `closed (committed)` **不**允许 dismiss——错误时另起 DR `supersede` 旧 DR。
+- **`closed (committed) → closed (superseded)`**：被新 DR 取代（仅在取代方 `closed (committed)` 时触发，新 DR 自身的 `supersedes` 字段声明意图，committed 时才回填旧 DR 的 `superseded_by`）。
 
 #### 入口
 
@@ -264,8 +287,8 @@ flowchart TD
 
 | DR ID        | tag   | title             | status     | date       |
 | ------------ | ----- | ----------------- | ---------- | ---------- |
-| fix-0001     | fix   | 退款未触发邮件    | coded      | 2026-07-09 |
-| spec-0007    | spec  | 邮箱校验规则      | merged     | 2026-07-12 |
+| fix-0001     | fix   | 退款未触发邮件    | closed (committed) | 2026-07-09 |
+| spec-0007    | spec  | 邮箱校验规则      | closed (committed) | 2026-07-12 |
 ```
 
 DR 文件头部：
@@ -308,7 +331,11 @@ DR 文件头部：
 "drs": {
   "fix-0001": {
     "tag": "fix",
-    "status": "coded",
+    "status": "closed",
+    "closed_reason": "committed",
+    "closed_via": "code",
+    "committing": false,
+    "affects_frozen": true,
     "affects": {                         // ← DR 侧：我影响了谁
       "specs":    ["specs/spec.md"],
       "features": ["feature-payment"]
@@ -319,15 +346,18 @@ DR 文件头部：
 
 #### supersede 与 dismissed
 
-- **supersede**：当已 `coded` / `merged` 的 DR 因后续变更被否定 → 新 DR 起草、状态 `proposed` 时把旧 DR 标记 `superseded_by = "<new-id>"`，新 DR `supersedes = ["<old-id>"]`。spec 章节的「变更履历」表只 append，不删除历史记录。
-- **dismissed**：用户判断偏差不成立（如：是测试用例不对，不是代码有 bug）。DR 永久标记 dismissed。
+- **supersede 延迟回填**：新 DR `open` 阶段只往自己的 `supsersedes` 字段写「我要取代谁」（意图声明，不污染旧 DR）。**只有**新 DR `closed (committed)` 时**才**回填旧 DR 的 `supserseded_by` 字段（事实落地）。
+  - 好处：若新 DR 中途被 `dismissed`，旧 DR 完全不受波及，章节变更履历不污染。
+  - 过渡期窗口：旧 DR 在 `closed (committed)` 状态期间，新 DR `open` 声明 supersede 但未 close —— 旧 DR 不打标；消费方读 `superseded_by` 为 null 表示「无取代」。
+  - spec 章节的「变更履历」表 append 时机：新 DR `closed (committed)` **真正成功**后才 append。
+- **dismissed 范围限定**：仅 `open` 阶段可 dismiss。`committing` 与 `closed (committed)` 阶段**不允许** dismiss —— 错误时另起 DR `supersede` 旧 DR。dismissed 的 DR 不留 dirty 标记（spec 资产头部「关联 DRs」表不追加、章节变更履历不 append）。
 
 #### DR 与下游派发的协同
 
 `/sdd.code <feature>` 在 subagent dispatch 时：
 
 1. 读 `state.json.artifacts.spec.drs` 与 `state.json.drs[*].affects`
-2. 若目标 feature 受 **accepted** DR 影响 → **主动告警**「本 feature 受 accepted DR <id> 影响，建议先 review 该 DR 的 `affects`」，**不**自动重启也不拒绝派发。
+2. 若目标 feature 受 `committing` 或 `closed (committed)` DR 影响（`affects_frozen = true` 且 `closed_reason ∈ {committing, committed}`）→ **主动告警**「本 feature 受 in-progress / committed DR <id> 影响，建议先 review 该 DR 的 `affects`」，**不**自动重启也不拒绝派发。
 
 > 旧版「`needs_rework` 告警」机制**完全废弃**，DR 的 `affects` 是唯一信号源。
 
@@ -380,11 +410,11 @@ DR 文件头部：
 - must: phase 推进必须由 `/sdd.<阶段>` 命令入口触发，禁止直接 Edit 切 phase
 
 ## 2. DR 流程
-- must: 任何修改代码（fix / feat / chg / arch）前必须先有 accepted DR
+- must: 任何修改代码（fix / feat / chg / arch）前必须先有 `affects_frozen=true` 的 DR（即状态机 ≥ committing 的 DR）
 - must: 跨版本修改代码必须先 `/sdd.dr` 起草 DR，不能 `/sdd.code` 绕过 DR
-- must: 修改 specs/spec.md / feature-*.md 前必须有 spec / doc DR accepted
-- must: 修改 prd.md 前必须有 spec DR accepted（PRD → spec 顺序）
-- must: DR 关闭前，spec.md 顶部「关联 DRs」表必须已 append 本 DR
+- must: 修改 specs/spec.md / feature-*.md 前必须有 spec / doc DR 且 `affects_frozen=true`
+- must: 修改 prd.md 前必须有 spec DR 且 `affects_frozen=true`（PRD → spec 顺序）
+- must: DR 进入 `committing` 前，spec.md 顶部「关联 DRs」表必须已 append 本 DR
 - may: typo 类修订可跳过 DR
 - may: `docs/requirements/*.md` 修订不强制走 DR（项目级跨版本调研文档，与代码 / 契约无关；不写 state.json，追溯走 git 历史）
 
@@ -466,7 +496,7 @@ docs/v1.0.1/prd.md               <- 版本级：业务目标 / 用户 / 范围 /
 spec.md                          <- 版本级：每个 feature 的 User Story + 验收标准 + 项目层元信息
   | 按 feature / fix 拆实现
 feature-<name>.md                <- 版本级：单 feature 实现层：user story -> task
-fix-<ID>.md                      <- 版本级：fix DR 触发的实现层：DR `accepted` 后由 /sdd.plan 生成
+fix-<ID>.md                      <- 版本级：fix DR 触发的实现层：DR `committing` 后由 /sdd.plan 生成
   | 派给 subagent
 源码 + 提交
 ```
@@ -533,12 +563,23 @@ fix-<ID>.md                      <- 版本级：fix DR 触发的实现层：DR `
 
 ### 7.0 `sdd-init-runner`
 
-1. 检测当前项目是否已初始化（`.sdd/state.json` 是否存在）。若已存在 → 拒绝并提示「已初始化，请用 `/sdd.status` 查看当前状态」。
-2. 创建 `.sdd/` 目录与 `state.json` 初始骨架（`version = "0.0.0"`、`phase = "INITED"`、`artifacts = {}`）。
-3. 创建 `docs/` 目录结构。
-4. **不**预创建任何版本目录；版本目录由 `/sdd.new` 启动。
-5. 若项目根不是 git 仓库，**不强制** git init，但提示「建议先 `git init` 以便后续归档写入 commit」。
-6. 写入 `.sdd/CONSTITUTION.md` 默认骨架（见 §3.3 八章节占位 + 默认 `must` 条款）。项目 owner 可自由增删。
+1. 检测当前项目是否已初始化（`.sdd/state.json` 是否存在）。
+   - 不存在 → 继续
+   - 存在 → 检测 `.sdd/state.json.initialized` 字段：
+     - `true` → 拒绝并提示「已初始化，请用 `/sdd.status` 查看当前状态」
+     - `false`（半成品）→ 询问用户「上次安装中断，是否清理重试？」：
+       - `y` → 删 `.sdd/` 整目录后从步骤 2 重来
+       - `n` → 中止退出
+2. 创建 `.sdd/` 目录与 `state.json` 初始骨架（`initialized = false`、`version = "0.0.0"`、`phase = "INITED"`、`artifacts = {}`）。
+3. **调用 `scripts/install-deps.sh`**（POSIX bash，由本 Skill 通过 bash 调用）安装 Spec-Kit / Superpowers。
+   - 脚本退出码 0 → 步骤 4
+   - 非零 → 删 `.sdd/`（清理重试态）+ 报错，提示用户「请先手动运行 `scripts/install-deps.sh` 后重试 `/sdd.init`」
+4. **验证依赖到位**：检查 `claude plugin list` 输出包含 `superpowers` 与 `spec-kit`；任一缺失 → 同步骤 3 失败处理（清理 + 报错）。
+5. 创建 `docs/` 目录结构。
+6. **不**预创建任何版本目录；版本目录由 `/sdd.new` 启动。
+7. 若项目根不是 git 仓库，**不强制** git init，但提示「建议先 `git init` 以便后续归档写入 commit」。
+8. 写入 `.sdd/CONSTITUTION.md` 默认骨架（见 §3.3 八章节占位 + 默认 `must` 条款）。项目 owner 可自由增删。
+9. 把 `state.json.initialized` 字段标为 `true`，完成初始化。
 
 ### 7.1 `sdd-new-version-bootstrapper`
 
@@ -569,7 +610,7 @@ fix-<ID>.md                      <- 版本级：fix DR 触发的实现层：DR `
      2. docs/requirements/competitor-analysis.md       - 竞品分析（Stripe / Adyen 支付链路）
      3. docs/requirements/tech-research-rust-vs-go.md  - 技术预研（推荐 Rust + axum）
      4. docs/requirements/market-size-2026.md          - 市场规模（2026 H1 报告）
-
+   
    哪些是本 PRD 的上游需求？[输入编号列表，或输入 a 全选，或输入 0 跳过]
    ```
    - 用户输入编号列表（`1,2,3`）→ 在 PRD 头部「上游需求文档」表写入这些 path
@@ -610,7 +651,7 @@ fix-<ID>.md                      <- 版本级：fix DR 触发的实现层：DR `
 
 ### 7.5 `sdd-plan-writer`
 
-**职责**：生成 per-feature 或 per-fix 的 plan，与 Superpowers `writing-plans` 机制 1:1 对齐。Spec-Kit 项目层元信息（Technical Context / Constitution Check / Project Structure）已在 `spec.md` 中包含（见 §7.4）。本 Skill 不再独立做"DR 起草"，那是 §7.7 `sdd-dr-writer` 的职责；fix 模式的入口只能由 DR `accepted` 后驱动。
+**职责**：生成 per-feature 或 per-fix 的 plan，与 Superpowers `writing-plans` 机制 1:1 对齐。Spec-Kit 项目层元信息（Technical Context / Constitution Check / Project Structure）已在 `spec.md` 中包含（见 §7.4）。本 Skill 不再独立做"DR 起草"，那是 §7.7 `sdd-dr-writer` 的职责；fix 模式的入口只能由 DR `committing` 后驱动。
 
 **两种模式**（依据用户输入的 `<name>` 前缀自动判定）：
 
@@ -621,7 +662,7 @@ fix-<ID>.md                      <- 版本级：fix DR 触发的实现层：DR `
   4. **不另起 `tasks.md`** —— 任务内嵌在 plan 文档里，与 Superpowers 约定一致。
   5. 用户批准后，把 `artifacts.features[name].status` 标记为 `planned`，`phase = FEATURE_PLAN`（首次进入 FEATURE_PLAN）。
 
-- **fix 模式**（`/sdd.plan <DR-id>`，由 `sdd-dr-writer` 在 `accepted` 后自动调用，**不**支持用户直接调用 —— DR 流程在 `proposed → accepted` 关口前置）：
+- **fix 模式**（`/sdd.plan <DR-id>`，由 `sdd-dr-writer` 在 `committing` 后自动调用，**不**支持用户直接调用 —— DR 流程在 `open → committing` 关口前置）：
   1. 读取 spec.md 与对应 DR（`drs[<DR-id>]` 的 `affects` 列表确定哪些 spec 资产 / feature 受影响）。
   2. 调用 **Superpowers `writing-plans`** 流程（同 feature 模式），任务围绕该 DR 描述的现象修复。
   3. 写入 `docs/vX.Y.Z/plans/<DR-id>.md`（与 DR 文件名同名去后缀）。
@@ -682,7 +723,7 @@ docs/vX.Y.Z/decisions/<tag>-NNNN-<slug>.md
 ```md
 # DR-<tag>-NNNN：<标题>
 
-- 状态：proposed                              # 起草后默认 proposed
+- 状态：open                                  # 起草后默认 open
 - tag  ：fix|feat|chg|arch|spec|doc|typo
 - 日期：YYYY-MM-DD
 - 影响的 spec 资产：
@@ -693,7 +734,7 @@ docs/vX.Y.Z/decisions/<tag>-NNNN-<slug>.md
 
 ## 现象
 
-（输入是什么、输出是什么、当前实际行为与期望的偏差是什么。**不写根因**——根因诊断在 `accepted` 之后。）
+（输入是什么、输出是什么、当前实际行为与期望的偏差是什么。**不写根因**——根因诊断在 `committing` 之后。）
 
 ## 期望
 
@@ -709,43 +750,58 @@ docs/vX.Y.Z/decisions/<tag>-NNNN-<slug>.md
 
 ## 关闭记录
 
-（`coded` / `merged` 之后由 Skill 自动追加 commit hash、关闭时间。）
+（`closed (committed)` 之后由 Skill 自动追加 commit hash、关闭时间。）
 ```
 
 **状态流转**（Skill 内部动作）：
 
 | 起始 | 动作 | 终止 | 触发 |
 | ---- | ---- | ---- | ---- |
-| (无) | Skill 写入模板，状态 `proposed` | proposed | 用户 `/sdd.dr` 调用 |
-| proposed | 用户确认 tag 与 `affects` | accepted | `/sdd.dr accept <id>` |
-| accepted | 影响代码 → code 路径（先生成 plan → 走 `/sdd.code`）。不影响代码 → 直接改 spec，commit 后 append 章节变更履历 | coded / merged | 自动（code 完成或文档 commit） |
-| coded / merged | 新 DR 引用本 DR 取代 | superseded | 自动（被 `supersedes` 引用时） |
-| proposed / accepted | 用户判断现象不成立 | dismissed | `/sdd.dr dismiss <id> <reason>` |
+| (无) | Skill 写模板 + 启发式推断 affects，状态 `open` | open | 用户 `/sdd.dr` |
+| open | 用户确认 tag 与 `affects`（affects_frozen 转 true） | committing | `/sdd.dr accept <id>` |
+| committing | 影响代码 → 生成 plan → 走 `/sdd.code` 完成；不影响代码 → 改 spec + git commit + append 章节变更履历；supersede 链回填 | closed (committed) | 自动（code 完成 / 文档 commit） |
+| committing | 关闭流程中途失败，回退保留 DR 文件草稿 | open（重试） | 自动（异常） |
+| open | 用户判断偏差不成立 | closed (dismissed) | `/sdd.dr dismiss <id> <reason>` |
+| closed (committed) | 被新 DR `supersede`（仅新 DR `closed` 时回填） | closed (superseded) | 自动（新 DR `supersede` 链回填） |
 
 **双向关联维护**（Skill 在状态流转时自动执行）：
 
-- `proposed → accepted`：
-  - DR 文件头部「影响的 spec 资产」表冻结（用户确认）
+- `(无) → open`：
+  - DR 文件头部「影响的 spec 资产」表填入启发式推断 + 用户可调
+  - `state.json.drs[<id>]` 写入 `status=open`、`closed_reason=null`、`committing=false`、`commit_attempt=0`、`affects_frozen=false`、`closed_via=null`
+  - **不**写 `state.json.artifacts.spec.drs`、**不**追加 spec 资产头部「关联 DRs」表（open 阶段对消费方不可见）
+- `open → committing`：
+  - DR 文件状态字段：open → committing
+  - `state.json.drs[<id>].status = "committing"`、`affects_frozen = true`、`committing = true`
+  - `state.json.artifacts.spec.drs` 追加本 DR ID（受影响的每个 spec 资产都追加）
   - 在每个受影响 spec 资产头部「关联 DRs」表追加本 DR 行
-  - `state.json.drs[<id>].affects` 写入
-  - `state.json.artifacts.spec.drs` 追加本 DR ID
-- `accepted → coded`：
-  - DR「关闭记录」追加 commit hash 与关闭时间
-  - `state.json.drs[<id>].status = "coded"`、`closed_at = now`
-- `accepted → merged`：
-  - DR「关闭记录」追加 commit hash 与关闭时间
-  - `state.json.drs[<id>].status = "merged"`、`closed_at = now`
-  - 更新受影响 spec 资产的章节变更履历（append）
-- `proposed/accepted → dismissed`：状态写入，不动产物的「关联 DRs」表（dismissed 的 DR 不留 dirty 标记）
-- `coded/merged → superseded`：
-  - 双向写 supersede 链：`drs[old].superseded_by = new`、`drs[new].supersedes += old`
+- `committing → closed (committed)`（**成功路径**）：
+  - DR 文件「关闭记录」段追加 commit hash + 关闭时间
+  - `state.json.drs[<id>].status = "closed"`、`closed_reason = "committed"`、`closed_at = now`、`committing = false`
+  - `closed_via` 写入：`tag ∈ {fix, feat, chg, arch}` → `"code"`；`tag ∈ {spec, doc, typo}` → `"doc"`
+  - **supersede 链回填**：遍历本 DR `supsersedes` 字段里的每个旧 DR id → `state.json.drs[old_id].supserseded_by = <id>`、旧 DR `closed_reason` 转 `"superseded"`
+  - **章节变更履历 append**：`closed_via = "doc"` 时，对每个 affected spec 章节追加「变更履历」表项；`closed_via = "code"` 时无 append（代码变更不影响章节）
+- `committing → open`（**失败回退**）：
+  - DR 文件保留草稿（不动「关闭记录」段）
+  - `state.json.drs[<id>].status = "open"`、`committing = false`、`commit_attempt += 1`、`affects_frozen = false`
+  - **不**回滚 `state.json.artifacts.spec.drs` 追加（避免再次被下游消费）/ **不**清空 affected 关联表
+  - **不**append 章节变更履历
+  - 重试由用户重新调 `/sdd.dr accept <id>` 触发
+- `open → closed (dismissed)`：
+  - DR 文件状态字段：open → closed (dismissed)，dismissed reason 由用户输入追加到「关闭记录」段
+  - `state.json.drs[<id>].status = "closed"`、`closed_reason = "dismissed"`、`closed_at = now`
+  - **不**写 `state.json.artifacts.spec.drs` / **不**追加 spec 资产头部「关联 DRs」表（dismissed DR 不污染下游）
+  - **不**append 章节变更履历
+- `closed (committed) → closed (superseded)`（由上一条 committing → closed (committed) 的 supersede 链回填自动触发）：
+  - `state.json.drs[<old_id>].closed_reason = "superseded"`、`superseded_by = <new_id>`
+  - DR 文件旧 DR 「关闭记录」段追加一句 supersede 记录
 
-**supersede / dismiss 不删除历史**：spec 章节的「变更履历」表只 append，`/sdd.status` / `/sdd.doctor` 可查询。
+**supersede / dismiss 不删除历史**：spec 章节的「变更履历」表只 append，`/sdd.status` / `/sdd.doctor` 可查询历史 supersede / dismiss 链。
 
 **执行与原 §7.5 关系**：
 
-- 影响代码的 DR `accepted` 后，由本 Skill 主动调起 `/sdd.plan`（`<name> = <DR id>`，例如 `fix-0001-payment-null`）生成 plan，再调起 `/sdd.code <name>`。
-- 不影响代码的 DR `accepted` 后：本 Skill 直接改 spec.md，commit 后置 `merged`。
+- 影响代码的 DR `committing` 后，由本 Skill 主动调起 `/sdd.plan`（`<name> = <DR id>`，例如 `fix-0001-payment-null`）生成 plan，再调起 `/sdd.code <name>`。
+- 不影响代码的 DR `committing` 后：本 Skill 直接改 spec.md，commit 后置 `closed (committed)`、`closed_via = "doc"`、append 章节变更履历。
 
 ### 7.8 `sdd-archiver`
 
@@ -762,7 +818,7 @@ docs/vX.Y.Z/decisions/<tag>-NNNN-<slug>.md
 
 ### 7.9 `sdd-status-reader`
 
-报告：当前 `version`、`phase`、缺失的产物、`proposed` 状态的 DR、下一步推荐的斜杠命令。
+报告：当前 `version`、`phase`、缺失的产物、`open` 状态的 DR、下一步推荐的斜杠命令。
 
 ### 7.10 `sdd-doctor-runner`
 
@@ -779,7 +835,8 @@ docs/vX.Y.Z/decisions/<tag>-NNNN-<slug>.md
 | 11 个 command 文件                  | `commands/sdd.{init,new,research,prd,spec,plan,code,dr,status,archive,doctor}.md` 全部存在 |
 | Hooks 配置                          | `hooks/hooks.json` 合法 JSON，四个事件都注册（SessionStart / PreToolUse / PostToolUse / PreCompact） |
 | Templates 齐备                      | `templates/{research,prd,spec,feature-plan,dr}.md.tmpl` 全部存在 |
-| Scripts 齐备                        | `scripts/{init,archive,status,render-template}.js`（或 .sh）全部存在     |
+| Scripts 齐备                        | `scripts/{init,install-deps,archive,status,render-template}.js`（或 .sh）全部存在 |
+| **外部依赖完备性**                  | `claude plugin list` 输出包含 `superpowers` 与 `spec-kit`                |
 
 **B. 项目状态诊断**（诊断当前正在使用 SDD 的项目仓库）：
 
@@ -798,6 +855,10 @@ docs/vX.Y.Z/decisions/<tag>-NNNN-<slug>.md
 ```
 /sdd.doctor
 
+依赖完备性
+  ✅ superpowers v6.1.1（Plugin 已装，brainstorming / writing-plans / subagent-driven-development / test-driven-development / systematic-debugging / verification-before-completion 都可达）
+  ❌ spec-kit 缺失（请运行 scripts/install-deps.sh 或 /sdd.init）
+
 Plugin 自身安装
   ✅ .claude-plugin/plugin.json
   ✅ 11 个 Skill 目录
@@ -815,7 +876,7 @@ Plugin 自身安装
 
 CONFORMANCE（最近 10 次提交 vs 宪法 §1-§7）
   ❌ commit a1b2c3d 修改 src/payment/index.ts，但 state.json.drs 中无对应 fix/feat/chg DR
-     违反 CONSTITUTION §2 "任何修改代码前必须有 accepted DR"
+     违反 CONSTITUTION §2 "任何修改代码前必须有 affects_frozen=true 的 DR"
   ⚠️ commit d4e5f6a 修改 docs/v1.0.1/specs/spec.md，但 spec.md 顶部「关联 DRs」表未 append 本 DR
      违反 CONSTITUTION §2 "DR 关闭前 spec.md 顶部必须已 append 本 DR"
 
@@ -829,7 +890,7 @@ CONFORMANCE（最近 10 次提交 vs 宪法 §1-§7）
 | Hook                    | 触发时机                  | 动作                                                                       |
 | ----------------------- | ------------------------- | -------------------------------------------------------------------------- |
 | `SessionStart`          | Agent 启动 / 恢复会话     | **同时读取** `state.json` 与 `.sdd/CONSTITUTION.md`；把摘要 `<plugin>active version=...phase=...missing=[...] next=/sdd.<x>` + CONSTITUTION 全文 注入 context（Claude Code 的 `hookSpecificOutput.additionalContext`）。 |
-| `PreToolUse Write/Edit` | 即将写入                  | **三层检查**（依次短路）：<br>**L1 路径合法性**：目标路径命中 `docs/vX.Y.Z/**` 时，按路径查「该路径对应的合法阶段集合」是否包含 `state.json.phase`，越阶段退出码 2。<br>- `prd.md` ↔ `PRD`<br>- `specs/spec.md` ↔ `SPEC`<br>- `plans/feature-*.md` ↔ `FEATURE_PLAN`、`CODE`<br>- `plans/fix-*.md` ↔ `FEATURE_PLAN`、`CODE`<br>- `decisions/**` ↔ 任何阶段（DR 是横切产物）<br>`docs/requirements/**` 不进入 L1 检查（项目级调研文档，不参与版本阶段门控）。<br>**phase 上下跳的处理**：用户想从 SPEC 阶段回跳改 `prd.md`，**不能**直接 Edit —— 必须调用 `/sdd.prd` 等命令入口。该命令入口在内部把 `phase` 切到目标阶段后，再调起对应的 Skill 写文档；Hook 始终读到的是**已稳定**的 phase，不会看到「写之前的瞬态切换」。<br>越阶段 → 退出码 2 + 提示「请运行 `/sdd.<对应阶段>`」。<br>**L2 宪法 must 条款**：识别本次写入语义（命令意图或路径 → 类别映射，例如写 `src/**` = 「改代码」、写 `docs/vX.Y.Z/specs/spec.md` = 「改 spec」、写 `plans/fix-*.md` = 「fix plan」）。比对 CONSTITUTION §2 的 must 条款：<br>- 「改代码」 → 必须有 accepted fix/feat/chg/arch DR（否则退出码 2 + 指向 `/sdd.dr`）<br>- 「改 spec」 → 必须有 accepted spec/doc DR（否则退出码 2 + 指向 `/sdd.dr`）<br>- 「改 prd」 → 必须有 accepted spec DR（否则退出码 2 + 指向 `/sdd.dr`）<br>应条款缺失时**不**硬拦，提示用户去 `/sdd.dr` 起草；用户在 `/sdd.dr` 完成 accept 后重试原操作。<br>**L3 宪法 should 条款**：警告不拦截。<br>**v0.1 不拦截源码路径**（路径合法性只在 L1 文档类路径检查；源码路径只走 L2 宪法检查）。 |
+| `PreToolUse Write/Edit` | 即将写入                  | **三层检查**（依次短路）：<br>**L1 路径合法性**：目标路径命中 `docs/vX.Y.Z/**` 时，按路径查「该路径对应的合法阶段集合」是否包含 `state.json.phase`，越阶段退出码 2。<br>- `prd.md` ↔ `PRD`<br>- `specs/spec.md` ↔ `SPEC`<br>- `plans/feature-*.md` ↔ `FEATURE_PLAN`、`CODE`<br>- `plans/fix-*.md` ↔ `FEATURE_PLAN`、`CODE`<br>- `decisions/**` ↔ 任何阶段（DR 是横切产物）<br>`docs/requirements/**` 不进入 L1 检查（项目级调研文档，不参与版本阶段门控）。<br>**phase 上下跳的处理**：用户想从 SPEC 阶段回跳改 `prd.md`，**不能**直接 Edit —— 必须调用 `/sdd.prd` 等命令入口。该命令入口在内部把 `phase` 切到目标阶段后，再调起对应的 Skill 写文档；Hook 始终读到的是**已稳定**的 phase，不会看到「写之前的瞬态切换」。<br>越阶段 → 退出码 2 + 提示「请运行 `/sdd.<对应阶段>`」。<br>**L2 宪法 must 条款**：识别本次写入语义（命令意图或路径 → 类别映射，例如写 `src/**` = 「改代码」、写 `docs/vX.Y.Z/specs/spec.md` = 「改 spec」、写 `plans/fix-*.md` = 「fix plan」）。比对 CONSTITUTION §2 的 must 条款：<br>- 「改代码」 → 必须有 `affects_frozen=true` 的 fix/feat/chg/arch DR（否则退出码 2 + 指向 `/sdd.dr`）<br>- 「改 spec」 → 必须有 `affects_frozen=true` 的 spec/doc DR（否则退出码 2 + 指向 `/sdd.dr`）<br>- 「改 prd」 → 必须有 `affects_frozen=true` 的 spec DR（否则退出码 2 + 指向 `/sdd.dr`）<br>应条款缺失时**不**硬拦，提示用户去 `/sdd.dr` 起草；用户在 `/sdd.dr` 完成 accept（即 `affects_frozen=true`）后重试原操作。<br>**L3 宪法 should 条款**：警告不拦截。<br>**v0.1 不拦截源码路径**（路径合法性只在 L1 文档类路径检查；源码路径只走 L2 宪法检查）。 |
 | `PostToolUse Write/Edit`| 写入完成                  | ① 文档路径命中 `docs/vX.Y.Z/**` → 更新对应 `artifacts.<name>.status = draft`、`updated_at` 时间戳。<br>② 源码路径 → 更新 `state.json.last_modified`；若新增了顶层模块，提示「建议补一条 DR（建议 tag = `arch`）」。 |
 | `PreCompact`            | 会话压缩                  | 把当前阶段产物路径快照写入 `state.json.compaction_snapshot`。下次 `SessionStart` 会重新注入，使被压缩过的 context 能找回这些文件路径。 |
 
@@ -841,9 +902,9 @@ Hooks **不**对方法论本身做二次判断（不审 spec 文字、不做 TDD
 | ----------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------- |
 | `state.json` 缺失 / 损坏            | 「项目未初始化。请运行 `/sdd.init`。」                        | 运行 `/sdd.init`                                           |
 | CONSTITUTION.md 缺失                | SessionStart 警告「项目无宪法强控」；PreToolUse L2 跳过只跑 L1 | `/sdd.init` 重生，或手动从模板拷贝                         |
-| 修改代码但无 accepted DR            | PreToolUse 退出码 2 + 提示「请先 `/sdd.dr fix|feat|chg|arch <title>` 起草 DR 并 accept」 | `/sdd.dr <tag> <title>` accept 后重试                       |
-| 修改 spec 但无 accepted spec/doc DR | PreToolUse 退出码 2 + 提示「请先 `/sdd.dr spec|doc <title>` 起草 DR 并 accept」 | `/sdd.dr spec|doc <title>` accept 后重试                    |
-| 修改 prd 但无 accepted spec DR      | PreToolUse 退出码 2 + 提示「PRD 修订需先有关联 spec 变更 DR」 | 先改 spec 或起草 spec DR accept                          |
+| 改代码但无 affects_frozen DR          | PreToolUse 退出码 2 + 提示「请先 `/sdd.dr fix|feat|chg|arch <title>` 起草 DR 并 accept（进入 committing）」 | `/sdd.dr <tag> <title>` accept 后重试                       |
+| 改 spec 但无 affects_frozen spec/doc DR | PreToolUse 退出码 2 + 提示「请先 `/sdd.dr spec|doc <title>` 起草 DR 并 accept」 | `/sdd.dr spec|doc <title>` accept 后重试                    |
+| 改 prd 但无 affects_frozen spec DR    | PreToolUse 退出码 2 + 提示「PRD 修订需先有关联 spec 变更 DR」 | 先改 spec 或起草 spec DR accept                          |
 | PRD 缺失或不符合 schema            | `/sdd.spec` 拒绝并提示「请先运行 `/sdd.prd` 或手动补齐 PRD 至符合规范。」 | 运行 `/sdd.prd` 或手动补齐 PRD 章节                     |
 | 阶段跳跃（例如无 PRD 直接 `/sdd.spec`） | 命令拒绝并说明原因                                            | 运行前置命令                                               |
 | 文档路径在错误阶段被改              | PreToolUse 退出码 2 并提示「请运行 /sdd.<对应阶段>」           | 切换到正确阶段                                             |
@@ -912,7 +973,66 @@ sdd-codeagent-plugin/
 
 **模板渲染**：Skill 运行时由脚本（如 `scripts/render-template.js`）读取 `templates/*.md.tmpl`，把变量替换后写入 `docs/vX.Y.Z/`。这是 Skill 内部步骤，与构建无关。
 
-### 11.1 跨平台适配 —— 后续节奏
+### 11.1 Plugin manifest 与外部依赖
+
+#### `.claude-plugin/plugin.json`（Plugin manifest）
+
+只声明 Plugin 自身信息，**不**声明外部依赖（避免依赖 Claude Code Plugin 系统的 `dependencies` 字段兼容性）：
+
+```json
+{
+  "name": "sdd-codeagent-plugin",
+  "version": "0.0.1",
+  "description": "Spec-Driven Development Plugin"
+}
+```
+
+**为什么 manifest 不声明 dependencies**：Claude Code Plugin 系统的 `dependencies` 字段可能在不同版本有差异；统一由 Plugin 自带的 `scripts/install-deps.sh` 兜底，行为更可控。
+
+#### 外部依赖
+
+| 依赖 | 用途 | 必需 |
+| ---- | ---- | ---- |
+| **Superpowers** | `brainstorming` / `writing-plans` / `subagent-driven-development` / `test-driven-development` / `systematic-debugging` / `verification-before-completion` | ✅ 必需 |
+| **Spec-Kit** | `spec.md` / `plan.md` 模板 + `/speckit.converge`（archiver 用） | ✅ 必需 |
+
+Plugin **硬依赖**：任一缺失 → 任何主流程命令拒绝运行。**不**做降级。
+
+#### `scripts/install-deps.sh`
+
+POSIX bash 脚本，Plugin 自带。检查 + 安装 Spec-Kit / Superpowers：
+
+```bash
+#!/usr/bin/env bash
+# install-deps.sh - 调用 Claude Code CLI 装外部依赖 Plugin
+
+set -e
+
+check() {
+  # 检测单个 Plugin 是否已装
+  local plugin_name="$1"
+  claude plugin list 2>/dev/null | grep -q "^${plugin_name}\b"
+}
+
+install() {
+  # 安装单个 Plugin
+  local plugin_name="$1"
+  local source="$2"
+  if check "$plugin_name"; then
+    echo "[skip] ${plugin_name} 已装"
+  else
+    echo "[installing] ${plugin_name}..."
+    claude plugin install "$source"
+  fi
+}
+
+install "superpowers" "claude-plugins-official/superpowers"
+install "spec-kit" "claude-plugins-official/spec-kit"
+
+echo "[done] 所有依赖已就绪"
+```
+
+### 11.2 跨平台适配 —— 后续节奏
 
 v0.1 **不**预留任何平台抽象层（YAGNI）。等 Claude Code adapter 稳定并经过实战验证后，再按以下顺序评估迁移：
 
@@ -921,7 +1041,39 @@ v0.1 **不**预留任何平台抽象层（YAGNI）。等 Claude Code adapter 稳
 
 **触发条件**：Claude Code v0.1 在真实项目里跑完 1-2 个完整版本（research → archive），积累足够用户反馈后再启动。
 
+### 11.3 依赖完备性时序
+
+Plugin 保证依赖 Spec-Kit / Superpowers 装上的三道防线：
+
+| 时机 | 触发点 | 行为 | 失败处理 |
+| ---- | ------ | ---- | -------- |
+| **首次安装** | 用户从仓库装本 Plugin | 由用户手动跑 `scripts/install-deps.sh`（manifest 不自动声明依赖） | 失败 → 装上后用户第一次 `/sdd.init` 时再次校验 |
+| **`/sdd.init`** | 项目初始化命令 | 步骤 3 调用 `scripts/install-deps.sh`（已装则跳过）；步骤 4 验证依赖到位 | 缺失 → `/sdd.init` 退出码非零 + 报错 |
+| **SessionStart Hook** | 每次会话启动 | 检查 Superpowers / Spec-Kit 是否可达；任何主流程 Skill 启动时再检查 | 任一缺失 → 报错 + 提示用户运行 `scripts/install-deps.sh`，**不**自动重跑（避免每次会话启动都做插件级安装） |
+
+**为什么不在 SessionStart 自动重跑 install-deps.sh**：插件级安装成本高、易被网络阻塞打断；让用户主动跑更可控。
+
+### 11.4 硬依赖缺失矩阵
+
+| 命令 | Superpowers 缺失 | Spec-Kit 缺失 |
+| ---- | ---------------- | -------------- |
+| `/sdd.init` | 拒绝（依赖检查前置） | 拒绝 |
+| `/sdd.new` | 接受（仅写版本目录） | 接受 |
+| `/sdd.research` | 拒绝（需 brainstorming） | 接受 |
+| `/sdd.prd` | 拒绝（需 brainstorming） | 接受 |
+| `/sdd.spec` | 拒绝 | 拒绝（需 spec.md 模板） |
+| `/sdd.plan` | 拒绝（需 writing-plans） | 接受 |
+| `/sdd.code` | 拒绝（需 subagent + TDD + verification） | 接受 |
+| `/sdd.dr` | 接受 | 接受 |
+| `/sdd.archive` | 接受 | 拒绝（需 /speckit.converge） |
+| `/sdd.status` | 接受 | 接受 |
+| `/sdd.doctor` | 接受 | 接受 |
+
+**Plugin 不做降级**：所有路径都是硬依赖，缺失则拒。理由：降级路径容易被误解为"功能正常"，掩盖真正问题。
+
 ## 12. 开放问题 / 后续工作
+
+- **phase 字段语义**：当前 `phase` 同时承担「命令可达性」(a)、「文档写权限门控」(b)、「阶段推进写入」(c) 三件事。简化方案待讨论——可能解耦为「最大已完成阶段快照」+ 单独「当前写入目标」信号。当前版本保留多义。
 
 - **state.json 并发**：v0.1 假定**主 Agent 是 state.json 的唯一写者**，subagent 通过 `.sdd/progress.md` 间接表达进度。**v0.1 不处理跨会话并发**（两个终端同时动 state.json）—— 不加文件锁、不做乐观合并。如果未来出现跨会话需求，再决定加 `.sdd/state.lock`（fcntl / Windows 兼容）还是改成 event-sourced。
 
@@ -938,18 +1090,18 @@ v0.1 视为完成，当且仅当：
 1. Plugin 能从本仓库安装进 Claude Code。
 2. 用户能在一个空白仓库里依次运行 `/sdd.init` → `/sdd.new v0.0.1` → `/sdd.research` → `/sdd.prd` → `/sdd.spec` → `/sdd.plan demo` → `/sdd.code demo`，**仅在阶段门控点（PRD / spec / plan 批准）由用户做一次批准**，阶段之间不需用户写额外指导。
 3. 在错误阶段试图改 `docs/vX.Y.Z/` 下的文档（如在 FEATURE_PLAN 阶段写 `prd.md`）会被 PreToolUse 硬拦截，并提示「请运行 /sdd.<对应阶段>」。
-4. `/sdd.status` 在每个阶段都准确反映当前状态（包括 research / prd 状态、`features[*].status`），并能列出所有 `proposed` / `accepted` 状态的 DR。
+4. `/sdd.status` 在每个阶段都准确反映当前状态（包括 research / prd 状态、`features[*].status`），并能列出所有 `open` 状态的 DR。
 5. `/sdd.archive` 能把 `docs/v0.0.1/` 通过 `git mv` 迁移到 `docs/archive/v0.0.1/`（包括 `prd.md` / `decisions/*.md`），原位置不再保留，并清空 `state.json` 中该版本相关字段。`docs/requirements/*.md` **不**随版本归档（项目级跨版本文档）。
 6. 所有对外部框架（Superpowers / Spec-Kit / OpenSpec）的调用都通过 Skill 编排，不在 Plugin 内部复制实现。
 7. **变更流程验证**：
-   1. `/sdd.code <feature>` 完成后，用户回答「不符合」，触发起草 DR（`/sdd.dr fix <title>`），DR 状态走 `proposed → accepted → coded`，过程中 `state.json.drs` 与受影响 spec 资产的「关联 DRs」双向同步更新。
-   2. `/sdd.dr spec` 修改 spec.md 表达后，状态走 `proposed → accepted → merged`，spec 资产对应的章节「变更履历」表自动 append 一行。
-   3. 把已 `coded` 的 DR supersede：新 DR `supersedes` 含旧 DR ID；旧 DR `superseded_by` 自动被填入新 DR ID；二者 spec 资产「关联 DRs」表都保留两行（历史可查）。
+   1. `/sdd.code <feature>` 完成后，用户回答「不符合」，触发起草 DR（`/sdd.dr fix <title>`），DR 状态走 `(无) → open → committing → closed (committed)`，过程中 `state.json.drs` 与受影响 spec 资产的「关联 DRs」双向同步更新。
+   2. `/sdd.dr spec` 修改 spec.md 表达后，状态走 `open → committing → closed (committed, closed_via=doc)`，spec 资产对应的章节「变更履历」表自动 append 一行。
+   3. 把已 `closed (committed)` 的 DR supersede：新 DR `open` 阶段 `supersedes` 含旧 DR ID；新 DR `closed (committed)` 时旧 DR `superseded_by` 才被回填；二者 spec 资产「关联 DRs」表都保留两行（历史可查）。
 9. **宪法强控验证**：
    1. `/sdd.init` 后 `.sdd/CONSTITUTION.md` 存在且包含八章节默认骨架（§1 阶段门控 / §2 DR 流程 / §3 Skill 身份 / §4 subagent / §5 Hooks / §6 多 Skill 协作 / §7 错误处理 / §8 门控破坏检测）。
    2. SessionStart 启动时，CONSTITUTION 全文注入 context；主 Agent + subagent 都受约束。
-   3. 用户尝试 Write `src/payment/index.ts`（修改代码）但 `state.json.drs` 中无 accepted fix/feat/chg/arch DR → PreToolUse 退出码 2 + 提示「请先 `/sdd.dr fix|feat|chg|arch <title>`」。
-   4. 用户尝试 Edit `docs/vX.Y.Z/specs/spec.md` 但无 accepted spec/doc DR → PreToolUse 退出码 2 + 提示「请先 `/sdd.dr spec|doc <title>`」。
+   3. 用户尝试 Write `src/payment/index.ts`（修改代码）但 `state.json.drs` 中无 `affects_frozen=true` 的 fix/feat/chg/arch DR → PreToolUse 退出码 2 + 提示「请先 `/sdd.dr fix|feat|chg|arch <title>` accept（进入 committing）」。
+   4. 用户尝试 Edit `docs/vX.Y.Z/specs/spec.md` 但无 `affects_frozen=true` 的 spec/doc DR → PreToolUse 退出码 2 + 提示「请先 `/sdd.dr spec|doc <title>` accept」。
    5. `/sdd.doctor` 跑 CONFORMANCE 检查，发现最近 N 次提交违反 CONSTITUTION §2 must 条款 → 输出 `❌` 标记并指向具体 commit + 违规条款。
    6. 项目 owner 修改 CONSTITUTION.md 中某条 `must` 为 `should` → 该条款降级为警告，下次违规不再硬拦。
 10. **requirements 验证**：
