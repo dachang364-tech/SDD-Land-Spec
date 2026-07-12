@@ -53,11 +53,11 @@ cd /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/sdd-plugin-m
 scripts/install-deps.sh
 ```
 
-该脚本会检查并安装：
+该脚本会检查并从 GitHub 仓库安装依赖 plugin，不依赖 Claude plugin marketplace：
 
 ```text
-superpowers
-spec-kit
+superpowers: https://github.com/obra/superpowers.git
+spec-kit: https://github.com/github/spec-kit.git
 ```
 
 ### 3. 安装本地 plugin 到 Claude Code

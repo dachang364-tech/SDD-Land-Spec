@@ -2,8 +2,8 @@
 set -euo pipefail
 
 # Contract-visible dependency sources:
-# claude plugin install "claude-plugins-official/superpowers"
-# claude plugin install "claude-plugins-official/spec-kit"
+# claude plugin install "https://github.com/obra/superpowers.git"
+# claude plugin install "https://github.com/github/spec-kit.git"
 
 has_plugin() {
   local plugin_name="$1"
@@ -21,7 +21,7 @@ install_plugin() {
   fi
 }
 
-install_plugin "superpowers" "claude-plugins-official/superpowers"
-install_plugin "spec-kit" "claude-plugins-official/spec-kit"
+install_plugin "superpowers" "https://github.com/obra/superpowers.git"
+install_plugin "spec-kit" "https://github.com/github/spec-kit.git"
 
 printf '[done] 所有依赖已就绪\n'

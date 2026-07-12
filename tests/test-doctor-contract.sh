@@ -14,8 +14,8 @@ assert_contains "CONSTITUTION.default.md" "must: 代码类 DR 必须先"
 
 assert_file_exists "scripts/install-deps.sh"
 assert_executable "scripts/install-deps.sh"
-assert_contains "scripts/install-deps.sh" 'claude plugin install "claude-plugins-official/superpowers"'
-assert_contains "scripts/install-deps.sh" 'claude plugin install "claude-plugins-official/spec-kit"'
+assert_contains "scripts/install-deps.sh" 'claude plugin install "https://github.com/obra/superpowers.git"'
+assert_contains "scripts/install-deps.sh" 'claude plugin install "https://github.com/github/spec-kit.git"'
 
 assert_file_exists "hooks/hooks.json"
 assert_contains "hooks/hooks.json" "PreToolUse"
