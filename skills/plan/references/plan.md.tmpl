@@ -1,0 +1,62 @@
+# NNN-<work-item> Implementation Plan
+
+- 序号：NNN
+- 状态：draft
+- 类型：feature | fix | feat | chg | arch
+- 上游 spec：docs/vX.Y.Z/specs/spec.md
+- 关联 DR：null | <dr-id>
+
+## Technical Design
+
+### 1. 技术方案
+
+### 2. 架构边界
+
+### 3. 模块影响
+
+### 4. 数据流 / 控制流
+
+### 5. 测试策略
+
+### 6. 风险与约束
+
+## Implementation Tasks
+
+本章节是 Technical Design 的执行展开，不是独立设计层。
+
+如果实现过程中需要改变技术方案、架构边界、模块影响、数据流 / 控制流、测试策略或实现范围，不直接改写既有 tasks；应通过代码类 DR 创建新的增量 plan。
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** <one sentence>
+
+**Architecture:** <two or three sentences>
+
+**Tech Stack:** <key technologies>
+
+## Global Constraints
+
+- MVP 不创建、不读取、不维护 `.sdd/state.json`。
+- 状态行唯一格式为 `- 状态：<value>`。
+- plan 是增量实施记录，文件名必须带版本内递增序号 `NNN-`。
+
+### Task 1: <task name>
+
+**Files:**
+- Create: `path/to/file`
+- Modify: `path/to/file`
+- Test: `path/to/test`
+
+**Interfaces:**
+- Consumes: <exact signatures from previous tasks>
+- Produces: <exact signatures for later tasks>
+
+- [ ] **Step 1: Write the failing test**
+
+- [ ] **Step 2: Run test to verify it fails**
+
+- [ ] **Step 3: Write minimal implementation**
+
+- [ ] **Step 4: Run test to verify it passes**
+
+- [ ] **Step 5: Commit**
