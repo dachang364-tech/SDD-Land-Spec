@@ -60,25 +60,38 @@ superpowers: https://github.com/obra/superpowers.git
 spec-kit: https://github.com/github/spec-kit.git
 ```
 
-### 3. 安装本地 plugin 到 Claude Code
+### 3. 添加本地 plugin marketplace
+
+Claude Code 2.1.29 起，`claude plugin install <plugin>` 会从已配置的 marketplace 中查找 plugin；本地目录需要先作为 marketplace 添加，不能直接执行 `claude plugin install /path/to/sdd-plugin`。
+
+安装前确认插件目录包含：
+
+```text
+.claude-plugin/plugin.json
+.claude-plugin/marketplace.json
+```
+
+添加本地 marketplace：
 
 ```bash
-claude plugin install /path/to/sdd-plugin
+claude plugin marketplace add /path/to/sdd-plugin
 ```
 
 当前 worktree 示例：
 
 ```bash
-claude plugin install /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/sdd-plugin-mvp-workflow
+claude plugin marketplace add /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/sdd-plugin-mvp-workflow
 ```
 
-也可以在 Claude Code 交互界面中执行：
+### 4. 从本地 marketplace 安装 SDD plugin
 
-```text
-/plugin install /path/to/sdd-plugin
+```bash
+claude plugin install sdd@sdd-local
 ```
 
-### 4. 查看安装结果
+如果 marketplace 名称不是 `sdd-local`，以 `.claude-plugin/marketplace.json` 中的 `name` 字段为准。
+
+### 5. 查看安装结果
 
 ```bash
 claude plugin list
@@ -249,14 +262,21 @@ TESTING.md
 claude plugin --help
 ```
 
-通常可以先移除旧版本，再重新安装本地目录：
+通常可以先移除旧版本，更新本地 marketplace，再重新安装：
 
 ```bash
 claude plugin remove sdd
-claude plugin install /path/to/sdd-plugin
+claude plugin marketplace update sdd-local
+claude plugin install sdd@sdd-local
 ```
 
-如果你的 Claude Code 版本命令名称不同，以 `claude plugin --help` 或 Claude Code 内 `/plugin` 显示为准。
+如果尚未添加本地 marketplace，先执行：
+
+```bash
+claude plugin marketplace add /path/to/sdd-plugin
+```
+
+如果你的 Claude Code 版本命令名称不同，以 `claude plugin --help` 和 `claude plugin marketplace --help` 显示为准。
 
 ## MVP Non-Goals
 

@@ -6,6 +6,10 @@ cd "$(dirname "$0")/.."
 assert_file_exists ".claude-plugin/plugin.json"
 assert_contains ".claude-plugin/plugin.json" '"name": "sdd"'
 assert_contains ".claude-plugin/plugin.json" '"version": "0.1.0"'
+assert_file_exists ".claude-plugin/marketplace.json"
+assert_contains ".claude-plugin/marketplace.json" '"name": "sdd-local"'
+assert_contains ".claude-plugin/marketplace.json" '"name": "sdd"'
+assert_contains ".claude-plugin/marketplace.json" '"source": "./"'
 
 assert_file_exists "CONSTITUTION.default.md"
 assert_contains "CONSTITUTION.default.md" "must: SDD 主流程必须按"

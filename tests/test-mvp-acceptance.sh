@@ -5,6 +5,7 @@ cd "$(dirname "$0")/.."
 
 # Plugin installation surface
 assert_file_exists ".claude-plugin/plugin.json"
+assert_file_exists ".claude-plugin/marketplace.json"
 assert_file_exists "hooks/hooks.json"
 assert_file_exists "scripts/hooks/pre-tool-use.sh"
 assert_file_exists "scripts/hooks/session-start.sh"

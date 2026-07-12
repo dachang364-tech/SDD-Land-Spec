@@ -1,0 +1,20 @@
+{
+  "name": "sdd-local",
+  "description": "Local marketplace for SDD Plugin development",
+  "metadata": {
+    "description": "Local marketplace for SDD Plugin development",
+    "version": "0.1.0"
+  },
+  "owner": {
+    "name": "SDD Plugin",
+    "email": "local@example.com"
+  },
+  "plugins": [
+    {
+      "name": "sdd",
+      "description": "Specification Driven Development workflow plugin for Claude Code",
+      "version": "0.1.0",
+      "source": "./"
+    }
+  ]
+}

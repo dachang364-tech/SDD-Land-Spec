@@ -89,7 +89,15 @@ rm -rf "$tmp"
 
 ## 6. 可选：本地安装后试用
 
-在 Claude Code 中按本地 plugin 目录安装当前 worktree，然后在一个空白测试仓库中尝试：
+在 Claude Code 2.1.29 中，先把当前 worktree 添加为本地 marketplace，再安装 `sdd` plugin：
+
+```bash
+claude plugin marketplace add /path/to/sdd-plugin
+claude plugin install sdd@sdd-local
+claude plugin list
+```
+
+然后在一个空白测试仓库中尝试：
 
 ```text
 /sdd:init
