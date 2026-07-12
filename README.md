@@ -1,33 +1,37 @@
-# SDD-Land-Spec
+# SDD Plugin
 
-Specification project for SDD (Spec-Driven Development) land / domain module.
+SDD Plugin provides an MVP Specification Driven Development workflow for Claude Code.
 
-## Overview
+## Commands
 
-This repository hosts the specification, schemas, and reference docs that define
-the SDD land domain — a shared vocabulary and contract used across SDD tools and
-integrations.
+- `/sdd:init`
+- `/sdd:new vX.Y.Z`
+- `/sdd:research <topic>`
+- `/sdd:prd`
+- `/sdd:spec`
+- `/sdd:plan <work-item>`
+- `/sdd:code <NNN|work-item>`
+- `/sdd:dr <tag> <title>`
+- `/sdd:dr accept <id>`
+- `/sdd:dr dismiss <id> <reason>`
+- `/sdd:status`
+- `/sdd:doctor`
+- `/sdd:archive`
 
-## Status
+## Install dependencies
 
-- **Owner**: Dachang (@dachang364-tech)
-- **License**: MIT (see [LICENSE](./LICENSE))
-- **Stage**: early scaffolding
+```bash
+scripts/install-deps.sh
+```
 
-## Repository contents
+## Workflow
 
-| Path | Purpose |
-| --- | --- |
-| `LICENSE` | MIT license for the project |
-| `README.md` | This file |
-| `.gitignore` | Standard ignore rules |
+```text
+/sdd:init → /sdd:new → /sdd:prd → /sdd:spec → /sdd:plan → /sdd:code → /sdd:archive
+```
 
-## Contributing
+Code-affecting changes use:
 
-Issues and pull requests are welcome. Please open a discussion before proposing
-large spec changes so the domain vocabulary stays coherent.
-
-## Contact
-
-- GitHub: <https://github.com/dachang364-tech>
-- Email: dachang364@gmail.com
+```text
+/sdd:dr fix|feat|chg|arch <title> → /sdd:dr accept <id> → /sdd:plan <id> → /sdd:code <NNN|id>
+```
