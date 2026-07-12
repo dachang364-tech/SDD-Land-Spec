@@ -54,6 +54,8 @@ assert_contains "skills/status/SKILL.md" "description: Show current SDD version 
 assert_contains "skills/status/SKILL.md" "展示当前版本状态与下一步建议"
 
 assert_contains "skills/doctor/SKILL.md" "description: Diagnose SDD plugin installation and project consistency"
+assert_contains "skills/doctor/SKILL.md" 'At execution start, read `docs/CONSTITUTION.md`.'
+assert_contains "skills/doctor/SKILL.md" 'suggest running `/sdd:init`'
 assert_contains "skills/doctor/SKILL.md" ".claude-plugin/plugin.json"
 assert_contains "skills/doctor/SKILL.md" "done 的代码类 DR plan 对应 DR 是否仍 accepted"
 

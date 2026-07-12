@@ -7,6 +7,13 @@ description: Diagnose SDD plugin installation and project consistency. Use for /
 
 Diagnose plugin installation integrity and minimum project consistency.
 
+## Startup constraint
+
+At execution start, read `docs/CONSTITUTION.md`.
+If `docs/CONSTITUTION.md` is missing, report that the SDD project is not initialized and suggest running `/sdd:init`.
+
+This startup constraint does not replace the project consistency check below; `/sdd:doctor` should still diagnose whether `docs/CONSTITUTION.md` exists as part of project consistency.
+
 ## Plugin installation checks
 
 Check existence of:
