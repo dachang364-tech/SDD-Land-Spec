@@ -17,6 +17,12 @@ assert_executable "scripts/install-deps.sh"
 assert_contains "scripts/install-deps.sh" 'claude plugin install "claude-plugins-official/superpowers"'
 assert_contains "scripts/install-deps.sh" 'claude plugin install "claude-plugins-official/spec-kit"'
 
+assert_file_exists "hooks/hooks.json"
+assert_contains "hooks/hooks.json" "PreToolUse"
+assert_contains "hooks/hooks.json" "SessionStart"
+assert_file_exists "scripts/hooks/pre-tool-use.sh"
+assert_file_exists "scripts/hooks/session-start.sh"
+
 assert_file_exists "README.md"
 assert_contains "README.md" "/sdd:init"
 assert_contains "README.md" "/sdd:archive"
