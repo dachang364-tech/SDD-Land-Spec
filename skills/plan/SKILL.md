@@ -19,6 +19,15 @@ Generate an Implementation Plan under `docs/vX.Y.Z/plans/`.
 2. If `<work-item>` matches `^(spec|doc|typo)-[0-9]{4}-[a-z0-9-]+$`, refuse: `文档类 DR 不生成 Implementation Plan，不执行 /sdd:code。`
 3. Otherwise use feature mode.
 
+## Plan number allocation
+
+Before choosing the output path, set `plans_dir` to `docs/vX.Y.Z/plans/` and allocate `NNN` by calling Task 2's `sdd_next_plan_number(plans_dir)` helper or an equivalent automatic rule:
+
+1. Inspect existing files matching `docs/vX.Y.Z/plans/[0-9][0-9][0-9]-*.md`.
+2. Extract the numeric prefixes as version-local plan numbers.
+3. Use the next zero-padded 3-digit number after the current maximum; if no plan exists, use `001`.
+4. Do not ask the user to choose `NNN`, and do not reuse an existing number.
+
 ## Feature mode
 
 Precondition:
