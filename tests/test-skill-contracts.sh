@@ -61,6 +61,9 @@ assert_contains "skills/code/SKILL.md" 'verification 通过后，将 plan 状态
 assert_contains "skills/code/SKILL.md" 'code_required: yes'
 assert_contains "skills/code/SKILL.md" 'associated DR remains accepted'
 assert_contains "skills/code/SKILL.md" 'closed_reason: committed'
+assert_contains "skills/code/SKILL.md" "plan execution mode for a matched Implementation Plan"
+assert_contains "skills/code/SKILL.md" "lightweight fix DR mode for an eligible accepted fix DR without a matching plan"
+assert_contains "skills/code/SKILL.md" "do not require locating a plan and do not require or change plan status"
 assert_contains "skills/code/SKILL.md" "If input matches a code-class DR id"
 assert_contains "skills/code/SKILL.md" "plan_required: no"
 assert_contains "skills/code/SKILL.md" "lightweight fix DR"
@@ -145,5 +148,7 @@ assert_contains "README.md" 'fix DR 通常使用 `spec_change: no`'
 assert_contains "CONSTITUTION.default.md" '代码类 DR 默认使用 `plan_required: yes`'
 assert_contains "CONSTITUTION.default.md" '文档类 DR 必须使用 `plan_required: no` 和 `code_required: no`'
 assert_contains "CONSTITUTION.default.md" "代码类 DR 在 spec 修订完成后不得关闭"
+assert_contains "CONSTITUTION.default.md" '轻量 fix DR 通过 `/sdd:code` verification'
+assert_contains "CONSTITUTION.default.md" '才能关闭为 `committed`'
 
 printf 'PASS: skill contracts\n'

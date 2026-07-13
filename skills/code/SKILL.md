@@ -11,11 +11,14 @@ Execute an existing Implementation Plan, or execute an accepted lightweight fix 
 
 1. Read `docs/CONSTITUTION.md`; if missing, stop and ask the user to run `/sdd:init`.
 2. Resolve the unique active version directory.
-3. Locate the plan from `<NNN|work-item>`.
-4. Require plan status to be `planned` or `coding`.
-5. If plan has a code-class DR, require DR status to be `accepted`.
-6. If plan has a code-class DR, require DR `class` to be `code`.
-7. If plan has a code-class DR, require DR `code_required: yes`.
+3. Resolve the input through Work item lookup, then use exactly one execution mode:
+   - plan execution mode for a matched Implementation Plan.
+   - lightweight fix DR mode for an eligible accepted fix DR without a matching plan.
+4. In plan execution mode, require plan status to be `planned` or `coding`.
+5. In plan execution mode, if plan has a code-class DR, require DR status to be `accepted`.
+6. In plan execution mode, if plan has a code-class DR, require DR `class` to be `code`.
+7. In plan execution mode, if plan has a code-class DR, require DR `code_required: yes`.
+8. In lightweight fix DR mode, do not require locating a plan and do not require or change plan status.
 
 ## Work item lookup
 

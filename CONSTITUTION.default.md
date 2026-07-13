@@ -22,8 +22,8 @@
 - must: 轻量 fix DR 必须是 `fix`、`class: code`、`spec_change: no`、`plan_required: no`、`code_required: yes`，并只能在 `/sdd:code` verification 通过后关闭。
 - must: 文档类 DR 必须使用 `plan_required: no` 和 `code_required: no`。
 - must: 代码类 DR 必须先 `accepted`，才能生成对应 Implementation Plan。
-- must: 代码类 DR 在 spec 修订完成后不得关闭，必须保持 `accepted` 直到关联 plan 完成并通过 verification。
-- must: 代码类 DR 只有在关联 plan 完成并通过 verification 后才能关闭为 `committed`。
+- must: 代码类 DR 在 spec 修订完成后不得关闭，必须保持 `accepted`，直到关联 plan 完成并通过 verification，或轻量 fix DR 通过 `/sdd:code` verification。
+- must: 代码类 DR 只有在关联 plan 完成并通过 verification 后，或轻量 fix DR 通过 `/sdd:code` verification 后，才能关闭为 `committed`。
 - may: typo 类修订可以按项目约定跳过 DR。
 
 ## 4. Plan 约束
