@@ -135,6 +135,12 @@ assert_contains "skills/triage/SKILL.md" "置信度：low | medium | high"
 assert_contains "skills/triage/SKILL.md" "已读取依据"
 assert_contains "skills/triage/SKILL.md" "请确认你要走哪条路径。"
 
+assert_contains "README.md" "/sdd:triage"
+assert_contains "README.md" "用户疑问分诊"
+assert_contains "README.md" "轻量 fix DR"
+assert_contains "README.md" "Markdown 链接"
+assert_contains "README.md" "最终由用户选择"
+
 assert_contains "skills/status/SKILL.md" "description: Show current SDD version status and next-step guidance"
 assert_contains "skills/status/SKILL.md" "展示当前版本状态与下一步建议"
 
