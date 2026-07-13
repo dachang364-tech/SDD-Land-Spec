@@ -65,6 +65,8 @@ DR `class` is `code`
 DR `plan_required: yes`
 ```
 
+Refuse DR `plan_required: no`; use `/sdd:code <id>` for eligible lightweight fix DRs.
+
 Output path:
 
 ```text

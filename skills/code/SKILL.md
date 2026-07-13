@@ -31,7 +31,7 @@ This skill keeps its existing responsibility: execute a planned/coding plan or a
 1. If input is `NNN`, match `docs/vX.Y.Z/plans/NNN-*.md` and use plan execution mode.
 2. If input is a complete plan basename, match the same `.md` basename and use plan execution mode.
 3. If input is feature name, match by plan suffix and use plan execution mode.
-4. If input matches a code-class DR id `^(fix|feat|chg|arch)-[0-9]{4}-[a-z0-9-]+$`, first check for a matching plan by suffix. If no plan matches, read `docs/vX.Y.Z/decisions/<dr-id>.md` and use lightweight fix DR mode only when `plan_required: no`.
+4. If input matches a code-class DR id `^(fix|feat|chg|arch)-[0-9]{4}-[a-z0-9-]+$`, first check for a matching plan by suffix. If no plan matches, read `docs/vX.Y.Z/decisions/<dr-id>.md` and use lightweight fix DR mode only when DR `tag` is `fix` and `plan_required: no`.
 5. If zero plans match and no eligible lightweight fix DR matches, stop and ask the user to run `/sdd:plan <work-item>` or confirm a lightweight fix DR.
 6. If multiple plans match, stop and ask the user to use plan number, for example `/sdd:code 002`.
 

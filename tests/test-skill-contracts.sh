@@ -51,6 +51,8 @@ assert_contains "skills/plan/SKILL.md" "Technical Planning Dialogue"
 assert_contains "skills/plan/SKILL.md" 'plan_required: yes'
 assert_contains "skills/plan/SKILL.md" 'DR `plan_required: yes`'
 assert_contains "skills/plan/SKILL.md" 'DR `class` is `code`'
+assert_contains "skills/plan/SKILL.md" 'DR `plan_required: no`'
+assert_contains "skills/plan/SKILL.md" 'use `/sdd:code <id>` for eligible lightweight fix DRs'
 assert_file_exists "skills/plan/references/plan.md.tmpl"
 assert_contains "skills/plan/references/plan.md.tmpl" "## Technical Design"
 assert_contains "skills/plan/references/plan.md.tmpl" "## Implementation Tasks"
@@ -74,6 +76,7 @@ assert_contains "skills/code/SKILL.md" "lightweight fix DR mode for an eligible 
 assert_contains "skills/code/SKILL.md" "do not require locating a plan and do not require or change plan status"
 assert_contains "skills/code/SKILL.md" "If input matches a code-class DR id"
 assert_contains "skills/code/SKILL.md" "plan_required: no"
+assert_contains "skills/code/SKILL.md" 'use lightweight fix DR mode only when DR `tag` is `fix` and `plan_required: no`'
 assert_contains "skills/code/SKILL.md" "lightweight fix DR"
 assert_contains "skills/code/SKILL.md" "no plan status is changed"
 assert_contains "skills/code/SKILL.md" "DR remains accepted"
@@ -89,13 +92,15 @@ assert_contains "skills/dr/SKILL.md" "code_required"
 assert_contains "skills/dr/SKILL.md" "fix | code | no | yes | yes"
 assert_contains "skills/dr/SKILL.md" "简单实现 bug 可以由用户选择轻量 fix 流程"
 assert_contains "skills/dr/SKILL.md" 'plan_required: no`：运行 `/sdd:code <id>`'
+assert_contains "skills/dr/SKILL.md" 'after accept, next step depends on `plan_required` and may be `/sdd:plan <id>` or `/sdd:code <id>`'
 assert_contains "skills/dr/SKILL.md" "feat | code | yes | yes | yes"
 assert_contains "skills/dr/SKILL.md" "chg | code | yes | yes | yes"
 assert_contains "skills/dr/SKILL.md" "arch | code | maybe | yes | yes"
 assert_contains "skills/dr/SKILL.md" "spec | document | yes | no | no"
 assert_contains "skills/dr/SKILL.md" "doc | document | maybe | no | no"
 assert_contains "skills/dr/SKILL.md" "typo | document | no | no | no"
-assert_contains "skills/dr/SKILL.md" 'spec_change: yes`：先运行 `/sdd:spec`，然后根据 `plan_required` 决定 `/sdd:plan <id>` 或 `/sdd:code <id>`'
+assert_contains "skills/dr/SKILL.md" 'spec_change: yes`：先运行 `/sdd:spec`，然后运行 `/sdd:plan <id>`'
+assert_contains "skills/dr/SKILL.md" 'spec_change: no`、`plan_required: no`：运行 `/sdd:code <id>`'
 assert_contains "skills/dr/SKILL.md" 'class: document`：运行 `/sdd:spec` 或对应文档 Skill，不进入 `/sdd:plan`'
 assert_contains "skills/dr/SKILL.md" "影响资产"
 assert_contains "skills/dr/SKILL.md" "使用 Markdown 链接格式"
