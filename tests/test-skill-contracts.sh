@@ -32,7 +32,7 @@ assert_contains "skills/spec/references/spec.md.tmpl" "- 状态：draft"
 assert_contains "skills/spec/SKILL.md" '用户确认后，将状态切换为 `approved`'
 assert_contains "skills/spec/SKILL.md" 'accepted code-class DR'
 assert_contains "skills/spec/SKILL.md" 'spec_change'
-assert_contains "skills/spec/SKILL.md" 'code-class DR 保持 `accepted`'
+assert_contains "skills/spec/SKILL.md" 'code-class DR 必须保持 `accepted`'
 assert_contains "skills/spec/SKILL.md" '下一步 `/sdd:plan <id>`'
 assert_contains "skills/spec/SKILL.md" 'document-class DRs may close after document revision'
 assert_contains "skills/spec/SKILL.md" 'document-class DR 不输出 `/sdd:plan` 或 `/sdd:code`'
@@ -49,6 +49,7 @@ assert_contains "skills/plan/SKILL.md" "^(fix|feat|chg|arch)-[0-9]{4}-[a-z0-9-]+
 assert_contains "skills/plan/SKILL.md" "文档类 DR 不生成 Implementation Plan"
 assert_contains "skills/plan/SKILL.md" "Technical Planning Dialogue"
 assert_contains "skills/plan/SKILL.md" 'plan_required: yes'
+assert_contains "skills/plan/SKILL.md" 'DR `plan_required: yes`'
 assert_contains "skills/plan/SKILL.md" 'DR `class` is `code`'
 assert_file_exists "skills/plan/references/plan.md.tmpl"
 assert_contains "skills/plan/references/plan.md.tmpl" "## Technical Design"
@@ -64,6 +65,7 @@ assert_contains "skills/code/SKILL.md" '高质量模式：`superpowers:subagent-
 assert_contains "skills/code/SKILL.md" '快速模式：`superpowers:executing-plans`'
 assert_contains "skills/code/SKILL.md" 'plan 状态从 `planned` 切换为 `coding`'
 assert_contains "skills/code/SKILL.md" 'verification 通过后，将 plan 状态切换为 `done`'
+assert_contains "skills/code/SKILL.md" "verification passes"
 assert_contains "skills/code/SKILL.md" 'code_required: yes'
 assert_contains "skills/code/SKILL.md" 'associated DR remains accepted'
 assert_contains "skills/code/SKILL.md" 'closed_reason: committed'
@@ -134,6 +136,10 @@ assert_contains "skills/triage/SKILL.md" "unclear, needs user choice"
 assert_contains "skills/triage/SKILL.md" "置信度：low | medium | high"
 assert_contains "skills/triage/SKILL.md" "已读取依据"
 assert_contains "skills/triage/SKILL.md" "请确认你要走哪条路径。"
+assert_contains "skills/triage/SKILL.md" "explain only -> no DR"
+assert_contains "skills/triage/SKILL.md" "fix DR -> code -> verification"
+assert_contains "skills/triage/SKILL.md" "fix DR -> plan -> code -> verification"
+assert_contains "skills/triage/SKILL.md" "new feat/chg DR -> spec -> plan -> code -> verification"
 
 assert_contains "README.md" "/sdd:triage"
 assert_contains "README.md" "用户疑问分诊"
