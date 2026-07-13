@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 . tests/test-common.sh
 
-for skill in init new research prd spec plan code dr status doctor archive; do
+for skill in init new research prd spec plan code dr triage status doctor archive; do
   assert_file_exists "skills/$skill/SKILL.md"
 done
 
@@ -81,6 +81,29 @@ assert_contains "skills/dr/references/dr.md.tmpl" "## 契约影响"
 assert_contains "skills/dr/references/dr.md.tmpl" "## 实现影响"
 assert_contains "skills/dr/references/dr.md.tmpl" "## 文档影响"
 assert_contains "skills/dr/references/dr.md.tmpl" "## 验证方式"
+
+assert_contains "skills/triage/SKILL.md" "description: Triage user questions after implementation, review, or testing"
+assert_contains "skills/triage/SKILL.md" "不创建 DR"
+assert_contains "skills/triage/SKILL.md" "不修改 spec"
+assert_contains "skills/triage/SKILL.md" "不修改 plan"
+assert_contains "skills/triage/SKILL.md" "不修改 code"
+assert_contains "skills/triage/SKILL.md" "不改变 plan 状态"
+assert_contains "skills/triage/SKILL.md" "不替用户选择后续路径"
+assert_contains "skills/triage/SKILL.md" "必须等待用户确认后"
+assert_contains "skills/triage/SKILL.md" "不得一次性读取整个 active version 目录"
+assert_contains "skills/triage/SKILL.md" '不得默认读取所有 `plans/*.md`'
+assert_contains "skills/triage/SKILL.md" '不得默认读取所有 `decisions/*.md`'
+assert_contains "skills/triage/SKILL.md" "不得默认读取代码"
+assert_contains "skills/triage/SKILL.md" "/sdd:triage --deep"
+assert_contains "skills/triage/SKILL.md" "code implementation issue"
+assert_contains "skills/triage/SKILL.md" "spec 和 plan 基本正确，但当前代码实现偏离预期"
+assert_contains "skills/triage/SKILL.md" "plan issue"
+assert_contains "skills/triage/SKILL.md" "spec issue"
+assert_contains "skills/triage/SKILL.md" "new requirement / change request"
+assert_contains "skills/triage/SKILL.md" "unclear, needs user choice"
+assert_contains "skills/triage/SKILL.md" "置信度：low | medium | high"
+assert_contains "skills/triage/SKILL.md" "已读取依据"
+assert_contains "skills/triage/SKILL.md" "请确认你要走哪条路径。"
 
 assert_contains "skills/status/SKILL.md" "description: Show current SDD version status and next-step guidance"
 assert_contains "skills/status/SKILL.md" "展示当前版本状态与下一步建议"
