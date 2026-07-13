@@ -28,6 +28,7 @@ Clarify:
 
 If accepted document-class DRs exist with tag `spec`, `doc`, or `typo`, list them and ask whether to associate one or more with this spec revision.
 If accepted code-class DRs exist with `spec_change: yes`, or with `spec_change: maybe` and the current revision needs a spec update, list them and ask whether to associate one or more with this spec revision.
+写入 `关联 DR` 表格时，应使用 Markdown 链接格式，例如 `[<dr-id>](../decisions/<dr-id>.md)`；章节号和标题可以放在链接后作为普通文本。
 
 ## Steps
 

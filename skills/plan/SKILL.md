@@ -81,6 +81,7 @@ Before writing Implementation Tasks:
 ## Plan content
 
 Use `skills/plan/references/plan.md.tmpl`.
+写入 `关联 DR` 时，使用 Markdown 链接格式，例如 `[<dr-id>](../decisions/<dr-id>.md)`；不要强制使用 Markdown anchor 链接到具体章节。
 
 Initial status:
 

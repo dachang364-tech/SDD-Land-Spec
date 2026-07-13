@@ -34,6 +34,10 @@ assert_contains "skills/spec/SKILL.md" 'code-class DR 保持 `accepted`'
 assert_contains "skills/spec/SKILL.md" '下一步 `/sdd:plan <id>`'
 assert_contains "skills/spec/SKILL.md" 'document-class DRs may close after document revision'
 assert_contains "skills/spec/SKILL.md" 'document-class DR 不输出 `/sdd:plan` 或 `/sdd:code`'
+assert_contains "skills/spec/SKILL.md" '写入 `关联 DR` 表格时，应使用 Markdown 链接格式'
+assert_contains "skills/spec/references/spec.md.tmpl" "| DR | tag | class | spec_change | 状态 | 关联小节 |"
+assert_contains "skills/spec/references/spec.md.tmpl" "| --- | --- | --- | --- | --- | --- |"
+assert_contains "skills/spec/SKILL.md" "[<dr-id>](../decisions/<dr-id>.md)"
 
 assert_contains "skills/plan/SKILL.md" "description: Create an implementation plan from approved spec or accepted code-class DR"
 assert_contains "skills/plan/SKILL.md" "^(fix|feat|chg|arch)-[0-9]{4}-[a-z0-9-]+$"
@@ -44,6 +48,9 @@ assert_contains "skills/plan/SKILL.md" 'DR `class` is `code`'
 assert_file_exists "skills/plan/references/plan.md.tmpl"
 assert_contains "skills/plan/references/plan.md.tmpl" "## Technical Design"
 assert_contains "skills/plan/references/plan.md.tmpl" "## Implementation Tasks"
+assert_contains "skills/plan/SKILL.md" '写入 `关联 DR` 时，使用 Markdown 链接格式'
+assert_contains "skills/plan/references/plan.md.tmpl" "- 关联 DR：null"
+assert_contains "skills/plan/SKILL.md" "[<dr-id>](../decisions/<dr-id>.md)"
 
 assert_contains "skills/code/SKILL.md" "description: Execute an SDD implementation plan"
 assert_contains "skills/code/SKILL.md" '高质量模式：`superpowers:subagent-driven-development`'
@@ -71,6 +78,11 @@ assert_contains "skills/dr/SKILL.md" "doc | document | maybe | no | no"
 assert_contains "skills/dr/SKILL.md" "typo | document | no | no | no"
 assert_contains "skills/dr/SKILL.md" 'spec_change: yes`：先运行 `/sdd:spec`，然后 `/sdd:plan <id>`'
 assert_contains "skills/dr/SKILL.md" 'class: document`：运行 `/sdd:spec` 或对应文档 Skill，不进入 `/sdd:plan`'
+assert_contains "skills/dr/SKILL.md" "影响资产"
+assert_contains "skills/dr/SKILL.md" "使用 Markdown 链接格式"
+assert_contains "skills/dr/SKILL.md" "[spec.md](../specs/spec.md)"
+assert_contains "skills/dr/SKILL.md" "[<plan-file>.md](../plans/<plan-file>.md)"
+assert_contains "skills/dr/SKILL.md" "[<dr-id>](./<dr-id>.md)"
 assert_file_exists "skills/dr/references/dr.md.tmpl"
 assert_contains "skills/dr/references/dr.md.tmpl" "- closed_reason: null"
 assert_contains "skills/dr/references/dr.md.tmpl" "- class：code | document"
@@ -81,6 +93,7 @@ assert_contains "skills/dr/references/dr.md.tmpl" "## 契约影响"
 assert_contains "skills/dr/references/dr.md.tmpl" "## 实现影响"
 assert_contains "skills/dr/references/dr.md.tmpl" "## 文档影响"
 assert_contains "skills/dr/references/dr.md.tmpl" "## 验证方式"
+assert_contains "skills/dr/references/dr.md.tmpl" "| 资产 | 章节 / ID |"
 
 assert_contains "skills/triage/SKILL.md" "description: Triage user questions after implementation, review, or testing"
 assert_contains "skills/triage/SKILL.md" "不创建 DR"

@@ -55,7 +55,8 @@ Steps:
 4. Fill template placeholders, including the selected tag, title, date, and generated number.
 5. Derive `class`, `spec_change`, `plan_required`, and `code_required` from the tag defaults table.
 6. Initial status is `drafting`.
-7. Output next step:
+7. 写入 `影响资产` 或引用 spec、plan、decision 时，使用 Markdown 链接格式，例如 `[spec.md](../specs/spec.md)`、`[<plan-file>.md](../plans/<plan-file>.md)`、`[<dr-id>](./<dr-id>.md)`；章节号和标题可以作为普通文本放在链接后。
+8. Output next step:
    - code-class DR: run `/sdd:dr accept <id>`; if `spec_change` is `yes` or `maybe`, first evaluate whether `/sdd:spec` is needed before `/sdd:plan <id>`.
    - document-class DR: run `/sdd:dr accept <id>`, then `/sdd:spec` or the corresponding document Skill.
 
