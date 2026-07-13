@@ -149,6 +149,7 @@ assert_contains "CONSTITUTION.default.md" '代码类 DR 默认使用 `plan_requi
 assert_contains "CONSTITUTION.default.md" '文档类 DR 必须使用 `plan_required: no` 和 `code_required: no`'
 assert_contains "CONSTITUTION.default.md" "代码类 DR 在 spec 修订完成后不得关闭"
 assert_contains "CONSTITUTION.default.md" '轻量 fix DR 通过 `/sdd:code` verification'
+assert_contains "CONSTITUTION.default.md" '/sdd:code` 可以执行状态为 `planned` 或 `coding` 的 plan，也可以执行符合条件的 lightweight fix DR'
 assert_contains "CONSTITUTION.default.md" '才能关闭为 `committed`'
 
 printf 'PASS: skill contracts\n'

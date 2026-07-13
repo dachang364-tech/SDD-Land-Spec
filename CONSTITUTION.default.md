@@ -6,7 +6,7 @@
 - must: SDD 主流程必须按 `/sdd:init → /sdd:new → /sdd:prd → /sdd:spec → /sdd:plan → /sdd:code → /sdd:archive` 推进。
 - must: `/sdd:spec` 必须在 `prd.md` 存在后执行。
 - must: feature plan 必须在 `spec.md` 状态为 `approved` 后生成。
-- must: `/sdd:code` 只能执行状态为 `planned` 或 `coding` 的 plan。
+- must: `/sdd:code` 可以执行状态为 `planned` 或 `coding` 的 plan，也可以执行符合条件的 lightweight fix DR。
 
 ## 2. 文档状态
 - must: SDD 管理的状态行只能使用 `- 状态：<value>` 格式。
