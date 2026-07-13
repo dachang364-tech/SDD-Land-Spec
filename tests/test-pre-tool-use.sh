@@ -35,7 +35,7 @@ if run_hook "$tmp" "docs/v0.1.0/plans/003-feature-settings.md" >/tmp/sdd-hook2.o
 fi
 assert_contains "/tmp/sdd-hook2.err" "前置文档 docs/v0.1.0/specs/spec.md 状态为 draft，期望 approved"
 
-printf '# DR\n\n- 状态：drafting\n' > "$tmp/docs/v0.1.0/decisions/chg-0002-policy.md"
+printf '# DR\n\n- 状态：drafting\n- class：code\n- tag：chg\n- spec_change：yes\n- plan_required：yes\n- code_required：yes\n' > "$tmp/docs/v0.1.0/decisions/chg-0002-policy.md"
 if run_hook "$tmp" "docs/v0.1.0/plans/004-chg-0002-policy.md" >/tmp/sdd-hook3.out 2>/tmp/sdd-hook3.err; then
   fail "expected code DR plan write with drafting DR to fail"
 fi

@@ -159,14 +159,21 @@ PRD → Functional Specification → Implementation Plan → Code → Archive
 
 ## 变更流程
 
+V0.2.0 起，新建 DR 模板会显式记录 `class / spec_change / plan_required / code_required`，用于决定后续是否进入 `/sdd:spec`、`/sdd:plan` 与 `/sdd:code`。
+
 代码类变更使用 DR 流程：
 
 ```text
 /sdd:dr fix|feat|chg|arch <title>
   → /sdd:dr accept <id>
+  → 如果需要修订规格，先 /sdd:spec
   → /sdd:plan <id>
   → /sdd:code <NNN|id>
 ```
+
+其中，spec-changing code-class DR 在 spec 批准后仍保持 `accepted`，下一步继续进入 `/sdd:plan <id>`，不能在 spec 修订完成时直接关闭。
+
+只修代码且不改契约时，fix DR 通常使用 `spec_change: no`，并生成新的增量 plan。
 
 文档类变更使用：
 

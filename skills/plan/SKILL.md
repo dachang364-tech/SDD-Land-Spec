@@ -55,6 +55,8 @@ Precondition:
 
 ```text
 docs/vX.Y.Z/decisions/<dr-id>.md 状态为 accepted
+DR `class` is `code`
+DR `plan_required: yes`
 ```
 
 Output path:

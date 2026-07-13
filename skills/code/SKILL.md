@@ -14,6 +14,8 @@ Execute an existing Implementation Plan.
 3. Locate the plan from `<NNN|work-item>`.
 4. Require plan status to be `planned` or `coding`.
 5. If plan has a code-class DR, require DR status to be `accepted`.
+6. If plan has a code-class DR, require DR `class` to be `code`.
+7. If plan has a code-class DR, require DR `code_required: yes`.
 
 ## Plan lookup
 

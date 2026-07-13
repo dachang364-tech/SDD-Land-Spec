@@ -18,7 +18,10 @@
 ## 3. DR 流程
 - must: 会影响代码实现的变更必须使用代码类 DR：`fix`、`feat`、`chg` 或 `arch`。
 - must: 只影响文档表达且不改变系统行为的变更可以使用文档类 DR：`spec`、`doc` 或 `typo`。
+- must: 代码类 DR 必须使用 `plan_required: yes` 和 `code_required: yes`。
+- must: 文档类 DR 必须使用 `plan_required: no` 和 `code_required: no`。
 - must: 代码类 DR 必须先 `accepted`，才能生成对应 Implementation Plan。
+- must: 代码类 DR 在 spec 修订完成后不得关闭，必须保持 `accepted` 直到关联 plan 完成并通过 verification。
 - must: 代码类 DR 只有在关联 plan 完成并通过 verification 后才能关闭为 `committed`。
 - may: typo 类修订可以按项目约定跳过 DR。
 
