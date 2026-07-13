@@ -120,7 +120,7 @@ claude
 
 ```text
 /sdd:init
-/sdd:new v0.1.0
+/sdd:new v0.2.0
 /sdd:status
 ```
 
@@ -130,10 +130,10 @@ claude
   - `docs/CONSTITUTION.md`
   - `docs/requirements/`
   - `docs/archive/`
-- `/sdd:new v0.1.0` 创建：
-  - `docs/v0.1.0/specs/`
-  - `docs/v0.1.0/plans/`
-  - `docs/v0.1.0/decisions/`
+- `/sdd:new v0.2.0` 创建：
+  - `docs/v0.2.0/specs/`
+  - `docs/v0.2.0/plans/`
+  - `docs/v0.2.0/decisions/`
 - `/sdd:status` 展示当前活跃版本状态和下一步建议。
 
 ## 主流程
