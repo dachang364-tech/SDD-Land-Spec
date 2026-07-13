@@ -14,6 +14,12 @@ Create or revise `docs/vX.Y.Z/specs/spec.md` from PRD and optional accepted docu
 3. Require `docs/vX.Y.Z/prd.md` to exist.
 4. If `prd.md` is missing, stop and say: `prd.md 不存在，请先运行 /sdd:prd。`
 
+## DR Advanced 增量约束
+
+This skill keeps its existing responsibility: create or revise `docs/vX.Y.Z/specs/spec.md`. DR Advanced only adds association rules for accepted document-class DRs and spec-changing code-class DRs.
+
+如果来自 `/sdd:triage` 的用户选择指向 spec revision, follow the same preconditions and do not modify plan or code in this skill.
+
 ## Dialogue
 
 Clarify:

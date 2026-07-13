@@ -20,6 +20,12 @@ Execute an existing Implementation Plan, or execute an accepted lightweight fix 
 7. In plan execution mode, if plan has a code-class DR, require DR `code_required: yes`.
 8. In lightweight fix DR mode, do not require locating a plan and do not require or change plan status.
 
+## DR Advanced 增量约束
+
+This skill keeps its existing responsibility: execute a planned/coding plan or an eligible lightweight fix DR. DR Advanced only adds DR-aware closing rules, lightweight fix DR mode, and verification-gated state transitions.
+
+如果来自 `/sdd:triage` 的用户选择指向 code execution, require either a planned/coding plan or an accepted lightweight fix DR. Do not revise spec or plan in this skill.
+
 ## Work item lookup
 
 1. If input is `NNN`, match `docs/vX.Y.Z/plans/NNN-*.md` and use plan execution mode.

@@ -13,6 +13,12 @@ Generate an Implementation Plan under `docs/vX.Y.Z/plans/`.
 2. Resolve the unique active version directory.
 3. Parse `<work-item>` by syntax, not by semantic guessing.
 
+## DR Advanced 增量约束
+
+This skill keeps its existing responsibility: generate an Implementation Plan. DR Advanced only adds code-class DR mode constraints, document-class DR rejection, `plan_required: yes`, and Markdown link requirements.
+
+如果来自 `/sdd:triage` 的用户选择指向 plan revision, generate a new incremental plan for the accepted code-class DR; do not reopen a closed DR and do not rewrite a completed plan.
+
 ## Mode detection
 
 1. If `<work-item>` matches `^(fix|feat|chg|arch)-[0-9]{4}-[a-z0-9-]+$`, use code-class DR mode.
