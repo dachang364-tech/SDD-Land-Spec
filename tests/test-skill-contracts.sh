@@ -34,6 +34,7 @@ assert_contains "skills/spec/SKILL.md" 'code-class DR 保持 `accepted`'
 assert_contains "skills/spec/SKILL.md" '下一步 `/sdd:plan <id>`'
 assert_contains "skills/spec/SKILL.md" 'document-class DRs may close after document revision'
 assert_contains "skills/spec/SKILL.md" 'document-class DR 不输出 `/sdd:plan` 或 `/sdd:code`'
+assert_contains "skills/spec/SKILL.md" "closed_reason: document-updated"
 assert_contains "skills/spec/SKILL.md" '写入 `关联 DR` 表格时，应使用 Markdown 链接格式'
 assert_contains "skills/spec/references/spec.md.tmpl" "| DR | tag | class | spec_change | 状态 | 关联小节 |"
 assert_contains "skills/spec/references/spec.md.tmpl" "| --- | --- | --- | --- | --- | --- |"
@@ -52,7 +53,7 @@ assert_contains "skills/plan/SKILL.md" '写入 `关联 DR` 时，使用 Markdown
 assert_contains "skills/plan/references/plan.md.tmpl" "- 关联 DR：null"
 assert_contains "skills/plan/SKILL.md" "[<dr-id>](../decisions/<dr-id>.md)"
 
-assert_contains "skills/code/SKILL.md" "description: Execute an SDD implementation plan"
+assert_contains "skills/code/SKILL.md" "description: Execute an SDD implementation plan or eligible lightweight fix DR"
 assert_contains "skills/code/SKILL.md" '高质量模式：`superpowers:subagent-driven-development`'
 assert_contains "skills/code/SKILL.md" '快速模式：`superpowers:executing-plans`'
 assert_contains "skills/code/SKILL.md" 'plan 状态从 `planned` 切换为 `coding`'
@@ -60,6 +61,11 @@ assert_contains "skills/code/SKILL.md" 'verification 通过后，将 plan 状态
 assert_contains "skills/code/SKILL.md" 'code_required: yes'
 assert_contains "skills/code/SKILL.md" 'associated DR remains accepted'
 assert_contains "skills/code/SKILL.md" 'closed_reason: committed'
+assert_contains "skills/code/SKILL.md" "If input matches a code-class DR id"
+assert_contains "skills/code/SKILL.md" "plan_required: no"
+assert_contains "skills/code/SKILL.md" "lightweight fix DR"
+assert_contains "skills/code/SKILL.md" "no plan status is changed"
+assert_contains "skills/code/SKILL.md" "DR remains accepted"
 
 assert_contains "skills/dr/SKILL.md" "description: Create, accept, or dismiss SDD decision records"
 assert_contains "skills/dr/SKILL.md" "fix | feat | chg | arch | spec | doc | typo"
@@ -70,13 +76,15 @@ assert_contains "skills/dr/SKILL.md" "spec_change"
 assert_contains "skills/dr/SKILL.md" "plan_required"
 assert_contains "skills/dr/SKILL.md" "code_required"
 assert_contains "skills/dr/SKILL.md" "fix | code | no | yes | yes"
+assert_contains "skills/dr/SKILL.md" "简单实现 bug 可以由用户选择轻量 fix 流程"
+assert_contains "skills/dr/SKILL.md" 'plan_required: no`：运行 `/sdd:code <id>`'
 assert_contains "skills/dr/SKILL.md" "feat | code | yes | yes | yes"
 assert_contains "skills/dr/SKILL.md" "chg | code | yes | yes | yes"
 assert_contains "skills/dr/SKILL.md" "arch | code | maybe | yes | yes"
 assert_contains "skills/dr/SKILL.md" "spec | document | yes | no | no"
 assert_contains "skills/dr/SKILL.md" "doc | document | maybe | no | no"
 assert_contains "skills/dr/SKILL.md" "typo | document | no | no | no"
-assert_contains "skills/dr/SKILL.md" 'spec_change: yes`：先运行 `/sdd:spec`，然后 `/sdd:plan <id>`'
+assert_contains "skills/dr/SKILL.md" 'spec_change: yes`：先运行 `/sdd:spec`，然后根据 `plan_required` 决定 `/sdd:plan <id>` 或 `/sdd:code <id>`'
 assert_contains "skills/dr/SKILL.md" 'class: document`：运行 `/sdd:spec` 或对应文档 Skill，不进入 `/sdd:plan`'
 assert_contains "skills/dr/SKILL.md" "影响资产"
 assert_contains "skills/dr/SKILL.md" "使用 Markdown 链接格式"
@@ -134,7 +142,7 @@ assert_contains "skills/archive/SKILL.md" "docs/vX.Y.Z/ → docs/archive/vX.Y.Z/
 assert_contains "README.md" "class / spec_change / plan_required / code_required"
 assert_contains "README.md" "spec-changing code-class DR"
 assert_contains "README.md" 'fix DR 通常使用 `spec_change: no`'
-assert_contains "CONSTITUTION.default.md" '代码类 DR 必须使用 `plan_required: yes` 和 `code_required: yes`'
+assert_contains "CONSTITUTION.default.md" '代码类 DR 默认使用 `plan_required: yes`'
 assert_contains "CONSTITUTION.default.md" '文档类 DR 必须使用 `plan_required: no` 和 `code_required: no`'
 assert_contains "CONSTITUTION.default.md" "代码类 DR 在 spec 修订完成后不得关闭"
 

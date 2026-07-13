@@ -25,6 +25,8 @@ fix | feat | chg | arch | spec | doc | typo
 | doc | document | maybe | no | no |
 | typo | document | no | no | no |
 
+简单实现 bug 可以由用户选择轻量 fix 流程：`tag: fix`、`class: code`、`spec_change: no`、`plan_required: no`、`code_required: yes`。如果修复涉及 API contract、schema、状态机、hook 或跨模块流程变化，不使用轻量 fix，应保持 `plan_required: yes` 并生成新的增量 Implementation Plan。
+
 `spec_change` 只能在不违反 `class`、`plan_required`、`code_required` 的前提下调整。
 
 ## Preconditions
@@ -82,8 +84,9 @@ Steps:
 4. Do not update supersede chain.
 5. Read `class`, `spec_change`, `plan_required`, and `code_required` from the DR.
 6. Output next step:
-   - `class: code` 且 `spec_change: yes`：先运行 `/sdd:spec`，然后 `/sdd:plan <id>`。
-   - `class: code` 且 `spec_change: no`：运行 `/sdd:plan <id>`。
+   - `class: code` 且 `spec_change: yes`：先运行 `/sdd:spec`，然后根据 `plan_required` 决定 `/sdd:plan <id>` 或 `/sdd:code <id>`。
+   - `class: code` 且 `spec_change: no`、`plan_required: yes`：运行 `/sdd:plan <id>`。
+   - `class: code` 且 `spec_change: no`、`plan_required: no`：运行 `/sdd:code <id>`。
    - `class: code` 且 `spec_change: maybe`：说明是否需要修订 spec；如果需要，先 `/sdd:spec`，否则 `/sdd:plan <id>`。
    - `class: document`：运行 `/sdd:spec` 或对应文档 Skill，不进入 `/sdd:plan`。
 

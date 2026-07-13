@@ -18,7 +18,8 @@
 ## 3. DR 流程
 - must: 会影响代码实现的变更必须使用代码类 DR：`fix`、`feat`、`chg` 或 `arch`。
 - must: 只影响文档表达且不改变系统行为的变更可以使用文档类 DR：`spec`、`doc` 或 `typo`。
-- must: 代码类 DR 必须使用 `plan_required: yes` 和 `code_required: yes`。
+- must: 代码类 DR 必须使用 `code_required: yes`；代码类 DR 默认使用 `plan_required: yes`，但简单实现 bug 的轻量 fix DR 可以使用 `plan_required: no`。
+- must: 轻量 fix DR 必须是 `fix`、`class: code`、`spec_change: no`、`plan_required: no`、`code_required: yes`，并只能在 `/sdd:code` verification 通过后关闭。
 - must: 文档类 DR 必须使用 `plan_required: no` 和 `code_required: no`。
 - must: 代码类 DR 必须先 `accepted`，才能生成对应 Implementation Plan。
 - must: 代码类 DR 在 spec 修订完成后不得关闭，必须保持 `accepted` 直到关联 plan 完成并通过 verification。
