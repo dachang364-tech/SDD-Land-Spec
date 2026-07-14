@@ -14,6 +14,7 @@ SDD Plugin MVP 提供以下能力：
 - 生成 Implementation Plan：`docs/vX.Y.Z/plans/NNN-*.md`
 - 按 plan 执行代码实现
 - 创建、接受、驳回 Decision Record
+- 对实现后、验收中或测试中的用户疑问执行 `/sdd:triage` 用户疑问分诊，只推荐后续路径，最终由用户选择
 - 查看当前 SDD 状态
 - 做插件安装和项目一致性诊断
 - 归档已完成版本到 `docs/archive/`
@@ -175,6 +176,12 @@ V0.2.0 起，新建 DR 模板会显式记录 `class / spec_change / plan_require
 
 只修代码且不改契约时，fix DR 通常使用 `spec_change: no`，并生成新的增量 plan。
 
+对于简单实现 bug，可以使用轻量 fix DR：`fix`、`class: code`、`spec_change: no`、`plan_required: no`、`code_required: yes`。轻量 fix 不生成 Implementation Plan，但仍必须通过 `/sdd:code <id>` 执行并完成 verification 后才能关闭 DR。
+
+用户在实现后、验收中或测试中提出疑问时，应先运行 `/sdd:triage` 判断问题更可能属于 code、plan、spec、新需求或仅解释。`/sdd:triage` 只输出分类、置信度、已读取依据、原因、推荐路径和可选路径，不创建 DR、不修改 spec、不修改 plan、不修改 code。
+
+spec、plan、DR 之间的引用应使用 Markdown 链接，例如 `[feat-0001-example](../decisions/feat-0001-example.md)`。章节号和标题可以作为普通文本放在链接后，不强制使用 Markdown anchor。
+
 文档类变更使用：
 
 ```text
@@ -198,6 +205,7 @@ V0.2.0 起，新建 DR 模板会显式记录 `class / spec_change / plan_require
 | `/sdd:dr <tag> <title>` | 创建 Decision Record |
 | `/sdd:dr accept <id>` | 接受 DR，允许后续落地 |
 | `/sdd:dr dismiss <id> <reason>` | 驳回 drafting 状态 DR |
+| `/sdd:triage [--deep]` | 对用户疑问进行分诊，推荐后续路径并等待用户选择 |
 | `/sdd:status` | 展示当前版本状态和下一步建议 |
 | `/sdd:doctor` | 检查插件安装完整性和项目最小一致性 |
 | `/sdd:archive` | 归档当前已完成版本 |

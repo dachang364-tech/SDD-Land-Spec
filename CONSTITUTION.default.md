@@ -6,7 +6,7 @@
 - must: SDD 主流程必须按 `/sdd:init → /sdd:new → /sdd:prd → /sdd:spec → /sdd:plan → /sdd:code → /sdd:archive` 推进。
 - must: `/sdd:spec` 必须在 `prd.md` 存在后执行。
 - must: feature plan 必须在 `spec.md` 状态为 `approved` 后生成。
-- must: `/sdd:code` 只能执行状态为 `planned` 或 `coding` 的 plan。
+- must: `/sdd:code` 可以执行状态为 `planned` 或 `coding` 的 plan，也可以执行符合条件的 lightweight fix DR。
 
 ## 2. 文档状态
 - must: SDD 管理的状态行只能使用 `- 状态：<value>` 格式。
@@ -18,11 +18,12 @@
 ## 3. DR 流程
 - must: 会影响代码实现的变更必须使用代码类 DR：`fix`、`feat`、`chg` 或 `arch`。
 - must: 只影响文档表达且不改变系统行为的变更可以使用文档类 DR：`spec`、`doc` 或 `typo`。
-- must: 代码类 DR 必须使用 `plan_required: yes` 和 `code_required: yes`。
+- must: 代码类 DR 必须使用 `code_required: yes`；代码类 DR 默认使用 `plan_required: yes`，但简单实现 bug 的轻量 fix DR 可以使用 `plan_required: no`。
+- must: 轻量 fix DR 必须是 `fix`、`class: code`、`spec_change: no`、`plan_required: no`、`code_required: yes`，并只能在 `/sdd:code` verification 通过后关闭。
 - must: 文档类 DR 必须使用 `plan_required: no` 和 `code_required: no`。
 - must: 代码类 DR 必须先 `accepted`，才能生成对应 Implementation Plan。
-- must: 代码类 DR 在 spec 修订完成后不得关闭，必须保持 `accepted` 直到关联 plan 完成并通过 verification。
-- must: 代码类 DR 只有在关联 plan 完成并通过 verification 后才能关闭为 `committed`。
+- must: 代码类 DR 在 spec 修订完成后不得关闭，必须保持 `accepted`，直到关联 plan 完成并通过 verification，或轻量 fix DR 通过 `/sdd:code` verification。
+- must: 代码类 DR 只有在关联 plan 完成并通过 verification 后，或轻量 fix DR 通过 `/sdd:code` verification 后，才能关闭为 `committed`。
 - may: typo 类修订可以按项目约定跳过 DR。
 
 ## 4. Plan 约束

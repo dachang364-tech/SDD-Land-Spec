@@ -25,6 +25,8 @@ fix | feat | chg | arch | spec | doc | typo
 | doc | document | maybe | no | no |
 | typo | document | no | no | no |
 
+简单实现 bug 可以由用户选择轻量 fix 流程：`tag: fix`、`class: code`、`spec_change: no`、`plan_required: no`、`code_required: yes`。如果修复涉及 API contract、schema、状态机、hook 或跨模块流程变化，不使用轻量 fix，应保持 `plan_required: yes` 并生成新的增量 Implementation Plan。
+
 `spec_change` 只能在不违反 `class`、`plan_required`、`code_required` 的前提下调整。
 
 ## Preconditions
@@ -55,8 +57,9 @@ Steps:
 4. Fill template placeholders, including the selected tag, title, date, and generated number.
 5. Derive `class`, `spec_change`, `plan_required`, and `code_required` from the tag defaults table.
 6. Initial status is `drafting`.
-7. Output next step:
-   - code-class DR: run `/sdd:dr accept <id>`; if `spec_change` is `yes` or `maybe`, first evaluate whether `/sdd:spec` is needed before `/sdd:plan <id>`.
+7. 写入 `影响资产` 或引用 spec、plan、decision 时，使用 Markdown 链接格式，例如 `[spec.md](../specs/spec.md)`、`[<plan-file>.md](../plans/<plan-file>.md)`、`[<dr-id>](./<dr-id>.md)`；章节号和标题可以作为普通文本放在链接后。
+8. Output next step:
+   - code-class DR: run `/sdd:dr accept <id>`; after accept, next step depends on `plan_required` and may be `/sdd:plan <id>` or `/sdd:code <id>`. If `spec_change` is `yes` or `maybe`, first evaluate whether `/sdd:spec` is needed.
    - document-class DR: run `/sdd:dr accept <id>`, then `/sdd:spec` or the corresponding document Skill.
 
 ## Accept mode
@@ -81,9 +84,10 @@ Steps:
 4. Do not update supersede chain.
 5. Read `class`, `spec_change`, `plan_required`, and `code_required` from the DR.
 6. Output next step:
-   - `class: code` 且 `spec_change: yes`：先运行 `/sdd:spec`，然后 `/sdd:plan <id>`。
-   - `class: code` 且 `spec_change: no`：运行 `/sdd:plan <id>`。
-   - `class: code` 且 `spec_change: maybe`：说明是否需要修订 spec；如果需要，先 `/sdd:spec`，否则 `/sdd:plan <id>`。
+   - `class: code` 且 `spec_change: yes`：先运行 `/sdd:spec`，然后运行 `/sdd:plan <id>`。
+   - `class: code` 且 `spec_change: no`、`plan_required: yes`：运行 `/sdd:plan <id>`。
+   - `class: code` 且 `spec_change: no`、`plan_required: no`：运行 `/sdd:code <id>`。
+   - `class: code` 且 `spec_change: maybe`：说明是否需要修订 spec；如果需要，先 `/sdd:spec`，然后 `/sdd:plan <id>`；如果不需要，则根据 `plan_required` 运行 `/sdd:plan <id>` 或 `/sdd:code <id>`。
    - `class: document`：运行 `/sdd:spec` 或对应文档 Skill，不进入 `/sdd:plan`。
 
 ## Dismiss mode
