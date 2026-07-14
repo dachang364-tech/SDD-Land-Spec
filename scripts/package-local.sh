@@ -4,11 +4,17 @@ set -euo pipefail
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="$(cd "$script_dir/.." && pwd)"
 plugin_json="$root_dir/.claude-plugin/plugin.json"
+marketplace_json="$root_dir/.claude-plugin/marketplace.json"
 dist_dir="$root_dir/dist"
-package_root="sdd"
+package_root="sdd-local"
 
 if [[ ! -f "$plugin_json" ]]; then
   printf '缺少插件元数据：%s\n' "$plugin_json" >&2
+  exit 1
+fi
+
+if [[ ! -f "$marketplace_json" ]]; then
+  printf '缺少 marketplace 元数据：%s\n' "$marketplace_json" >&2
   exit 1
 fi
 
@@ -19,6 +25,25 @@ if [[ -z "$name" || -z "$version" ]]; then
   printf '无法从 %s 读取 name 或 version。\n' "$plugin_json" >&2
   exit 1
 fi
+
+node - "$marketplace_json" "$name" "$version" <<'NODE'
+const fs = require('fs');
+
+const [marketplaceJson, pluginName, pluginVersion] = process.argv.slice(2);
+const marketplace = JSON.parse(fs.readFileSync(marketplaceJson, 'utf8'));
+const plugin = marketplace.plugins.find((entry) => entry.name === pluginName);
+
+if (!plugin) {
+  console.error(`marketplace 中缺少插件条目：${pluginName}`);
+  process.exit(1);
+}
+
+marketplace.metadata = marketplace.metadata || {};
+marketplace.metadata.version = pluginVersion;
+plugin.version = pluginVersion;
+
+fs.writeFileSync(marketplaceJson, `${JSON.stringify(marketplace, null, 2)}\n`);
+NODE
 
 mkdir -p "$dist_dir"
 zip_path="$dist_dir/${name}-plugin-v${version}.zip"
@@ -155,6 +180,25 @@ README
   tar "${exclude_args[@]}" -czf "$tar_path" "$package_root"
   zip -qr "$zip_path" "$package_root" -x '*/.DS_Store'
 )
+
+node - "$package_dir/.claude-plugin/plugin.json" "$package_dir/.claude-plugin/marketplace.json" <<'NODE'
+const fs = require('fs');
+
+const [pluginJson, marketplaceJson] = process.argv.slice(2);
+const plugin = JSON.parse(fs.readFileSync(pluginJson, 'utf8'));
+const marketplace = JSON.parse(fs.readFileSync(marketplaceJson, 'utf8'));
+const marketplacePlugin = marketplace.plugins.find((entry) => entry.name === plugin.name);
+
+if (!marketplacePlugin) {
+  console.error(`包内 marketplace 中缺少插件条目：${plugin.name}`);
+  process.exit(1);
+}
+
+if (marketplace.metadata?.version !== plugin.version || marketplacePlugin.version !== plugin.version) {
+  console.error(`包内版本不一致：plugin=${plugin.version}, marketplace.metadata=${marketplace.metadata?.version}, marketplace.plugins.${plugin.name}=${marketplacePlugin.version}`);
+  process.exit(1);
+}
+NODE
 
 printf '已生成本地包：\n'
 printf '%s\n' "$zip_path"
