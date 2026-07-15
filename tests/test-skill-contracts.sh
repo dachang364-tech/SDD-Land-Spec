@@ -50,6 +50,19 @@ assert_not_contains() {
   ! grep -Fq -- "$needle" "$path" || fail "expected $path not to contain: $needle"
 }
 
+assert_not_matches() {
+  local path="$1"
+  local pattern="$2"
+  ! grep -Eq -- "$pattern" "$path" || fail "expected $path not to match regex: $pattern"
+}
+
+assert_no_legacy_docs_v_paths() {
+  local path="$1"
+  local matches
+  matches="$(grep -Eo 'docs/v[^[:space:]`)"]*' "$path" | grep -Ev '^docs/versions(/|$)' || true)"
+  [[ -z "$matches" ]] || fail "expected $path not to contain legacy docs/v paths: $matches"
+}
+
 for template in \
   "skills/prd/references/prd.md.tmpl" \
   "skills/spec/references/spec.md.tmpl" \
@@ -194,6 +207,7 @@ assert_contains "skills/doctor/SKILL.md" 'At execution start, read `docs/CONSTIT
 assert_contains "skills/doctor/SKILL.md" "skills/triage/SKILL.md"
 assert_contains "skills/doctor/SKILL.md" "skills/research/SKILL.md"
 assert_contains "skills/doctor/SKILL.md" "scripts/lib/sdd-common.sh"
+assert_contains "skills/doctor/SKILL.md" "scripts/lib/sdd-references.sh"
 assert_contains "skills/doctor/SKILL.md" "scripts/hooks/pre-tool-use.sh"
 assert_contains "skills/doctor/SKILL.md" "docs/versions/"
 assert_contains "skills/doctor/SKILL.md" "state.json.version 必须等于版本目录名"
@@ -201,7 +215,6 @@ assert_contains "skills/doctor/SKILL.md" "旧草案结构"
 assert_contains "skills/doctor/SKILL.md" "docs/vX.Y.Z/"
 assert_contains "skills/doctor/SKILL.md" "## 文档引用"
 assert_contains "skills/doctor/SKILL.md" "docs/archive/INDEX.md"
-assert_contains "skills/doctor/SKILL.md" "scripts/lib/sdd-references.sh"
 assert_contains "skills/doctor/SKILL.md" "sdd_refs_validate <project-root> <source.md>"
 assert_contains "skills/doctor/SKILL.md" "blocking"
 assert_contains "skills/doctor/SKILL.md" "warning"
@@ -216,12 +229,48 @@ assert_contains "skills/archive/SKILL.md" '所有 `decisions/*.md` 的 Markdown 
 assert_contains "skills/archive/SKILL.md" '"state": "archived"'
 assert_contains "skills/archive/SKILL.md" "## 6. 文档引用摘要"
 assert_contains "skills/archive/SKILL.md" 'prd.md` 缺失不阻止归档'
-assert_contains "skills/archive/SKILL.md" '只从 `## 文档引用` 表机械提取'
+assert_contains "skills/archive/SKILL.md" '只读取 `## 文档引用` 表，不阅读全文'
+assert_contains "skills/archive/SKILL.md" "scripts/lib/sdd-references.sh"
+assert_contains "skills/archive/SKILL.md" "sdd_refs_validate <project-root> <source.md>"
+assert_contains "skills/archive/SKILL.md" "sdd_refs_extract_archive <project-root> <version-dir> <cross.md> <strong.md>"
+assert_contains "skills/archive/SKILL.md" "blocking"
+assert_contains "skills/archive/SKILL.md" "warning"
+assert_contains "skills/archive/SKILL.md" "level"
+assert_contains "skills/archive/SKILL.md" "code"
+assert_contains "skills/archive/SKILL.md" "source"
+assert_contains "skills/archive/SKILL.md" "reason"
 assert_contains "skills/archive/SKILL.md" "../versions/vX.Y.Z/ARCHIVE.md"
 
 assert_contains "README.md" "class / spec_change / plan_required / code_required"
 assert_contains "README.md" "spec-changing code-class DR"
 assert_contains "README.md" 'fix DR 通常使用 `spec_change: no`'
+assert_contains "README.md" '创建唯一活跃版本目录 `docs/versions/vX.Y.Z/`'
+assert_contains "README.md" '生成无状态 PRD：`docs/versions/vX.Y.Z/prd.md`'
+assert_contains "README.md" '生成 Functional Specification：`docs/versions/vX.Y.Z/specs/spec.md`'
+assert_contains "README.md" '生成 Implementation Plan：`docs/versions/vX.Y.Z/plans/NNN-*.md`'
+assert_contains "README.md" 'docs/versions/vX.Y.Z/state.json'
+assert_contains "README.md" 'docs/versions/v0.2.0/specs/'
+assert_contains "README.md" 'docs/versions/vX.Y.Z/specs/spec.md'
+assert_contains "README.md" 'docs/versions/vX.Y.Z/plans/NNN-feature-*.md'
+assert_contains "README.md" 'docs/versions/vX.Y.Z/ARCHIVE.md'
+assert_contains "README.md" 'docs/archive/INDEX.md'
+assert_not_contains "README.md" '创建唯一活跃版本目录 `docs/vX.Y.Z/`'
+assert_not_contains "README.md" '生成无状态 PRD：`docs/vX.Y.Z/prd.md`'
+assert_not_contains "README.md" 'docs/vX.Y.Z/specs/spec.md'
+assert_not_contains "README.md" 'docs/vX.Y.Z/plans/NNN-feature-*.md'
+assert_not_contains "README.md" 'sdd-plugin-mvp-workflow'
+assert_no_legacy_docs_v_paths "README.md"
+assert_contains "TESTING.md" 'mkdir -p "$tmp/docs/versions/v0.1.0/specs" "$tmp/docs/versions/v0.1.0/plans" "$tmp/docs/versions/v0.1.0/decisions"'
+assert_contains "TESTING.md" 'docs/versions/v0.1.0/specs/spec.md'
+assert_contains "TESTING.md" 'docs/versions/v0.1.0/prd.md'
+assert_contains "TESTING.md" 'docs/versions/v0.1.0/plans/001-feature-login.md'
+assert_contains "TESTING.md" 'docs/versions/v0.2.0/state.json'
+assert_contains "TESTING.md" 'docs/versions/v0.2.0/specs/'
+assert_not_contains "TESTING.md" 'mkdir -p "$tmp/docs/v0.1.0/specs" "$tmp/docs/v0.1.0/plans" "$tmp/docs/v0.1.0/decisions"'
+assert_not_contains "TESTING.md" 'docs/v0.1.0/specs/spec.md'
+assert_not_contains "TESTING.md" 'docs/v0.1.0/plans/001-feature-login.md'
+assert_not_contains "TESTING.md" 'sdd-plugin-mvp-workflow'
+assert_no_legacy_docs_v_paths "TESTING.md"
 assert_contains "CONSTITUTION.default.md" '代码类 DR 默认使用 `plan_required: yes`'
 assert_contains "CONSTITUTION.default.md" '文档类 DR 必须使用 `plan_required: no` 和 `code_required: no`'
 assert_contains "CONSTITUTION.default.md" "代码类 DR 在 spec 修订完成后不得关闭"

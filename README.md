@@ -7,17 +7,17 @@ SDD Plugin 是一个面向 Claude Code 的 Specification Driven Development（SD
 SDD Plugin MVP 提供以下能力：
 
 - 初始化项目级 SDD 目录和流程宪法 `docs/CONSTITUTION.md`
-- 创建唯一活跃版本目录 `docs/vX.Y.Z/`
+- 创建唯一活跃版本目录 `docs/versions/vX.Y.Z/`
 - 生成项目级调研资料 `docs/requirements/*.md`
-- 生成无状态 PRD：`docs/vX.Y.Z/prd.md`
-- 生成 Functional Specification：`docs/vX.Y.Z/specs/spec.md`
-- 生成 Implementation Plan：`docs/vX.Y.Z/plans/NNN-*.md`
+- 生成无状态 PRD：`docs/versions/vX.Y.Z/prd.md`
+- 生成 Functional Specification：`docs/versions/vX.Y.Z/specs/spec.md`
+- 生成 Implementation Plan：`docs/versions/vX.Y.Z/plans/NNN-*.md`
 - 按 plan 执行代码实现
 - 创建、接受、驳回 Decision Record
 - 对实现后、验收中或测试中的用户疑问执行 `/sdd:triage` 用户疑问分诊，只推荐后续路径，最终由用户选择
 - 查看当前 SDD 状态
 - 做插件安装和项目一致性诊断
-- 归档已完成版本到 `docs/archive/`
+- 在 `docs/versions/vX.Y.Z/ARCHIVE.md` 归档已完成版本，并维护 `docs/archive/INDEX.md`
 - 通过 PreToolUse Hook 做最小 L1 文档门控
 
 ## 安装要求
@@ -45,7 +45,7 @@ cd /path/to/sdd-plugin
 如果你正在使用本仓库当前 worktree，可进入：
 
 ```bash
-cd /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/sdd-plugin-mvp-workflow
+cd /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/document-references-advanced-fresh
 ```
 
 ### 2. 安装依赖 plugin
@@ -81,7 +81,7 @@ claude plugin marketplace add /path/to/sdd-plugin
 当前 worktree 示例：
 
 ```bash
-claude plugin marketplace add /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/sdd-plugin-mvp-workflow
+claude plugin marketplace add /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/document-references-advanced-fresh
 ```
 
 ### 4. 从本地 marketplace 安装 SDD plugin
@@ -132,9 +132,10 @@ claude
   - `docs/requirements/`
   - `docs/archive/`
 - `/sdd:new v0.2.0` 创建：
-  - `docs/v0.2.0/specs/`
-  - `docs/v0.2.0/plans/`
-  - `docs/v0.2.0/decisions/`
+  - `docs/versions/v0.2.0/state.json`
+  - `docs/versions/v0.2.0/specs/`
+  - `docs/versions/v0.2.0/plans/`
+  - `docs/versions/v0.2.0/decisions/`
 - `/sdd:status` 展示当前活跃版本状态和下一步建议。
 
 ## 主流程
@@ -220,23 +221,28 @@ docs/
 ├── requirements/
 │   └── *.md
 ├── archive/
-└── vX.Y.Z/
-    ├── prd.md
-    ├── specs/
-    │   └── spec.md
-    ├── plans/
-    │   └── NNN-*.md
-    └── decisions/
-        └── <tag>-NNNN-<slug>.md
+│   └── INDEX.md
+└── versions/
+    └── vX.Y.Z/
+        ├── state.json
+        ├── prd.md
+        ├── ARCHIVE.md
+        ├── specs/
+        │   └── spec.md
+        ├── plans/
+        │   └── NNN-*.md
+        └── decisions/
+            └── <tag>-NNNN-<slug>.md
 ```
 
 ## Hook 门控
 
 MVP 只实现 PreToolUse L1 文档门控：
 
-- 写 `docs/vX.Y.Z/specs/spec.md` 前要求 `docs/vX.Y.Z/prd.md` 存在
-- 写 `docs/vX.Y.Z/plans/NNN-feature-*.md` 前要求 `spec.md` 状态为 `approved`
-- 写 `docs/vX.Y.Z/plans/NNN-{fix,feat,chg,arch}-*.md` 前要求对应 DR 状态为 `accepted`
+- 写 `docs/versions/vX.Y.Z/specs/spec.md` 前要求 `docs/versions/vX.Y.Z/prd.md` 存在
+- 写 `docs/versions/vX.Y.Z/plans/NNN-feature-*.md` 前要求 `spec.md` 状态为 `approved`
+- 写 `docs/versions/vX.Y.Z/plans/NNN-{fix,feat,chg,arch}-*.md` 前要求对应 DR 状态为 `accepted`
+- 允许写 `docs/versions/vX.Y.Z/state.json`、`docs/versions/vX.Y.Z/ARCHIVE.md` 和 `docs/archive/INDEX.md`
 - 不拦截 `src/**`
 - 不解析 `docs/CONSTITUTION.md` 的 `must` / `should`
 - 不创建 `.sdd/state.json`
@@ -246,7 +252,7 @@ MVP 只实现 PreToolUse L1 文档门控：
 在插件项目根目录运行：
 
 ```bash
-bash tests/test-doctor-contract.sh && bash tests/test-common-library.sh && bash tests/test-pre-tool-use.sh && bash tests/test-skill-contracts.sh && bash tests/test-mvp-acceptance.sh
+bash tests/test-doctor-contract.sh && bash tests/test-common-library.sh && bash tests/test-pre-tool-use.sh && bash tests/test-reference-validation.sh && bash tests/test-skill-contracts.sh && bash tests/test-mvp-acceptance.sh
 ```
 
 期望输出：
@@ -255,6 +261,7 @@ bash tests/test-doctor-contract.sh && bash tests/test-common-library.sh && bash 
 PASS: skeleton contract
 PASS: common library
 PASS: pre-tool-use hook
+PASS: reference validation
 PASS: skill contracts
 PASS: MVP acceptance
 ```

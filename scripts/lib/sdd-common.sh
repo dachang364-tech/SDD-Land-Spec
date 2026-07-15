@@ -118,16 +118,27 @@ sdd_active_version_dir() {
     fi
     state="$(sdd_state_field "$path/state.json" state)"
     case "$state" in
-      active|archived) ;;
+      active)
+        if [[ "$archived_at" != "null" ]]; then
+          printf 'state.json 生命周期非法：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+          shopt -u nullglob
+          return 2
+        fi
+        actives+=("docs/versions/$base")
+        ;;
+      archived)
+        if [[ "$archived_at" == "null" ]]; then
+          printf 'state.json 生命周期非法：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+          shopt -u nullglob
+          return 2
+        fi
+        ;;
       *)
         printf 'state.json.state 非法：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
         shopt -u nullglob
         return 2
         ;;
     esac
-    if [[ "$state" == "active" ]]; then
-      actives+=("docs/versions/$base")
-    fi
   done
   shopt -u nullglob
 

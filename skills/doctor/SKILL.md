@@ -34,6 +34,7 @@ hooks/hooks.json
 scripts/install-deps.sh
 scripts/hooks/pre-tool-use.sh
 scripts/lib/sdd-common.sh
+scripts/lib/sdd-references.sh
 CONSTITUTION.default.md
 ```
 

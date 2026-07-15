@@ -83,6 +83,27 @@ if sdd_active_version_dir "$tmp/missing-archived-at" >/tmp/sdd-missing-archived-
 fi
 assert_contains "/tmp/sdd-missing-archived-at.err" "state.json 缺少必需字段"
 
+bash tests/fixtures/valid-project.sh "$tmp/active-with-archived-at"
+printf '{\n  "version": "v0.1.0",\n  "state": "active",\n  "created_at": "2026-07-14T00:00:00Z",\n  "archived_at": "2026-07-14T12:00:00Z"\n}\n' > "$tmp/active-with-archived-at/docs/versions/v0.1.0/state.json"
+if sdd_active_version_dir "$tmp/active-with-archived-at" >/tmp/sdd-active-with-archived-at.out 2>/tmp/sdd-active-with-archived-at.err; then
+  fail "expected active state with archived_at to fail"
+fi
+assert_contains "/tmp/sdd-active-with-archived-at.err" "state.json 生命周期非法"
+
+bash tests/fixtures/valid-project.sh "$tmp/archived-with-null"
+printf '{\n  "version": "v0.1.0",\n  "state": "archived",\n  "created_at": "2026-07-14T00:00:00Z",\n  "archived_at": null\n}\n' > "$tmp/archived-with-null/docs/versions/v0.1.0/state.json"
+if sdd_active_version_dir "$tmp/archived-with-null" >/tmp/sdd-archived-with-null.out 2>/tmp/sdd-archived-with-null.err; then
+  fail "expected archived state with null archived_at to fail"
+fi
+assert_contains "/tmp/sdd-archived-with-null.err" "state.json 生命周期非法"
+
+bash tests/fixtures/valid-project.sh "$tmp/archived-with-value"
+printf '{\n  "version": "v0.1.0",\n  "state": "archived",\n  "created_at": "2026-07-14T00:00:00Z",\n  "archived_at": "2026-07-14T12:00:00Z"\n}\n' > "$tmp/archived-with-value/docs/versions/v0.1.0/state.json"
+if sdd_active_version_dir "$tmp/archived-with-value" >/tmp/sdd-archived-with-value.out 2>/tmp/sdd-archived-with-value.err; then
+  fail "expected archived-only project to report no active version"
+fi
+assert_contains "/tmp/sdd-archived-with-value.err" "未发现 active version"
+
 bash tests/fixtures/valid-project.sh "$tmp/non-semver"
 mkdir -p "$tmp/non-semver/docs/versions/v0.2.0-beta"
 printf '{\n  "version": "v0.2.0-beta",\n  "state": "active",\n  "created_at": "2026-07-14T00:00:00Z",\n  "archived_at": null\n}\n' > "$tmp/non-semver/docs/versions/v0.2.0-beta/state.json"

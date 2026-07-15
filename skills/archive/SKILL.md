@@ -42,14 +42,16 @@ description: Archive the current active SDD version. Use for /sdd:archive.
 
 1. 扫描 `docs/versions/v*/state.json`，解析唯一 active version。
 2. 执行归档前置条件检查。
-3. 从 active version 的 PRD、spec、plans、DR 提取归档摘要信息。
-4. 从 PRD、spec、plans、DR 的 `## 文档引用` 表机械提取 `文档引用摘要`：只读取引用表，不阅读全文；提取 `目标标识` 匹配 `vX.Y.Z:` 或 `project:` 的行写入「跨版本与项目级关系」；提取关系为 `modifies`/`replaces`/`deprecates` 的同版本行写入「本版本强关系」；不根据正文链接补推关系。
-5. 在 active version 目录内生成或覆盖 `docs/versions/vX.Y.Z/ARCHIVE.md`。
-6. 检查生成后的 `ARCHIVE.md` 中本地相对 Markdown `.md` 链接。
-7. 将该版本 `state.json.state` 从 `active` 改为 `archived`，保留 `created_at`，写入 `archived_at`。
-8. 创建或更新 `docs/archive/INDEX.md`（每个 archived version 最多一行，链接 `../versions/vX.Y.Z/ARCHIVE.md`）。
-9. 检查 `docs/archive/INDEX.md` 本次新增或修改的本地相对 Markdown `.md` 链接。
-10. 输出归档结果：归档版本、`ARCHIVE.md` 路径、`INDEX.md` 路径、当前 0 active version、下一步建议 `/sdd:new vX.Y.Z`。
+3. 加载 `scripts/lib/sdd-references.sh`。
+4. 枚举 active version 内现有的 `prd.md`、`specs/*.md`、`plans/*.md`、`decisions/*.md`；对每个来源文档调用 `sdd_refs_validate <project-root> <source.md>` 执行归档前 preflight。若 helper 输出 JSONL 诊断，必须保留 `level`、`code`、`source`、`reason` 字段；遇到 `blocking` 立即停止归档，`warning` 仅记录到验证摘要。
+5. 从 active version 的 PRD、spec、plans、DR 提取归档摘要信息。
+6. 调用 `sdd_refs_extract_archive <project-root> <version-dir> <cross.md> <strong.md>` 机械提取 `文档引用摘要` 输入文件；只读取 `## 文档引用` 表，不阅读全文；将 `cross.md` 内容写入「跨版本与项目级关系」，将 `strong.md` 内容写入「本版本强关系」；不根据正文链接补推关系。
+7. 在 active version 目录内生成或覆盖 `docs/versions/vX.Y.Z/ARCHIVE.md`。
+8. 检查生成后的 `ARCHIVE.md` 中本地相对 Markdown `.md` 链接。
+9. 将该版本 `state.json.state` 从 `active` 改为 `archived`，保留 `created_at`，写入 `archived_at`。
+10. 创建或更新 `docs/archive/INDEX.md`（每个 archived version 最多一行，链接 `../versions/vX.Y.Z/ARCHIVE.md`）。
+11. 检查 `docs/archive/INDEX.md` 本次新增或修改的本地相对 Markdown `.md` 链接。
+12. 输出归档结果：归档版本、`ARCHIVE.md` 路径、`INDEX.md` 路径、当前 0 active version、下一步建议 `/sdd:new vX.Y.Z`。
 
 归档后的 `state.json`：
 
@@ -133,7 +135,7 @@ description: Archive the current active SDD version. Use for /sdd:archive.
 
 Rules:
 
-- 只从 `## 文档引用` 表机械提取 `文档引用摘要`，不从正文链接推断新关系。
+- 必须通过 `sdd_refs_extract_archive <project-root> <version-dir> <cross.md> <strong.md>` 机械生成 `文档引用摘要`，不从正文链接推断新关系。
 - 空集合使用固定行 `未发现。`；无法机械提取时使用 `未能机械提取；请查看原始文档。`。
 - `INDEX.md` 不链接具体 spec、plan、DR 或 requirements。
 

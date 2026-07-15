@@ -5,7 +5,7 @@
 ## 1. 进入实现分支
 
 ```bash
-cd /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/sdd-plugin-mvp-workflow
+cd /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/document-references-advanced-fresh
 ```
 
 确认当前分支：
@@ -17,13 +17,13 @@ git branch --show-current
 期望输出：
 
 ```text
-sdd-plugin-mvp-workflow
+feature-document-references-advanced-fresh
 ```
 
 ## 2. 运行自动化验证
 
 ```bash
-bash tests/test-doctor-contract.sh && bash tests/test-common-library.sh && bash tests/test-pre-tool-use.sh && bash tests/test-skill-contracts.sh && bash tests/test-mvp-acceptance.sh
+bash tests/test-doctor-contract.sh && bash tests/test-common-library.sh && bash tests/test-pre-tool-use.sh && bash tests/test-reference-validation.sh && bash tests/test-skill-contracts.sh && bash tests/test-mvp-acceptance.sh
 ```
 
 期望输出：
@@ -32,6 +32,7 @@ bash tests/test-doctor-contract.sh && bash tests/test-common-library.sh && bash 
 PASS: skeleton contract
 PASS: common library
 PASS: pre-tool-use hook
+PASS: reference validation
 PASS: skill contracts
 PASS: MVP acceptance
 ```
@@ -59,14 +60,14 @@ grep -F '${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-start.sh' hooks/hooks.json
 
 ```bash
 tmp="$(mktemp -d)"
-mkdir -p "$tmp/docs/v0.1.0/specs" "$tmp/docs/v0.1.0/plans" "$tmp/docs/v0.1.0/decisions"
+mkdir -p "$tmp/docs/versions/v0.1.0/specs" "$tmp/docs/versions/v0.1.0/plans" "$tmp/docs/versions/v0.1.0/decisions"
 ```
 
 验证缺少 PRD 时禁止写 spec：
 
 ```bash
 cd "$tmp"
-printf '{"tool_input":{"file_path":"docs/v0.1.0/specs/spec.md"}}' | /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/sdd-plugin-mvp-workflow/scripts/hooks/pre-tool-use.sh
+printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/specs/spec.md"}}' | /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/document-references-advanced-fresh/scripts/hooks/pre-tool-use.sh
 ```
 
 期望：退出码为 `2`，并输出中文错误，提示先完成 `/sdd:prd`。
@@ -74,9 +75,9 @@ printf '{"tool_input":{"file_path":"docs/v0.1.0/specs/spec.md"}}' | /Users/apple
 验证 spec approved 后允许写 feature plan：
 
 ```bash
-printf '# PRD\n' > docs/v0.1.0/prd.md
-printf '# Functional Specification\n\n- 状态：approved\n' > docs/v0.1.0/specs/spec.md
-printf '{"tool_input":{"file_path":"docs/v0.1.0/plans/001-feature-login.md"}}' | /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/sdd-plugin-mvp-workflow/scripts/hooks/pre-tool-use.sh
+printf '# PRD\n' > docs/versions/v0.1.0/prd.md
+printf '# Functional Specification\n\n- 状态：approved\n' > docs/versions/v0.1.0/specs/spec.md
+printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/plans/001-feature-login.md"}}' | /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/document-references-advanced-fresh/scripts/hooks/pre-tool-use.sh
 ```
 
 期望：无输出，退出码为 `0`。
@@ -112,7 +113,7 @@ claude plugin list
 重点确认：
 
 - `/sdd:init` 创建 `docs/CONSTITUTION.md`、`docs/requirements/`、`docs/archive/`。
-- `/sdd:new v0.2.0` 创建 `docs/v0.2.0/specs/`、`plans/`、`decisions/`。
+- `/sdd:new v0.2.0` 创建 `docs/versions/v0.2.0/state.json`、`docs/versions/v0.2.0/specs/`、`plans/`、`decisions/`。
 - `/sdd:status` 能展示当前版本状态和下一步建议。
 - feature plan 在 `spec.md` 未 `approved` 时会被拒绝。
 
@@ -127,5 +128,5 @@ Merge back to main locally
 当前实现分支：
 
 ```text
-sdd-plugin-mvp-workflow
+feature-document-references-advanced-fresh
 ```
