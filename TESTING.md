@@ -72,12 +72,21 @@ printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/specs/spec.md"}}' | /Us
 
 期望：退出码为 `2`，并输出中文错误，提示先完成 `/sdd:prd`。
 
-验证 spec approved 后允许写 feature plan：
+验证没有 approved spec 时禁止写普通 spec-mode plan：
 
 ```bash
 printf '# PRD\n' > docs/versions/v0.1.0/prd.md
-printf '# Functional Specification\n\n- 状态：approved\n' > docs/versions/v0.1.0/specs/spec.md
-printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/plans/001-feature-login.md"}}' | /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/document-references-advanced-fresh/scripts/hooks/pre-tool-use.sh
+printf '# Functional Specification\n\n- 状态：draft\n' > docs/versions/v0.1.0/specs/spec.md
+printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/plans/001-login.md"}}' | /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/document-references-advanced-fresh/scripts/hooks/pre-tool-use.sh
+```
+
+期望：退出码为 `2`，并输出中文错误，提示先完成 `/sdd:spec` 并批准目标 Functional Specification。
+
+验证存在 approved spec 后允许写普通 spec-mode plan：
+
+```bash
+printf '# Functional Specification\n\n- 状态：approved\n' > docs/versions/v0.1.0/specs/document-references.md
+printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/plans/001-login.md"}}' | /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/document-references-advanced-fresh/scripts/hooks/pre-tool-use.sh
 ```
 
 期望：无输出，退出码为 `0`。

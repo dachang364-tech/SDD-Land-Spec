@@ -240,7 +240,7 @@ docs/
 MVP 只实现 PreToolUse L1 文档门控：
 
 - 写 `docs/versions/vX.Y.Z/specs/spec.md` 前要求 `docs/versions/vX.Y.Z/prd.md` 存在
-- 写 `docs/versions/vX.Y.Z/plans/NNN-feature-*.md` 前要求 `spec.md` 状态为 `approved`
+- 写 `docs/versions/vX.Y.Z/plans/NNN-<slug>.md`（不含 `NNN-{fix,feat,chg,arch}-*.md`）前要求 `specs/*.md` 中至少一个目标 Functional Specification 状态为 `approved`
 - 写 `docs/versions/vX.Y.Z/plans/NNN-{fix,feat,chg,arch}-*.md` 前要求对应 DR 状态为 `accepted`
 - 允许写 `docs/versions/vX.Y.Z/state.json`、`docs/versions/vX.Y.Z/ARCHIVE.md` 和 `docs/archive/INDEX.md`
 - 不拦截 `src/**`

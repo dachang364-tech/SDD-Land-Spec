@@ -10,6 +10,24 @@ target_path="$(sdd_json_target_path)"
 
 target_path="${target_path#./}"
 
+plan_requires_approved_spec() {
+  local version="$1"
+  local spec_glob="docs/versions/$version/specs/*.md"
+  local spec status
+  shopt -s nullglob
+  for spec in docs/versions/"$version"/specs/*.md; do
+    [[ -f "$spec" ]] || continue
+    status="$(sdd_read_status "$spec" 2>/dev/null)" || continue
+    if [[ "$status" == "approved" ]]; then
+      shopt -u nullglob
+      return 0
+    fi
+  done
+  shopt -u nullglob
+  printf '无法写入 %s：\n前置规格 %s 中不存在 approved 文档。\n请先完成 /sdd:spec 并批准目标 Functional Specification。\n' "$target_path" "$spec_glob" >&2
+  exit 2
+}
+
 case "$target_path" in
   docs/versions/v*/prd.md)
     exit 0
@@ -20,17 +38,6 @@ case "$target_path" in
     prd="docs/versions/$version/prd.md"
     if [[ ! -f "$prd" ]]; then
       printf '无法写入 %s：\n前置文档 %s 不存在。\n请先完成 /sdd:prd。\n' "$target_path" "$prd" >&2
-      exit 2
-    fi
-    exit 0
-    ;;
-  docs/versions/v*/plans/[0-9][0-9][0-9]-feature-*.md)
-    version="${target_path#docs/versions/}"
-    version="${version%%/*}"
-    spec="docs/versions/$version/specs/spec.md"
-    status="$(sdd_read_status "$spec")" || exit 2
-    if [[ "$status" != "approved" ]]; then
-      printf '无法写入 %s：\n前置文档 %s 状态为 %s，期望 approved。\n请先完成 /sdd:spec 并批准 Functional Specification。\n' "$target_path" "$spec" "$status" >&2
       exit 2
     fi
     exit 0
@@ -48,7 +55,13 @@ case "$target_path" in
     fi
     exit 0
     ;;
-  docs/versions/v*/plans/*.md|docs/versions/v*/decisions/*.md|docs/versions/v*/ARCHIVE.md|docs/versions/v*/state.json|docs/archive/INDEX.md|docs/requirements/*.md|src/*|src/**)
+  docs/versions/v*/plans/[0-9][0-9][0-9]-*.md)
+    version="${target_path#docs/versions/}"
+    version="${version%%/*}"
+    plan_requires_approved_spec "$version"
+    exit 0
+    ;;
+  docs/versions/v*/decisions/*.md|docs/versions/v*/ARCHIVE.md|docs/versions/v*/state.json|docs/archive/INDEX.md|docs/requirements/*.md|src/*|src/**)
     exit 0
     ;;
   *)
