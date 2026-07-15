@@ -22,7 +22,6 @@ assert_contains "skills/new/SKILL.md" "扫描 docs/versions/v*/state.json"
 
 assert_contains "skills/research/SKILL.md" "description: Create project-level SDD research notes"
 assert_file_exists "skills/research/references/research.md.tmpl"
-assert_contains "skills/research/references/research.md.tmpl" "# 研究：<topic>"
 
 assert_contains "skills/prd/SKILL.md" "description: Create the product requirements document"
 assert_file_exists "skills/prd/references/prd.md.tmpl"
@@ -32,6 +31,18 @@ assert_contains "skills/prd/references/prd.md.tmpl" "## 文档引用"
 assert_contains "skills/prd/references/prd.md.tmpl" "| 关系 | 当前范围 | 目标文档 | 目标标识 | 说明 |"
 assert_contains "skills/prd/references/prd.md.tmpl" "| 未声明。 | - | - | - | - |"
 assert_contains "skills/prd/references/prd.md.tmpl" "## 7. 上游需求资料"
+
+assert_contains "skills/prd/SKILL.md" "docs/versions/vX.Y.Z/prd.md"
+assert_contains "skills/prd/SKILL.md" "扫描 docs/versions/v*/state.json"
+assert_contains "skills/prd/SKILL.md" "project:requirements/<file>.md"
+assert_contains "skills/prd/SKILL.md" "## 文档引用"
+assert_contains "skills/prd/SKILL.md" '不写 `- 状态：'
+
+assert_contains "skills/research/SKILL.md" "docs/requirements/<topic-slug>-<yyyy-mm>.md"
+assert_contains "skills/research/SKILL.md" "不要求 active version"
+assert_contains "skills/research/SKILL.md" "不读取或修改 state.json"
+assert_contains "skills/research/references/research.md.tmpl" "# Research：<topic>"
+assert_contains "skills/research/references/research.md.tmpl" "## 7. 可引用结论"
 
 assert_not_contains() {
   local path="$1"
