@@ -13,6 +13,12 @@ run_hook() {
   (cd "$root" && printf '{"tool_input":{"file_path":"%s"}}' "$target" | "$OLDPWD/scripts/hooks/pre-tool-use.sh")
 }
 
+run_hook_abs_raw() {
+  local root="$1"
+  local target="$2"
+  (cd "$root" && printf '{"tool_input":{"file_path":"%s"}}' "$target" | "$OLDPWD/scripts/hooks/pre-tool-use.sh")
+}
+
 run_hook "$tmp" "docs/versions/v0.1.0/prd.md"
 run_hook "$tmp" "docs/versions/v0.1.0/specs/spec.md"
 run_hook "$tmp" "docs/versions/v0.1.0/specs/document-references.md"
@@ -36,10 +42,25 @@ fi
 assert_contains "/tmp/sdd-hook2.err" "前置规格 docs/versions/v0.1.0/specs/*.md 中不存在 approved 文档"
 assert_contains "/tmp/sdd-hook2.err" "请先完成 /sdd:spec 并批准目标 Functional Specification"
 
-if run_hook "$tmp" "docs/versions/v0.1.0/plans/003-login.md" >/tmp/sdd-hook2b.out 2>/tmp/sdd-hook2b.err; then
-  fail "expected plain spec-mode plan write with only draft specs to fail"
+if run_hook_abs_raw "$tmp" "$tmp/docs/versions/v0.1.0/plans/003-login.md" >/tmp/sdd-hook2c.out 2>/tmp/sdd-hook2c.err; then
+  fail "expected absolute spec-mode plan path with only draft specs to fail"
 fi
-assert_contains "/tmp/sdd-hook2b.err" "前置规格 docs/versions/v0.1.0/specs/*.md 中不存在 approved 文档"
+assert_contains "/tmp/sdd-hook2c.err" "前置规格 docs/versions/v0.1.0/specs/*.md 中不存在 approved 文档"
+
+if run_hook_abs_raw "$tmp" "$tmp/docs/versions/../versions/v0.1.0/plans/003-login.md" >/tmp/sdd-hook2d.out 2>/tmp/sdd-hook2d.err; then
+  fail "expected dot-dot absolute spec-mode plan path with only draft specs to fail"
+fi
+assert_contains "/tmp/sdd-hook2d.err" "前置规格 docs/versions/v0.1.0/specs/*.md 中不存在 approved 文档"
+
+if run_hook "$tmp" "docs/x/../../docs/versions/v0.1.0/plans/003-login.md" >/tmp/sdd-hook2f.out 2>/tmp/sdd-hook2f.err; then
+  fail "expected dot-dot relative spec-mode plan path with only draft specs to fail"
+fi
+assert_contains "/tmp/sdd-hook2f.err" "前置规格 docs/versions/v0.1.0/specs/*.md 中不存在 approved 文档"
+
+if run_hook "$tmp" "docs//versions/v0.1.0/plans/003-login.md" >/tmp/sdd-hook2g.out 2>/tmp/sdd-hook2g.err; then
+  fail "expected doubled-slash relative spec-mode plan path with only draft specs to fail"
+fi
+assert_contains "/tmp/sdd-hook2g.err" "前置规格 docs/versions/v0.1.0/specs/*.md 中不存在 approved 文档"
 
 printf '# Functional Specification\n\n- 状态：approved\n' > "$tmp/docs/versions/v0.1.0/specs/document-references.md"
 run_hook "$tmp" "docs/versions/v0.1.0/plans/003-login.md"

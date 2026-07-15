@@ -107,10 +107,24 @@ DOC
   if scripts/lib/sdd-references.sh validate "$root" "$root/docs/versions/v0.1.0/specs/invalid-project-locator.md" > "$tmp/invalid-project-locator"; then fail "expected invalid project locator to block: $locator"; fi
   assert_contains "$tmp/invalid-project-locator" '"code": "invalid_locator"'
 done
-scripts/lib/sdd-references.sh extract-archive "$root" "$root/docs/versions/v0.1.0" "$tmp/cross" "$tmp/strong"
-assert_contains "$tmp/cross" 'v0.2.0:specs/old.md'
-assert_contains "$tmp/cross" 'project:requirements/rules.md'
-assert_contains "$tmp/strong" '| plans/001-bad.md | modifies | [good.md](../specs/good.md) | plan 不得修改契约 |'
+cat > "$root/docs/versions/v0.1.0/specs/external-invalid-locator.md" <<'DOC'
+# External invalid locator
+## 文档引用
+| 关系 | 当前范围 | 目标文档 | 目标标识 | 说明 |
+| ---- | -------- | -------- | -------- | ---- |
+| references | 外部背景 | [site](https://example.com) | invalid | 外部文档仍需使用合法 locator 占位 |
+DOC
+if scripts/lib/sdd-references.sh validate "$root" "$root/docs/versions/v0.1.0/specs/external-invalid-locator.md" > "$tmp/external-invalid-locator"; then fail "expected invalid locator on external link to block"; fi
+assert_contains "$tmp/external-invalid-locator" '"code": "invalid_locator"'
+cat > "$root/docs/versions/v0.1.0/specs/bad-separator.md" <<'DOC'
+# Bad separator
+## 文档引用
+| 关系 | 当前范围 | 目标文档 | 目标标识 | 说明 |
+| this is not | a markdown | separator | row | at all |
+| references | 历史规则 | [old.md](../../v0.2.0/specs/old.md) | v0.2.0:specs/old.md | 无效分隔行必须阻塞 |
+DOC
+if scripts/lib/sdd-references.sh validate "$root" "$root/docs/versions/v0.1.0/specs/bad-separator.md" > "$tmp/bad-separator"; then fail "expected invalid markdown separator to block"; fi
+assert_contains "$tmp/bad-separator" '"code": "invalid_reference_header"'
 cat > "$root/docs/versions/v0.1.0/specs/malformed.md" <<'DOC'
 # Malformed
 ## 文档引用

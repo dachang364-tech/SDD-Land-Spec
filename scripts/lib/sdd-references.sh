@@ -6,7 +6,7 @@ from pathlib import Path
 H=["关系","当前范围","目标文档","目标标识","说明"]; E=["未声明。","-","-","-","-"]
 R={"references","derives_from","implements","modifies","replaces","deprecates"}; S={"modifies","replaces","deprecates"}
 K=("依据","来源","派生","修改","替代","决策","实现","implements","modifies","replaces","derives_from")
-L=re.compile(r"\[([^\]]+)\]\(([^)]+)\)"); V=re.compile(r"^(v\d+\.\d+\.\d+):(.+\.md)$"); P=re.compile(r"^project:(requirements/.+\.md)$")
+L=re.compile(r"\[([^\]]+)\]\(([^)]+)\)"); V=re.compile(r"^(v\d+\.\d+\.\d+):(.+\.md)$"); P=re.compile(r"^project:(requirements/.+\.md)$"); SEP=re.compile(r"^:?-{3,}:?$")
 def canonical_relative_path(path):
  return path.endswith(".md") and all(part not in {"", ".", ".."} for part in path.split("/"))
 def version_locator(s):
@@ -30,6 +30,9 @@ def kind(p):
  if p.endswith("/archive/INDEX.md"):return "index"
  return "other"
 def cells(line):return [x.strip() for x in line.strip()[1:-1].split("|")] if line.strip().startswith("|") and line.strip().endswith("|") else None
+def separator(line):
+ cs=cells(line)
+ return cs is not None and len(cs)==5 and all(SEP.fullmatch(cell) for cell in cs)
 def table(text):
  lines=text.splitlines(); start=next((i for i,x in enumerate(lines) if x.strip()=="## 文档引用"),None)
  if start is None:raise ValueError("missing_reference_table")
@@ -38,7 +41,7 @@ def table(text):
   if x.startswith("## "):break
   if x.strip().startswith("|"):raw.append(x)
   elif raw and x.strip():break
- if len(raw)<3 or cells(raw[0])!=H or len(cells(raw[1]) or [])!=5:raise ValueError("invalid_reference_header")
+ if len(raw)<3 or cells(raw[0])!=H or not separator(raw[1]):raise ValueError("invalid_reference_header")
  rows=[cells(x) for x in raw[2:]]
  if any(x is None or len(x)!=5 for x in rows):raise ValueError("invalid_reference_row")
  if rows==[E]:rows=[]
@@ -74,6 +77,10 @@ def validate(root,source):
   if x["source_type"]=="plan" and rel in S:out.append(diag("blocking","plan_strong_relation",sr,original,res,"plan cannot use strong relation"))
   if not x["link_text"]:out.append(diag("blocking","target_not_markdown_link",sr,reason="目标文档 must be Markdown link"));continue
   if rk=="unsafe":out.append(diag("blocking","unsafe_path",sr,original,res,"normalized path escapes project root"));continue
+  if loc!="-":
+   lp=locator(root,loc)
+   if lp is None:out.append(diag("blocking","invalid_locator",sr,original,res,"invalid locator format"))
+   elif rk=="skip":out.append(diag("blocking","locator_without_local_markdown_target",sr,original,res,"non-local target must use locator '-'"));continue
   if rk=="skip":continue
   declared.add(res); rp=(Path(root)/res).resolve()
   if not rp.is_file():out.append(diag("blocking","missing_target",sr,original,res,"local Markdown target does not exist"))
@@ -82,9 +89,7 @@ def validate(root,source):
   if cross and not version_locator(loc):out.append(diag("blocking","missing_version_locator",sr,original,res,"cross-version locator required"))
   if project and not project_locator(loc):out.append(diag("blocking","missing_project_locator",sr,original,res,"project locator required"))
   if loc!="-":
-   lp=locator(root,loc)
-   if lp is None:out.append(diag("blocking","invalid_locator",sr,original,res,"invalid locator format"))
-   elif lp!=rp:out.append(diag("blocking","locator_mismatch",sr,original,res,"link and locator differ"))
+   if lp!=rp:out.append(diag("blocking","locator_mismatch",sr,original,res,"link and locator differ"))
    elif not cross and not project:out.append(diag("warning","same_version_locator",sr,original,res,"same-version locator is unnecessary"))
   if x["target_type"] not in A.get(x["source_type"],set()):
    if rel in S:out.append(diag("blocking","direction_matrix_strong",sr,original,res,"matrix-external strong relation"))

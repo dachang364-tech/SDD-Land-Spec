@@ -5,9 +5,30 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="$(cd "$script_dir/../.." && pwd)"
 . "$root_dir/scripts/lib/sdd-common.sh"
 
+normalize_target_path() {
+  local raw="$1"
+  python3 - "$PWD" "$raw" <<'PY'
+import os
+import sys
+root = os.path.realpath(sys.argv[1])
+raw = sys.argv[2]
+if os.path.isabs(raw):
+    path = os.path.realpath(raw)
+else:
+    path = os.path.realpath(os.path.join(root, raw))
+try:
+    rel = os.path.relpath(path, root)
+except ValueError:
+    print(path)
+    sys.exit(0)
+print(rel)
+PY
+}
+
 target_path="$(sdd_json_target_path)"
 [[ -n "$target_path" ]] || exit 0
 
+target_path="$(normalize_target_path "$target_path")"
 target_path="${target_path#./}"
 
 plan_requires_approved_spec() {
