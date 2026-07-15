@@ -86,7 +86,6 @@ def validate(root,source):
    if lp is None:out.append(diag("blocking","invalid_locator",sr,original,res,"invalid locator format"))
    elif lp!=rp:out.append(diag("blocking","locator_mismatch",sr,original,res,"link and locator differ"))
    elif not cross and not project:out.append(diag("warning","same_version_locator",sr,original,res,"same-version locator is unnecessary"))
-  if x["source_type"]=="plan" and rel in S:out.append(diag("blocking","plan_strong_relation",sr,original,res,"plan cannot use strong relation"))
   if x["target_type"] not in A.get(x["source_type"],set()):
    if rel in S:out.append(diag("blocking","direction_matrix_strong",sr,original,res,"matrix-external strong relation"))
    elif rel=="references" and x["note"].strip():out.append(diag("warning","direction_matrix_weak",sr,original,res,"matrix-external weak relation"))

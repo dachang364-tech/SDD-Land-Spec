@@ -51,6 +51,7 @@ cat > "$root/docs/versions/v0.1.0/plans/001-bad.md" <<'DOC'
 DOC
 if scripts/lib/sdd-references.sh validate "$root" "$root/docs/versions/v0.1.0/plans/001-bad.md" > "$tmp/bad"; then fail "expected blocking failure"; fi
 for code in invalid_relation plan_strong_relation locator_mismatch unsafe_path short_note body_link_not_declared; do assert_contains "$tmp/bad" "\"code\": \"$code\""; done
+[[ "$(grep -c '"code": "plan_strong_relation"' "$tmp/bad")" == 1 ]] || fail "expected one plan strong diagnostic for a resolvable local Markdown target"
 assert_contains "$tmp/bad" '"source": "docs/versions/v0.1.0/plans/001-bad.md"'
 assert_contains "$tmp/bad" '"original": "../../v0.2.0/specs/old.md"'
 assert_contains "$tmp/bad" '"resolved": "docs/versions/v0.2.0/specs/old.md"'
