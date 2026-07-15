@@ -12,6 +12,9 @@ def canonical_relative_path(path):
 def version_locator(s):
  m=V.fullmatch(s)
  return m if m and canonical_relative_path(m.group(2)) else None
+def project_locator(s):
+ m=P.fullmatch(s)
+ return m if m and canonical_relative_path(m.group(1)) else None
 A={"requirements":{"requirements"},"prd":{"requirements","prd","spec","dr"},"spec":{"prd","requirements","dr","spec"},"plan":{"spec","dr","plan"},"dr":{"requirements","prd","spec","plan","dr"}}
 def relative(root,p):
  try:return Path(p).resolve().relative_to(Path(root).resolve()).as_posix()
@@ -51,7 +54,7 @@ def resolve(root,source,original):
 def locator(root,s):
  m=version_locator(s)
  if m:return (Path(root)/"docs/versions"/m.group(1)/m.group(2)).resolve()
- m=P.fullmatch(s)
+ m=project_locator(s)
  return (Path(root)/"docs"/m.group(1)).resolve() if m else None
 def parse(root,source):
  text=Path(source).read_text(encoding="utf-8"); rows,region=table(text); out=[]
@@ -68,6 +71,7 @@ def validate(root,source):
  for x in rows:
   rel,loc,original,res,rk=x["relation"],x["locator"],x["original"],x["resolved"],x["resolution_kind"]
   if rel not in R:out.append(diag("blocking","invalid_relation",sr,original,res,"relation outside enum"))
+  if x["source_type"]=="plan" and rel in S:out.append(diag("blocking","plan_strong_relation",sr,original,res,"plan cannot use strong relation"))
   if not x["link_text"]:out.append(diag("blocking","target_not_markdown_link",sr,reason="目标文档 must be Markdown link"));continue
   if rk=="unsafe":out.append(diag("blocking","unsafe_path",sr,original,res,"normalized path escapes project root"));continue
   if rk=="skip":continue
@@ -76,7 +80,7 @@ def validate(root,source):
   sv=next((p for p in Path(sr).parts if re.fullmatch(r"v\d+\.\d+\.\d+",p)),None); tv=next((p for p in Path(res).parts if re.fullmatch(r"v\d+\.\d+\.\d+",p)),None)
   cross=bool(sv and tv and sv!=tv); project=res.startswith("docs/requirements/")
   if cross and not version_locator(loc):out.append(diag("blocking","missing_version_locator",sr,original,res,"cross-version locator required"))
-  if project and not P.fullmatch(loc):out.append(diag("blocking","missing_project_locator",sr,original,res,"project locator required"))
+  if project and not project_locator(loc):out.append(diag("blocking","missing_project_locator",sr,original,res,"project locator required"))
   if loc!="-":
    lp=locator(root,loc)
    if lp is None:out.append(diag("blocking","invalid_locator",sr,original,res,"invalid locator format"))
@@ -106,7 +110,7 @@ def extract(root,v,cross_file,strong_file):
   except ValueError:bad=True;continue
   for x in rows:
    display=Path(x["source"]).relative_to(Path("docs/versions")/version).as_posix()
-   if version_locator(x["locator"]) or P.fullmatch(x["locator"]):cross.append(f'| {display} | {x["relation"]} | {x["target_markdown"]} | {x["locator"]} | {x["note"]} |')
+   if version_locator(x["locator"]) or project_locator(x["locator"]):cross.append(f'| {display} | {x["relation"]} | {x["target_markdown"]} | {x["locator"]} | {x["note"]} |')
    elif x["relation"] in S:strong.append(f'| {display} | {x["relation"]} | {x["target_markdown"]} | {x["note"]} |')
  if bad:
   cross=["| 未能机械提取；请查看原始文档。 | - | - | - | - |"]

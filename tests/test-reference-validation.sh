@@ -65,6 +65,17 @@ DOC
 scripts/lib/sdd-references.sh validate "$root" "$root/docs/versions/v0.1.0/prd.md" > "$tmp/matrix"
 assert_contains "$tmp/matrix" '"code": "direction_matrix_weak"'
 assert_contains "$tmp/matrix" '"level": "warning"'
+cat > "$root/docs/versions/v0.1.0/plans/strong-unresolvable.md" <<'DOC'
+# Strong unresolvable references
+## 文档引用
+| 关系 | 当前范围 | 目标文档 | 目标标识 | 说明 |
+| ---- | -------- | -------- | -------- | ---- |
+| modifies | 外链目标 | [site](https://example.com) | - | plan 不得修改外部目标 |
+| replaces | 非 Markdown 目标 | [code](../../../src/app.ts) | - | plan 不得替代非文档目标 |
+| deprecates | 越界目标 | [escape.md](../../../../outside.md) | - | plan 不得废弃越界目标 |
+DOC
+if scripts/lib/sdd-references.sh validate "$root" "$root/docs/versions/v0.1.0/plans/strong-unresolvable.md" > "$tmp/strong-unresolvable"; then fail "expected unresolvable plan strong relations to block"; fi
+[[ "$(grep -c '"code": "plan_strong_relation"' "$tmp/strong-unresolvable")" == 3 ]] || fail "expected every unresolvable plan strong relation to block"
 for locator in \
   'v0.2.0:specs/../specs/old.md' \
   'v0.2.0:specs/./old.md' \
@@ -79,6 +90,21 @@ for locator in \
 DOC
   if scripts/lib/sdd-references.sh validate "$root" "$root/docs/versions/v0.1.0/specs/invalid-locator.md" > "$tmp/invalid-locator"; then fail "expected invalid version locator to block: $locator"; fi
   assert_contains "$tmp/invalid-locator" '"code": "invalid_locator"'
+done
+for locator in \
+  'project:requirements/../requirements/rules.md' \
+  'project:requirements/./rules.md' \
+  'project:requirements//rules.md' \
+  'project:requirements/../../versions/v0.1.0/prd.md'; do
+  cat > "$root/docs/versions/v0.1.0/specs/invalid-project-locator.md" <<DOC
+# Invalid project locator
+## 文档引用
+| 关系 | 当前范围 | 目标文档 | 目标标识 | 说明 |
+| ---- | -------- | -------- | -------- | ---- |
+| derives_from | 业务约束 | [rules.md](../../../requirements/rules.md) | $locator | locator 含有非规范 requirements 路径段 |
+DOC
+  if scripts/lib/sdd-references.sh validate "$root" "$root/docs/versions/v0.1.0/specs/invalid-project-locator.md" > "$tmp/invalid-project-locator"; then fail "expected invalid project locator to block: $locator"; fi
+  assert_contains "$tmp/invalid-project-locator" '"code": "invalid_locator"'
 done
 scripts/lib/sdd-references.sh extract-archive "$root" "$root/docs/versions/v0.1.0" "$tmp/cross" "$tmp/strong"
 assert_contains "$tmp/cross" 'v0.2.0:specs/old.md'
