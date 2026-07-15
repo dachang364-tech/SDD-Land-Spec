@@ -9,11 +9,16 @@ done
 
 assert_contains "skills/init/SKILL.md" "description: Initialize SDD project structure"
 assert_contains "skills/init/SKILL.md" "docs/CONSTITUTION.md 已存在"
-assert_contains "skills/init/SKILL.md" "不要创建 .sdd/state.json"
+assert_contains "skills/init/SKILL.md" "docs/versions/"
+assert_contains "skills/init/SKILL.md" "不创建任何版本目录或版本级 state.json"
+assert_contains "skills/init/SKILL.md" "允许处于 0 active version 状态"
 
 assert_contains "skills/new/SKILL.md" "description: Create the unique active SDD version directory"
 assert_contains "skills/new/SKILL.md" "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
-assert_contains "skills/new/SKILL.md" "docs/vX.Y.Z/specs/"
+assert_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/state.json"
+assert_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/specs/"
+assert_contains "skills/new/SKILL.md" '"state": "active"'
+assert_contains "skills/new/SKILL.md" "扫描 docs/versions/v*/state.json"
 
 assert_contains "skills/research/SKILL.md" "description: Create project-level SDD research notes"
 assert_file_exists "skills/research/references/research.md.tmpl"
