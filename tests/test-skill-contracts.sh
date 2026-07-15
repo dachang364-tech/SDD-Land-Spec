@@ -33,6 +33,20 @@ assert_contains "skills/prd/references/prd.md.tmpl" "| 关系 | 当前范围 | �
 assert_contains "skills/prd/references/prd.md.tmpl" "| 未声明。 | - | - | - | - |"
 assert_contains "skills/prd/references/prd.md.tmpl" "## 7. 上游需求资料"
 
+assert_not_contains() {
+  local path="$1"
+  local needle="$2"
+  ! grep -Fq -- "$needle" "$path" || fail "expected $path not to contain: $needle"
+}
+
+for template in \
+  "skills/prd/references/prd.md.tmpl" \
+  "skills/spec/references/spec.md.tmpl" \
+  "skills/plan/references/plan.md.tmpl" \
+  "skills/dr/references/dr.md.tmpl"; do
+  assert_not_contains "$template" "path/to/"
+done
+
 assert_contains "skills/spec/SKILL.md" "description: Create or revise the functional specification"
 assert_contains "skills/spec/SKILL.md" "DR Advanced 增量约束"
 assert_contains "skills/spec/SKILL.md" '如果来自 `/sdd:triage` 的用户选择'
