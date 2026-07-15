@@ -42,19 +42,33 @@ sdd_state_field() {
     printf 'state 文件不存在：%s\n' "$state_file" >&2
     return 2
   fi
-  if command -v python3 >/dev/null 2>&1; then
-    python3 -c 'import json,sys
-try:
-    data=json.load(open(sys.argv[1]))
-except Exception:
-    sys.exit(3)
-if sys.argv[2] not in data:
-    sys.exit(4)
-v=data[sys.argv[2]]
-print("null" if v is None else v)' "$state_file" "$field"
-  else
-    sed -n "s/.*\"$field\"[[:space:]]*:[[:space:]]*\"\{0,1\}\([^\",}]*\)\"\{0,1\}.*/\1/p" "$state_file" | head -n 1
+  if ! command -v python3 >/dev/null 2>&1; then
+    printf '需要 python3 以读取 state.json：%s\n' "$state_file" >&2
+    return 2
   fi
+
+  python3 - "$state_file" "$field" <<'PY'
+import json
+import sys
+
+state_file, field = sys.argv[1:]
+try:
+    with open(state_file, encoding="utf-8") as handle:
+        data = json.load(handle)
+except (OSError, json.JSONDecodeError):
+    print(f"state.json 无法解析：{state_file}", file=sys.stderr)
+    sys.exit(3)
+
+if not isinstance(data, dict):
+    print(f"state.json 无法解析：{state_file}", file=sys.stderr)
+    sys.exit(3)
+if field not in data:
+    print(f"state.json 缺少字段：{field}（{state_file}）", file=sys.stderr)
+    sys.exit(4)
+
+value = data[field]
+print("null" if value is None else value)
+PY
 }
 
 sdd_active_version_dir() {

@@ -21,6 +21,22 @@ state="$(sdd_state_field "$tmp/valid/docs/versions/v0.1.0/state.json" state)"
 version="$(sdd_state_field "$tmp/valid/docs/versions/v0.1.0/state.json" version)"
 [[ "$version" == "v0.1.0" ]] || fail "expected v0.1.0, got $version"
 
+if PATH=/nonexistent sdd_state_field "$tmp/valid/docs/versions/v0.1.0/state.json" state >/tmp/sdd-missing-python.out 2>/tmp/sdd-missing-python.err; then
+  fail "expected missing python3 to fail"
+fi
+assert_contains "/tmp/sdd-missing-python.err" "需要 python3"
+
+printf '{ invalid json\n' > "$tmp/invalid-state.json"
+if sdd_state_field "$tmp/invalid-state.json" state >/tmp/sdd-invalid-json.out 2>/tmp/sdd-invalid-json.err; then
+  fail "expected invalid JSON to fail"
+fi
+assert_contains "/tmp/sdd-invalid-json.err" "state.json 无法解析"
+
+if sdd_state_field "$tmp/valid/docs/versions/v0.1.0/state.json" missing_field >/tmp/sdd-missing-field.out 2>/tmp/sdd-missing-field.err; then
+  fail "expected missing state field to fail"
+fi
+assert_contains "/tmp/sdd-missing-field.err" "state.json 缺少字段"
+
 number="$(sdd_next_plan_number "$tmp/valid/docs/versions/v0.1.0/plans")"
 [[ "$number" == "002" ]] || fail "expected next plan 002, got $number"
 
