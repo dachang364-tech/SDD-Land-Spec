@@ -3,9 +3,11 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 . tests/test-common.sh
 
+plugin_version="$(sdd_plugin_version .claude-plugin/plugin.json)"
+
 assert_file_exists ".claude-plugin/plugin.json"
 assert_contains ".claude-plugin/plugin.json" '"name": "sdd"'
-assert_contains ".claude-plugin/plugin.json" '"version": "0.2.0"'
+assert_contains ".claude-plugin/plugin.json" "\"version\": \"$plugin_version\""
 assert_file_exists ".claude-plugin/marketplace.json"
 assert_contains ".claude-plugin/marketplace.json" '"name": "sdd-local"'
 assert_contains ".claude-plugin/marketplace.json" '"name": "sdd"'
