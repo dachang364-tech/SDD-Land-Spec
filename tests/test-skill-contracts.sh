@@ -201,6 +201,10 @@ assert_contains "skills/doctor/SKILL.md" "旧草案结构"
 assert_contains "skills/doctor/SKILL.md" "docs/vX.Y.Z/"
 assert_contains "skills/doctor/SKILL.md" "## 文档引用"
 assert_contains "skills/doctor/SKILL.md" "docs/archive/INDEX.md"
+assert_contains "skills/doctor/SKILL.md" "scripts/lib/sdd-references.sh"
+assert_contains "skills/doctor/SKILL.md" "sdd_refs_validate <project-root> <source.md>"
+assert_contains "skills/doctor/SKILL.md" "blocking"
+assert_contains "skills/doctor/SKILL.md" "warning"
 
 assert_contains "skills/archive/SKILL.md" "description: Archive the current active SDD version"
 assert_contains "skills/archive/SKILL.md" '所有 `plans/*.md` 状态为 `done`'

@@ -84,13 +84,21 @@ spec-kit
 - `docs/archive/INDEX.md` has at most one row per archived version, linking to `../versions/vX.Y.Z/ARCHIVE.md`.
 - `INDEX.md` must not link to concrete spec/plan/DR/requirements.
 
-## 8. Reference tables (lightweight)
+## 8. Reference tables
 
-- For existing PRD, spec, plan, DR in the active version:
-  - Check the `## 文档引用` table exists.
-  - Check the 5-column header `关系`, `当前范围`, `目标文档`, `目标标识`, `说明`.
-  - Check relation values are in the enum.
-  - Check cross-version references have version locators; project-level requirements references have `project:` locators.
+Only when exactly 1 active version exists:
+
+1. Load `scripts/lib/sdd-references.sh`.
+2. Enumerate each existing `prd.md`, `specs/*.md`, `plans/*.md`, and `decisions/*.md` in that active-version directory.
+3. For every enumerated source, call `sdd_refs_validate <project-root> <source.md>`.
+4. Consume every JSONL diagnostic emitted by the helper. Report diagnostics with `level: "blocking"` as `ERROR`, diagnostics with `level: "warning"` as `WARNING`, and retain the helper diagnostic code, source, and reason in the report.
+5. If the helper exits non-zero because it emitted `blocking` diagnostics, continue checking the remaining documents; `/sdd:doctor` remains read-only.
+
+The helper owns the reference-table contract, including:
+
+- the `## 文档引用` table and its 5-column header `关系`, `当前范围`, `目标文档`, `目标标识`, `说明`;
+- relation enum validity;
+- cross-version locators and project-level requirements `project:` locators.
 
 ## Output rules
 

@@ -12,7 +12,7 @@ description: Show current SDD version status and next-step guidance. Use for /sd
 1. Read `docs/CONSTITUTION.md`; if missing, report the project is not initialized, suggest `/sdd:init`, then stop.
 2. Check `docs/versions/` exists; if missing, report incomplete structure, suggest `/sdd:init` or `/sdd:doctor`, then stop.
 3. 扫描 docs/versions/v*/state.json。
-4. If any version directory is missing `state.json`, has unparseable JSON, a `version` mismatch, or an illegal `state`, report a consistency error, suggest `/sdd:doctor`, then stop.
+4. If any version directory is missing `state.json`, has unparseable JSON, is missing required `version`, `state`, `created_at`, or `archived_at` fields, has a `version` mismatch, has an illegal `state`, or violates the active/archived `archived_at` rule, report a consistency error, suggest `/sdd:doctor`, then stop.
 5. If 0 active version:
    - 输出项目已初始化。
    - 输出 `Active version：未发现`。
