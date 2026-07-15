@@ -70,28 +70,22 @@ assert_contains "skills/spec/SKILL.md" 'code-class DR 必须保持 `accepted`'
 assert_contains "skills/spec/SKILL.md" "不再使用独立 `## 关联 DRs`"
 
 assert_contains "skills/plan/SKILL.md" "description: Create an implementation plan from approved spec or accepted code-class DR"
-assert_contains "skills/plan/SKILL.md" "DR Advanced 增量约束"
-assert_contains "skills/plan/SKILL.md" '如果来自 `/sdd:triage` 的用户选择'
-assert_contains "skills/plan/SKILL.md" "^(fix|feat|chg|arch)-[0-9]{4}-[a-z0-9-]+$"
-assert_contains "skills/plan/SKILL.md" "文档类 DR 不生成 Implementation Plan"
-assert_contains "skills/plan/SKILL.md" "Technical Planning Dialogue"
-assert_contains "skills/plan/SKILL.md" 'plan_required: yes'
-assert_contains "skills/plan/SKILL.md" 'DR `plan_required: yes`'
-assert_contains "skills/plan/SKILL.md" 'DR `class` is `code`'
-assert_contains "skills/plan/SKILL.md" 'DR `plan_required: no`'
-assert_contains "skills/plan/SKILL.md" 'use `/sdd:code <id>` for eligible lightweight fix DRs'
+assert_contains "skills/plan/SKILL.md" "docs/versions/vX.Y.Z/plans/NNN-<slug>.md"
+assert_contains "skills/plan/SKILL.md" "docs/versions/vX.Y.Z/plans/NNN-<dr-id>.md"
+assert_contains "skills/plan/SKILL.md" "扫描 docs/versions/v*/state.json"
+assert_contains "skills/plan/SKILL.md" "## 文档引用"
+assert_contains "skills/plan/SKILL.md" 'plan 引用 spec 时，关系应为 `implements`'
+assert_contains "skills/plan/SKILL.md" '不得使用 `modifies`、`replaces`、`deprecates`'
+assert_contains "skills/plan/SKILL.md" "Self-Review"
 assert_file_exists "skills/plan/references/plan.md.tmpl"
 assert_contains "skills/plan/references/plan.md.tmpl" "## 文档引用"
-assert_contains "skills/plan/references/plan.md.tmpl" "| 关系 | 当前范围 | 目标文档 | 目标标识 | 说明 |"
-assert_contains "skills/plan/references/plan.md.tmpl" "| 未声明。 | - | - | - | - |"
 assert_contains "skills/plan/references/plan.md.tmpl" "## 6. Implementation Tasks"
 assert_contains "skills/plan/references/plan.md.tmpl" "## 7. Self-Review"
-assert_contains "skills/plan/SKILL.md" '写入 `关联 DR` 时，使用 Markdown 链接格式'
-assert_contains "skills/plan/SKILL.md" "[<dr-id>](../decisions/<dr-id>.md)"
 
 assert_contains "skills/code/SKILL.md" "description: Execute an SDD implementation plan or eligible lightweight fix DR"
-assert_contains "skills/code/SKILL.md" "DR Advanced 增量约束"
-assert_contains "skills/code/SKILL.md" '如果来自 `/sdd:triage` 的用户选择'
+assert_contains "skills/code/SKILL.md" "docs/versions/vX.Y.Z/plans/NNN-*.md"
+assert_contains "skills/code/SKILL.md" "扫描 docs/versions/v*/state.json"
+assert_contains "skills/code/SKILL.md" '基于 `## 文档引用` 验证 plan'
 assert_contains "skills/code/SKILL.md" '高质量模式：`superpowers:subagent-driven-development`'
 assert_contains "skills/code/SKILL.md" '快速模式：`superpowers:executing-plans`'
 assert_contains "skills/code/SKILL.md" 'plan 状态从 `planned` 切换为 `coding`'
@@ -100,15 +94,16 @@ assert_contains "skills/code/SKILL.md" "verification passes"
 assert_contains "skills/code/SKILL.md" 'code_required: yes'
 assert_contains "skills/code/SKILL.md" 'associated DR remains accepted'
 assert_contains "skills/code/SKILL.md" 'closed_reason: committed'
-assert_contains "skills/code/SKILL.md" "plan execution mode for a matched Implementation Plan"
-assert_contains "skills/code/SKILL.md" "lightweight fix DR mode for an eligible accepted fix DR without a matching plan"
-assert_contains "skills/code/SKILL.md" "do not require locating a plan and do not require or change plan status"
 assert_contains "skills/code/SKILL.md" "If input matches a code-class DR id"
 assert_contains "skills/code/SKILL.md" "plan_required: no"
 assert_contains "skills/code/SKILL.md" 'use lightweight fix DR mode only when DR `tag` is `fix` and `plan_required: no`'
 assert_contains "skills/code/SKILL.md" "lightweight fix DR"
 assert_contains "skills/code/SKILL.md" "no plan status is changed"
 assert_contains "skills/code/SKILL.md" "DR remains accepted"
+
+assert_contains "skills/triage/SKILL.md" "扫描 docs/versions/v*/state.json"
+assert_contains "skills/triage/SKILL.md" "reference issue"
+assert_contains "skills/triage/SKILL.md" "关联 DRs"
 
 assert_contains "skills/dr/SKILL.md" "description: Create, accept, or dismiss SDD decision records"
 assert_contains "skills/dr/SKILL.md" "fix | feat | chg | arch | spec | doc | typo"
@@ -173,10 +168,10 @@ assert_contains "skills/triage/SKILL.md" "unclear, needs user choice"
 assert_contains "skills/triage/SKILL.md" "置信度：low | medium | high"
 assert_contains "skills/triage/SKILL.md" "已读取依据"
 assert_contains "skills/triage/SKILL.md" "请确认你要走哪条路径。"
-assert_contains "skills/triage/SKILL.md" "explain only -> no DR"
-assert_contains "skills/triage/SKILL.md" "fix DR -> code -> verification"
-assert_contains "skills/triage/SKILL.md" "fix DR -> plan -> code -> verification"
-assert_contains "skills/triage/SKILL.md" "new feat/chg DR -> spec -> plan -> code -> verification"
+assert_contains "skills/triage/SKILL.md" "explain only，不创建 DR"
+assert_contains "skills/triage/SKILL.md" "/sdd:dr fix <title>"
+assert_contains "skills/triage/SKILL.md" "/sdd:plan <id>"
+assert_contains "skills/triage/SKILL.md" "/sdd:dr feat|chg <title>"
 
 assert_contains "README.md" "/sdd:triage"
 assert_contains "README.md" "用户疑问分诊"
