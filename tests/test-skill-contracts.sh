@@ -184,13 +184,23 @@ assert_contains "README.md" "Markdown 链接"
 assert_contains "README.md" "最终由用户选择"
 
 assert_contains "skills/status/SKILL.md" "description: Show current SDD version status and next-step guidance"
-assert_contains "skills/status/SKILL.md" "展示当前版本状态与下一步建议"
+assert_contains "skills/status/SKILL.md" "扫描 docs/versions/v*/state.json"
+assert_contains "skills/status/SKILL.md" "Active version：未发现"
+assert_contains "skills/status/SKILL.md" "/sdd:new vX.Y.Z"
+assert_contains "skills/status/SKILL.md" "发现多个 active version"
 
 assert_contains "skills/doctor/SKILL.md" "description: Diagnose SDD plugin installation and project consistency"
 assert_contains "skills/doctor/SKILL.md" 'At execution start, read `docs/CONSTITUTION.md`.'
-assert_contains "skills/doctor/SKILL.md" 'suggest running `/sdd:init`'
-assert_contains "skills/doctor/SKILL.md" ".claude-plugin/plugin.json"
-assert_contains "skills/doctor/SKILL.md" "done 的代码类 DR plan 对应 DR 是否仍 accepted"
+assert_contains "skills/doctor/SKILL.md" "skills/triage/SKILL.md"
+assert_contains "skills/doctor/SKILL.md" "skills/research/SKILL.md"
+assert_contains "skills/doctor/SKILL.md" "scripts/lib/sdd-common.sh"
+assert_contains "skills/doctor/SKILL.md" "scripts/hooks/pre-tool-use.sh"
+assert_contains "skills/doctor/SKILL.md" "docs/versions/"
+assert_contains "skills/doctor/SKILL.md" "state.json.version 必须等于版本目录名"
+assert_contains "skills/doctor/SKILL.md" "旧草案结构"
+assert_contains "skills/doctor/SKILL.md" "docs/vX.Y.Z/"
+assert_contains "skills/doctor/SKILL.md" "## 文档引用"
+assert_contains "skills/doctor/SKILL.md" "docs/archive/INDEX.md"
 
 assert_contains "skills/archive/SKILL.md" "description: Archive the current active SDD version"
 assert_contains "skills/archive/SKILL.md" '所有 `plans/*.md` 状态为 `done`'
