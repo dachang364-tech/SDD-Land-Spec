@@ -65,8 +65,33 @@ DOC
 scripts/lib/sdd-references.sh validate "$root" "$root/docs/versions/v0.1.0/prd.md" > "$tmp/matrix"
 assert_contains "$tmp/matrix" '"code": "direction_matrix_weak"'
 assert_contains "$tmp/matrix" '"level": "warning"'
+for locator in \
+  'v0.2.0:specs/../specs/old.md' \
+  'v0.2.0:specs/./old.md' \
+  'v0.2.0:specs//old.md' \
+  'v0.2.0:../v0.1.0/specs/good.md'; do
+  cat > "$root/docs/versions/v0.1.0/specs/invalid-locator.md" <<DOC
+# Invalid locator
+## 文档引用
+| 关系 | 当前范围 | 目标文档 | 目标标识 | 说明 |
+| ---- | -------- | -------- | -------- | ---- |
+| references | 历史规则 | [old.md](../../v0.2.0/specs/old.md) | $locator | locator 含有非规范路径段 |
+DOC
+  if scripts/lib/sdd-references.sh validate "$root" "$root/docs/versions/v0.1.0/specs/invalid-locator.md" > "$tmp/invalid-locator"; then fail "expected invalid version locator to block: $locator"; fi
+  assert_contains "$tmp/invalid-locator" '"code": "invalid_locator"'
+done
 scripts/lib/sdd-references.sh extract-archive "$root" "$root/docs/versions/v0.1.0" "$tmp/cross" "$tmp/strong"
 assert_contains "$tmp/cross" 'v0.2.0:specs/old.md'
 assert_contains "$tmp/cross" 'project:requirements/rules.md'
 assert_contains "$tmp/strong" '| plans/001-bad.md | modifies | [good.md](../specs/good.md) | plan 不得修改契约 |'
+cat > "$root/docs/versions/v0.1.0/specs/malformed.md" <<'DOC'
+# Malformed
+## 文档引用
+| 关系 | 当前范围 | 目标文档 | 目标标识 |
+| ---- | -------- | -------- | -------- |
+| references | 缺失列 | [old.md](../../v0.2.0/specs/old.md) | v0.2.0:specs/old.md |
+DOC
+scripts/lib/sdd-references.sh extract-archive "$root" "$root/docs/versions/v0.1.0" "$tmp/mixed-cross" "$tmp/mixed-strong"
+assert_contains "$tmp/mixed-cross" '| 未能机械提取；请查看原始文档。 | - | - | - | - |'
+assert_contains "$tmp/mixed-strong" '| 未能机械提取；请查看原始文档。 | - | - | - |'
 printf 'PASS: reference validation\n'
