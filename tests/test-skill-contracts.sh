@@ -207,8 +207,17 @@ assert_contains "skills/doctor/SKILL.md" "blocking"
 assert_contains "skills/doctor/SKILL.md" "warning"
 
 assert_contains "skills/archive/SKILL.md" "description: Archive the current active SDD version"
-assert_contains "skills/archive/SKILL.md" '所有 `plans/*.md` 状态为 `done`'
-assert_contains "skills/archive/SKILL.md" "docs/vX.Y.Z/ → docs/archive/vX.Y.Z/"
+assert_contains "skills/archive/SKILL.md" "不移动版本目录"
+assert_contains "skills/archive/SKILL.md" "docs/versions/vX.Y.Z/ARCHIVE.md"
+assert_contains "skills/archive/SKILL.md" "docs/archive/INDEX.md"
+assert_contains "skills/archive/SKILL.md" '所有 `specs/*.md` 的 Markdown 头部状态必须为 `approved`'
+assert_contains "skills/archive/SKILL.md" '所有 `plans/*.md` 的 Markdown 头部状态必须为 `done`'
+assert_contains "skills/archive/SKILL.md" '所有 `decisions/*.md` 的 Markdown 头部状态必须为 `closed`'
+assert_contains "skills/archive/SKILL.md" '"state": "archived"'
+assert_contains "skills/archive/SKILL.md" "## 6. 文档引用摘要"
+assert_contains "skills/archive/SKILL.md" 'prd.md` 缺失不阻止归档'
+assert_contains "skills/archive/SKILL.md" '只从 `## 文档引用` 表机械提取'
+assert_contains "skills/archive/SKILL.md" "../versions/vX.Y.Z/ARCHIVE.md"
 
 assert_contains "README.md" "class / spec_change / plan_required / code_required"
 assert_contains "README.md" "spec-changing code-class DR"
