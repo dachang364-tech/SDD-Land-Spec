@@ -70,7 +70,8 @@ Generate a new incremental Implementation Plan under `docs/versions/vX.Y.Z/plans
 - plan 引用 spec 时，关系应为 `implements`。
 - plan 引用 code-class DR 时，关系应为 `implements`。
 - plan 引用其他 plan、历史 plan 或历史 DR 作为背景时，关系可为 `references`。
-- 引用旧版本 plan 或旧版本 DR 时，必须同时写相对 Markdown link 和版本 locator。
+- 引用同版本文档时，只写相对 Markdown link，不写版本 locator。
+- 引用跨版本文档时，必须同时写相对 Markdown link 和版本 locator，例如 `v0.2.0:plans/001-archive.md`。
 - plan 不得使用 `modifies`、`replaces`、`deprecates`。
 - 如果发现需要改变功能契约，停止当前 plan 生成流程，先创建或修订 DR / spec。
 

@@ -79,6 +79,10 @@ assert_contains "skills/plan/SKILL.md" '不得使用 `modifies`、`replaces`、`
 assert_contains "skills/plan/SKILL.md" "Self-Review"
 assert_file_exists "skills/plan/references/plan.md.tmpl"
 assert_contains "skills/plan/references/plan.md.tmpl" "## 文档引用"
+assert_contains "skills/plan/references/plan.md.tmpl" "| 关系 | 当前范围 | 目标文档 | 目标标识 | 说明 |"
+assert_contains "skills/plan/references/plan.md.tmpl" "| 未声明。 | - | - | - | - |"
+assert_contains "skills/plan/SKILL.md" "引用同版本文档时，只写相对 Markdown link，不写版本 locator。"
+assert_contains "skills/plan/SKILL.md" '引用跨版本文档时，必须同时写相对 Markdown link 和版本 locator，例如 `v0.2.0:plans/001-archive.md`。'
 assert_contains "skills/plan/references/plan.md.tmpl" "## 6. Implementation Tasks"
 assert_contains "skills/plan/references/plan.md.tmpl" "## 7. Self-Review"
 
