@@ -59,24 +59,15 @@ for template in \
 done
 
 assert_contains "skills/spec/SKILL.md" "description: Create or revise the functional specification"
-assert_contains "skills/spec/SKILL.md" "DR Advanced 增量约束"
-assert_contains "skills/spec/SKILL.md" '如果来自 `/sdd:triage` 的用户选择'
-assert_file_exists "skills/spec/references/spec.md.tmpl"
-assert_contains "skills/spec/references/spec.md.tmpl" "- 状态：draft"
+assert_contains "skills/spec/SKILL.md" "docs/versions/vX.Y.Z/specs/<spec-name>.md"
+assert_contains "skills/spec/SKILL.md" "扫描 docs/versions/v*/state.json"
+assert_contains "skills/spec/SKILL.md" "## 文档引用"
+assert_contains "skills/spec/SKILL.md" "[prd.md](../prd.md)"
+assert_contains "skills/spec/SKILL.md" "v0.2.0:specs/archive.md"
 assert_contains "skills/spec/SKILL.md" '用户确认后，将状态切换为 `approved`'
-assert_contains "skills/spec/SKILL.md" 'accepted code-class DR'
-assert_contains "skills/spec/SKILL.md" 'spec_change'
-assert_contains "skills/spec/SKILL.md" 'code-class DR 必须保持 `accepted`'
-assert_contains "skills/spec/SKILL.md" '下一步 `/sdd:plan <id>`'
-assert_contains "skills/spec/SKILL.md" 'document-class DRs may close after document revision'
-assert_contains "skills/spec/SKILL.md" 'document-class DR 不输出 `/sdd:plan` 或 `/sdd:code`'
 assert_contains "skills/spec/SKILL.md" "closed_reason: document-updated"
-assert_contains "skills/spec/SKILL.md" '写入 `关联 DR` 表格时，应使用 Markdown 链接格式'
-assert_contains "skills/spec/references/spec.md.tmpl" "## 文档引用"
-assert_contains "skills/spec/references/spec.md.tmpl" "| 关系 | 当前范围 | 目标文档 | 目标标识 | 说明 |"
-assert_contains "skills/spec/references/spec.md.tmpl" "| 未声明。 | - | - | - | - |"
-assert_contains "skills/spec/references/spec.md.tmpl" "## 9. 验收标准"
-assert_contains "skills/spec/SKILL.md" "[<dr-id>](../decisions/<dr-id>.md)"
+assert_contains "skills/spec/SKILL.md" 'code-class DR 必须保持 `accepted`'
+assert_contains "skills/spec/SKILL.md" "不再使用独立 `## 关联 DRs`"
 
 assert_contains "skills/plan/SKILL.md" "description: Create an implementation plan from approved spec or accepted code-class DR"
 assert_contains "skills/plan/SKILL.md" "DR Advanced 增量约束"
@@ -122,29 +113,28 @@ assert_contains "skills/code/SKILL.md" "DR remains accepted"
 assert_contains "skills/dr/SKILL.md" "description: Create, accept, or dismiss SDD decision records"
 assert_contains "skills/dr/SKILL.md" "fix | feat | chg | arch | spec | doc | typo"
 assert_contains "skills/dr/SKILL.md" "drafting → accepted"
-assert_contains "skills/dr/SKILL.md" "accepted 或 closed DR 不允许 dismiss"
 assert_contains "skills/dr/SKILL.md" "class"
 assert_contains "skills/dr/SKILL.md" "spec_change"
 assert_contains "skills/dr/SKILL.md" "plan_required"
 assert_contains "skills/dr/SKILL.md" "code_required"
 assert_contains "skills/dr/SKILL.md" "fix | code | no | yes | yes"
 assert_contains "skills/dr/SKILL.md" "简单实现 bug 可以由用户选择轻量 fix 流程"
-assert_contains "skills/dr/SKILL.md" 'plan_required: no`：运行 `/sdd:code <id>`'
-assert_contains "skills/dr/SKILL.md" 'after accept, next step depends on `plan_required` and may be `/sdd:plan <id>` or `/sdd:code <id>`'
+assert_contains "skills/dr/SKILL.md" "plan_required: no\`：运行 \`/sdd:code <id>\`"
+assert_contains "skills/dr/SKILL.md" "after accept, next step depends on \`plan_required\` and may be \`/sdd:plan <id>\` or \`/sdd:code <id>\`"
 assert_contains "skills/dr/SKILL.md" "feat | code | yes | yes | yes"
 assert_contains "skills/dr/SKILL.md" "chg | code | yes | yes | yes"
 assert_contains "skills/dr/SKILL.md" "arch | code | maybe | yes | yes"
 assert_contains "skills/dr/SKILL.md" "spec | document | yes | no | no"
 assert_contains "skills/dr/SKILL.md" "doc | document | maybe | no | no"
 assert_contains "skills/dr/SKILL.md" "typo | document | no | no | no"
-assert_contains "skills/dr/SKILL.md" 'spec_change: yes`：先运行 `/sdd:spec`，然后运行 `/sdd:plan <id>`'
-assert_contains "skills/dr/SKILL.md" 'spec_change: no`、`plan_required: no`：运行 `/sdd:code <id>`'
-assert_contains "skills/dr/SKILL.md" 'class: document`：运行 `/sdd:spec` 或对应文档 Skill，不进入 `/sdd:plan`'
-assert_contains "skills/dr/SKILL.md" "影响资产"
-assert_contains "skills/dr/SKILL.md" "使用 Markdown 链接格式"
-assert_contains "skills/dr/SKILL.md" "[spec.md](../specs/spec.md)"
-assert_contains "skills/dr/SKILL.md" "[<plan-file>.md](../plans/<plan-file>.md)"
-assert_contains "skills/dr/SKILL.md" "[<dr-id>](./<dr-id>.md)"
+assert_contains "skills/dr/SKILL.md" "spec_change: no\`、\`plan_required: no\`：运行 \`/sdd:code <id>\`"
+assert_contains "skills/dr/SKILL.md" "class: document\`：运行 \`/sdd:spec\` 或对应文档 Skill，不进入 \`/sdd:plan\`"
+assert_contains "skills/dr/SKILL.md" "docs/versions/vX.Y.Z/decisions/<tag>-NNNN-<slug>.md"
+assert_contains "skills/dr/SKILL.md" "扫描 docs/versions/v*/state.json"
+assert_contains "skills/dr/SKILL.md" "## 文档引用"
+assert_contains "skills/dr/SKILL.md" "## 影响资产\` 只做摘要"
+assert_contains "skills/dr/SKILL.md" "project:requirements/<file>.md"
+assert_contains "skills/dr/SKILL.md" "closed_reason: dismissed"
 assert_file_exists "skills/dr/references/dr.md.tmpl"
 assert_contains "skills/dr/references/dr.md.tmpl" "- closed_reason: null"
 assert_contains "skills/dr/references/dr.md.tmpl" "- class：code | document"
