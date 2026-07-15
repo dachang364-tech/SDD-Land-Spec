@@ -10,34 +10,51 @@ Execute an existing Implementation Plan, or execute an accepted lightweight fix 
 ## Preconditions
 
 1. Read `docs/CONSTITUTION.md`; if missing, stop and ask the user to run `/sdd:init`.
-2. Resolve the unique active version directory.
-3. Resolve the input through Work item lookup, then use exactly one execution mode:
-   - plan execution mode for a matched Implementation Plan.
-   - lightweight fix DR mode for an eligible accepted fix DR without a matching plan.
-4. In plan execution mode, require plan status to be `planned` or `coding`.
-5. In plan execution mode, if plan has a code-class DR, require DR status to be `accepted`.
-6. In plan execution mode, if plan has a code-class DR, require DR `class` to be `code`.
-7. In plan execution mode, if plan has a code-class DR, require DR `code_required: yes`.
-8. In lightweight fix DR mode, do not require locating a plan and do not require or change plan status.
-
-## DR Advanced 增量约束
-
-This skill keeps its existing responsibility: execute a planned/coding plan or an eligible lightweight fix DR. DR Advanced only adds DR-aware closing rules, lightweight fix DR mode, and verification-gated state transitions.
-
-如果来自 `/sdd:triage` 的用户选择指向 code execution, require either a planned/coding plan or an accepted lightweight fix DR. Do not revise spec or plan in this skill.
+2. Require `docs/versions/` to exist; if missing, stop and ask the user to run `/sdd:init` or `/sdd:doctor`.
+3. 扫描 docs/versions/v*/state.json 发现唯一 active version。
+4. If 0 active version, stop and ask the user to run `/sdd:new vX.Y.Z`.
+5. If multiple active versions or inconsistent state, stop and ask the user to run `/sdd:doctor`.
+6. Resolve the input through Work item lookup, then use exactly one execution mode.
 
 ## Work item lookup
 
-1. If input is `NNN`, match `docs/vX.Y.Z/plans/NNN-*.md` and use plan execution mode.
+1. If input is `NNN`, match `docs/versions/vX.Y.Z/plans/NNN-*.md` and use plan execution mode.
 2. If input is a complete plan basename, match the same `.md` basename and use plan execution mode.
-3. If input is feature name, match by plan suffix and use plan execution mode.
-4. If input matches a code-class DR id `^(fix|feat|chg|arch)-[0-9]{4}-[a-z0-9-]+$`, first check for a matching plan by suffix. If no plan matches, read `docs/vX.Y.Z/decisions/<dr-id>.md` and use lightweight fix DR mode only when DR `tag` is `fix` and `plan_required: no`.
+3. If input is a feature name, match by plan suffix and use plan execution mode.
+4. If input matches a code-class DR id `^(fix|feat|chg|arch)-[0-9]{4}-[a-z0-9-]+$`, first check for a matching plan by suffix. If no plan matches, read `docs/versions/vX.Y.Z/decisions/<dr-id>.md` and use lightweight fix DR mode only when DR `tag` is `fix` and `plan_required: no`.
 5. If zero plans match and no eligible lightweight fix DR matches, stop and ask the user to run `/sdd:plan <work-item>` or confirm a lightweight fix DR.
-6. If multiple plans match, stop and ask the user to use plan number, for example `/sdd:code 002`.
+6. If multiple plans match, stop and ask the user to use the plan number, for example `/sdd:code 002`.
+
+## Plan execution mode
+
+- plan 状态必须是 `planned` 或 `coding`。
+- 基于 `## 文档引用` 验证 plan `implements` 的 approved spec 或 accepted code-class DR。
+- spec mode plan 必须 `implements` 一个 approved spec。
+- code-class DR mode plan 必须 `implements` 一个 accepted code-class DR（`accepted`、`class: code`、`plan_required: yes`、`code_required: yes`）。
+- document-class DR 不允许进入 `/sdd:code`。
+
+Steps:
+
+1. Change plan 状态从 `planned` 切换为 `coding`; if already `coding`, keep it.
+2. Ask the user to choose execution mode:
+   - 高质量模式：`superpowers:subagent-driven-development`
+   - 快速模式：`superpowers:executing-plans`
+3. Execute the plan.
+4. Run `superpowers:verification-before-completion`.
+5. When execution succeeds and verification 通过后，将 plan 状态切换为 `done`.
+6. If the plan implements an accepted code-class DR, change that DR from `accepted` to `closed`.
+7. Set DR `closed_reason: committed`.
+8. Set DR `closed_at` to current UTC timestamp.
+9. If the DR has `supersedes`, update superseded DR files with `superseded_by`.
+
+Failure behavior:
+
+```text
+plan remains coding
+associated DR remains accepted
+```
 
 ## Lightweight fix DR mode
-
-This mode is only for simple implementation bugs that conform to the existing spec and do not require an Implementation Plan.
 
 Preconditions:
 
@@ -57,7 +74,7 @@ Steps:
 3. When execution succeeds and verification passes, change the DR from `accepted` to `closed`.
 4. Set DR `closed_reason: committed`.
 5. Set DR `closed_at` to current UTC timestamp.
-6. Because no plan exists in lightweight fix DR mode, no plan status is changed.
+6. Because no plan exists, no plan status is changed.
 
 Failure behavior:
 
@@ -66,29 +83,6 @@ DR remains accepted
 no plan status is changed
 ```
 
-## Execution mode
+## Boundaries
 
-Ask the user to choose:
-
-1. 高质量模式：`superpowers:subagent-driven-development`
-2. 快速模式：`superpowers:executing-plans`
-
-## Steps
-
-1. Change plan 状态从 `planned` 切换为 `coding`; if already `coding`, keep it.
-2. Execute the plan with the chosen Superpowers sub-skill.
-3. Run `superpowers:verification-before-completion`.
-4. When execution succeeds and verification 通过后，将 plan 状态切换为 `done`.
-5. If plan has a code-class DR, change that DR from `accepted` to `closed`.
-6. Set DR `closed_reason: committed`.
-7. Set DR `closed_at` to current UTC timestamp.
-8. If the DR has `supersedes`, update superseded DR files with `superseded_by`.
-
-## Failure behavior
-
-If execution or verification fails:
-
-```text
-plan remains coding
-associated DR remains accepted
-```
+- 不创建 active version、不修改 state.json、不创建或修订 PRD/spec/plan/DR 设计正文、不修复 `## 文档引用` 表、不接受或 dismiss DR、不处理 document-class DR、不归档版本。

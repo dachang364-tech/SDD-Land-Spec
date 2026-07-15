@@ -35,36 +35,122 @@ sdd_assert_status() {
   return 2
 }
 
-sdd_active_version_dir() {
-  local root="$1"
-  local docs_dir="$root/docs"
-  if [[ ! -d "$docs_dir" ]]; then
-    printf '未找到 docs/，请先运行 /sdd:init。\n' >&2
+sdd_state_field() {
+  local state_file="$1"
+  local field="$2"
+  if [[ ! -f "$state_file" ]]; then
+    printf 'state 文件不存在：%s\n' "$state_file" >&2
+    return 2
+  fi
+  if ! command -v python3 >/dev/null 2>&1; then
+    printf '需要 python3 以读取 state.json：%s\n' "$state_file" >&2
     return 2
   fi
 
-  local versions=()
-  local path
+  python3 - "$state_file" "$field" <<'PY'
+import json
+import sys
+
+state_file, field = sys.argv[1:]
+try:
+    with open(state_file, encoding="utf-8") as handle:
+        data = json.load(handle)
+except (OSError, json.JSONDecodeError):
+    print(f"state.json 无法解析：{state_file}", file=sys.stderr)
+    sys.exit(3)
+
+if not isinstance(data, dict):
+    print(f"state.json 无法解析：{state_file}", file=sys.stderr)
+    sys.exit(3)
+if field not in data:
+    print(f"state.json 缺少字段：{field}（{state_file}）", file=sys.stderr)
+    sys.exit(4)
+
+value = data[field]
+print("null" if value is None else value)
+PY
+}
+
+sdd_active_version_dir() {
+  local root="$1"
+  local versions_dir="$root/docs/versions"
+  if [[ ! -d "$versions_dir" ]]; then
+    printf '未找到 docs/versions/，请先运行 /sdd:init。\n' >&2
+    return 2
+  fi
+
+  local actives=()
+  local path base state version created_at archived_at
   shopt -s nullglob
-  for path in "$docs_dir"/v*; do
+  for path in "$versions_dir"/v*; do
     [[ -d "$path" ]] || continue
-    case "$(basename "$path")" in
-      v[0-9]*.[0-9]*.[0-9]*) versions+=("docs/$(basename "$path")") ;;
+    base="$(basename "$path")"
+    [[ "$base" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || continue
+    if [[ ! -f "$path/state.json" ]]; then
+      printf '版本目录缺少 state.json：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+      shopt -u nullglob
+      return 2
+    fi
+    version="$(sdd_state_field "$path/state.json" version)" || {
+      printf 'state.json 无法解析：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+      shopt -u nullglob
+      return 2
+    }
+    if [[ "$version" != "$base" ]]; then
+      printf 'state.json.version 与目录名不一致：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+      shopt -u nullglob
+      return 2
+    fi
+    created_at="$(sdd_state_field "$path/state.json" created_at 2>/dev/null)" || {
+      printf 'state.json 缺少必需字段：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+      shopt -u nullglob
+      return 2
+    }
+    archived_at="$(sdd_state_field "$path/state.json" archived_at 2>/dev/null)" || {
+      printf 'state.json 缺少必需字段：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+      shopt -u nullglob
+      return 2
+    }
+    if [[ -z "$created_at" || -z "$archived_at" ]]; then
+      printf 'state.json 缺少必需字段：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+      shopt -u nullglob
+      return 2
+    fi
+    state="$(sdd_state_field "$path/state.json" state)"
+    case "$state" in
+      active)
+        if [[ "$archived_at" != "null" ]]; then
+          printf 'state.json 生命周期非法：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+          shopt -u nullglob
+          return 2
+        fi
+        actives+=("docs/versions/$base")
+        ;;
+      archived)
+        if [[ "$archived_at" == "null" ]]; then
+          printf 'state.json 生命周期非法：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+          shopt -u nullglob
+          return 2
+        fi
+        ;;
+      *)
+        printf 'state.json.state 非法：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+        shopt -u nullglob
+        return 2
+        ;;
     esac
   done
   shopt -u nullglob
 
-  if [[ "${#versions[@]}" -eq 0 ]]; then
-    printf '未找到活跃版本目录，请先运行 /sdd:new vX.Y.Z。\n' >&2
+  if [[ "${#actives[@]}" -eq 0 ]]; then
+    printf '未发现 active version，请先运行 /sdd:new vX.Y.Z。\n' >&2
     return 2
   fi
-
-  if [[ "${#versions[@]}" -gt 1 ]]; then
-    printf '发现多个未归档版本目录：%s。MVP 不支持多活跃版本，请先运行 /sdd:archive。\n' "${versions[*]}" >&2
+  if [[ "${#actives[@]}" -gt 1 ]]; then
+    printf '发现多个 active version：%s，请运行 /sdd:doctor。\n' "${actives[*]}" >&2
     return 2
   fi
-
-  printf '%s\n' "${versions[0]}"
+  printf '%s\n' "${actives[0]}"
 }
 
 sdd_next_plan_number() {
@@ -108,6 +194,16 @@ sdd_json_target_path() {
   else
     printf '%s\n' "$payload" | sed -n 's/.*"file_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p; s/.*"path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1
   fi
+}
+
+sdd_locator_valid() {
+  local locator="$1"
+  case "$locator" in
+    -) return 0 ;;
+    project:requirements/*.md) return 0 ;;
+    v[0-9]*.[0-9]*.[0-9]*:*) return 0 ;;
+    *) return 1 ;;
+  esac
 }
 
 sdd_slug() {

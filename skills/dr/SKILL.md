@@ -5,7 +5,7 @@ description: Create, accept, or dismiss SDD decision records. Use for /sdd:dr <t
 
 # /sdd:dr
 
-Manage Decision Records.
+Manage Decision Records under `docs/versions/vX.Y.Z/decisions/`.
 
 ## Tags
 
@@ -27,54 +27,49 @@ fix | feat | chg | arch | spec | doc | typo
 
 简单实现 bug 可以由用户选择轻量 fix 流程：`tag: fix`、`class: code`、`spec_change: no`、`plan_required: no`、`code_required: yes`。如果修复涉及 API contract、schema、状态机、hook 或跨模块流程变化，不使用轻量 fix，应保持 `plan_required: yes` 并生成新的增量 Implementation Plan。
 
-`spec_change` 只能在不违反 `class`、`plan_required`、`code_required` 的前提下调整。
+`spec_change` 和 `plan_required` 只能在不违反 `class` 与 `code_required` 强约束的前提下调整。
 
 ## Preconditions
 
 1. Read `docs/CONSTITUTION.md`; if missing, stop and ask the user to run `/sdd:init`.
-2. Resolve the unique active version directory.
+2. Require `docs/versions/` to exist; if missing, stop and ask the user to run `/sdd:init` or `/sdd:doctor`.
+3. 扫描 docs/versions/v*/state.json 发现唯一 active version。
+4. If 0 active version, stop and ask the user to run `/sdd:new vX.Y.Z`.
+5. If multiple active versions or inconsistent state, stop and ask the user to run `/sdd:doctor`.
 
 ## Dispatch
 
 1. If first argument is `accept`, run accept mode.
 2. If first argument is `dismiss`, run dismiss mode.
-3. If first argument is one of the valid tags, run create mode.
+3. If first argument is a valid tag, run create mode.
 4. Otherwise print usage.
 
 ## Create mode
 
-Input:
-
-```text
-/sdd:dr <tag> <title>
-```
+Input: `/sdd:dr <tag> <title>`
 
 Steps:
 
-1. Generate globally increasing DR number from existing `docs/vX.Y.Z/decisions/*.md`.
-2. Slugify title.
-3. Write `docs/vX.Y.Z/decisions/<tag>-NNNN-<slug>.md` from `skills/dr/references/dr.md.tmpl`.
-4. Fill template placeholders, including the selected tag, title, date, and generated number.
-5. Derive `class`, `spec_change`, `plan_required`, and `code_required` from the tag defaults table.
+1. Scan `docs/versions/vX.Y.Z/decisions/*.md`.
+2. Generate version-local increasing DR number `NNNN`; if none, use `0001`.
+3. Slugify title.
+4. Write `docs/versions/vX.Y.Z/decisions/<tag>-NNNN-<slug>.md` from `skills/dr/references/dr.md.tmpl`.
+5. Derive `class`, `spec_change`, `plan_required`, `code_required` from the tag defaults table.
 6. Initial status is `drafting`.
-7. 写入 `影响资产` 或引用 spec、plan、decision 时，使用 Markdown 链接格式，例如 `[spec.md](../specs/spec.md)`、`[<plan-file>.md](../plans/<plan-file>.md)`、`[<dr-id>](./<dr-id>.md)`；章节号和标题可以作为普通文本放在链接后。
-8. Output next step:
+7. If the user chooses lightweight fix, set `plan_required: no` but keep `class: code` and `code_required: yes`.
+8. Write the `## 文档引用` table; if no formal reference, use the fixed empty-set row `| 未声明。 | - | - | - | - |`.
+   - 引用 project-level requirements：同时写相对 Markdown link 和 `project:requirements/<file>.md` locator。
+   - 引用跨版本文档：同时写相对 Markdown link 和版本 locator。
+   - `## 文档引用` 是 DR 的正式关系来源；`## 影响资产` 只做摘要，不作为正式关系来源。
+9. Output next step:
    - code-class DR: run `/sdd:dr accept <id>`; after accept, next step depends on `plan_required` and may be `/sdd:plan <id>` or `/sdd:code <id>`. If `spec_change` is `yes` or `maybe`, first evaluate whether `/sdd:spec` is needed.
    - document-class DR: run `/sdd:dr accept <id>`, then `/sdd:spec` or the corresponding document Skill.
 
 ## Accept mode
 
-Input:
+Input: `/sdd:dr accept <id>`
 
-```text
-/sdd:dr accept <id>
-```
-
-Precondition:
-
-```text
-DR 状态为 drafting
-```
+Precondition: DR 状态为 drafting。
 
 Steps:
 
@@ -82,27 +77,19 @@ Steps:
 2. Do not write `closed_reason`.
 3. Do not write `closed_at`.
 4. Do not update supersede chain.
-5. Read `class`, `spec_change`, `plan_required`, and `code_required` from the DR.
+5. Read `class`, `spec_change`, `plan_required`, `code_required`.
 6. Output next step:
-   - `class: code` 且 `spec_change: yes`：先运行 `/sdd:spec`，然后运行 `/sdd:plan <id>`。
+   - `class: code` 且 `spec_change: yes`：先运行 `/sdd:spec`，然后根据 `plan_required` 运行 `/sdd:plan <id>` 或 `/sdd:code <id>`。
    - `class: code` 且 `spec_change: no`、`plan_required: yes`：运行 `/sdd:plan <id>`。
    - `class: code` 且 `spec_change: no`、`plan_required: no`：运行 `/sdd:code <id>`。
-   - `class: code` 且 `spec_change: maybe`：说明是否需要修订 spec；如果需要，先 `/sdd:spec`，然后 `/sdd:plan <id>`；如果不需要，则根据 `plan_required` 运行 `/sdd:plan <id>` 或 `/sdd:code <id>`。
-   - `class: document`：运行 `/sdd:spec` 或对应文档 Skill，不进入 `/sdd:plan`。
+   - `class: code` 且 `spec_change: maybe`：说明是否需要修订 spec；如需要先 `/sdd:spec`，再按 `plan_required` 进入 `/sdd:plan <id>` 或 `/sdd:code <id>`；如不需要直接按 `plan_required` 进入。
+   - `class: document`：运行 `/sdd:spec` 或对应文档 Skill，不进入 `/sdd:plan` 或 `/sdd:code`。
 
 ## Dismiss mode
 
-Input:
+Input: `/sdd:dr dismiss <id> <reason>`
 
-```text
-/sdd:dr dismiss <id> <reason>
-```
-
-Precondition:
-
-```text
-DR 状态为 drafting
-```
+Precondition: DR 状态为 drafting。
 
 Steps:
 
@@ -111,8 +98,13 @@ Steps:
 3. Set `dismissed_reason` to the provided reason.
 4. Set `closed_at` to current UTC timestamp.
 
-Failure behavior:
+## Supersede rules
 
-```text
-accepted 或 closed DR 不允许 dismiss；错误时另起 DR supersede。
-```
+- accepted 或 closed DR 需要替代时，应新建 DR，并通过 `supersedes` 和 `## 文档引用` 引用被替代 DR。
+- 跨版本替代不回写旧版本文档；closed DR 不重新打开；`superseded` 不作为 DR status，只能通过 `superseded_by` 或新 DR 的 `supersedes` 表达。
+
+## Boundaries
+
+- 不创建 active version、不修改 state.json、不创建 spec/plan、不修改 code、不归档版本。
+- `/sdd:dr accept` 不关闭 DR；`/sdd:dr dismiss` 不允许作用于 accepted 或 closed DR。
+- DR 的正式关系以 `## 文档引用` 为准，`## 影响资产` 只做摘要。
