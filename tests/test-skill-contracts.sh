@@ -27,7 +27,11 @@ assert_contains "skills/research/references/research.md.tmpl" "# 研究：<topic
 assert_contains "skills/prd/SKILL.md" "description: Create the product requirements document"
 assert_file_exists "skills/prd/references/prd.md.tmpl"
 assert_contains "skills/prd/references/prd.md.tmpl" "# PRD：<产品/版本名>"
-assert_contains "skills/prd/references/prd.md.tmpl" "## 6. 成功标准"
+assert_contains "skills/prd/references/prd.md.tmpl" "## 5. 成功标准"
+assert_contains "skills/prd/references/prd.md.tmpl" "## 文档引用"
+assert_contains "skills/prd/references/prd.md.tmpl" "| 关系 | 当前范围 | 目标文档 | 目标标识 | 说明 |"
+assert_contains "skills/prd/references/prd.md.tmpl" "| 未声明。 | - | - | - | - |"
+assert_contains "skills/prd/references/prd.md.tmpl" "## 7. 上游需求资料"
 
 assert_contains "skills/spec/SKILL.md" "description: Create or revise the functional specification"
 assert_contains "skills/spec/SKILL.md" "DR Advanced 增量约束"
@@ -43,8 +47,10 @@ assert_contains "skills/spec/SKILL.md" 'document-class DRs may close after docum
 assert_contains "skills/spec/SKILL.md" 'document-class DR 不输出 `/sdd:plan` 或 `/sdd:code`'
 assert_contains "skills/spec/SKILL.md" "closed_reason: document-updated"
 assert_contains "skills/spec/SKILL.md" '写入 `关联 DR` 表格时，应使用 Markdown 链接格式'
-assert_contains "skills/spec/references/spec.md.tmpl" "| DR | tag | class | spec_change | 状态 | 关联小节 |"
-assert_contains "skills/spec/references/spec.md.tmpl" "| --- | --- | --- | --- | --- | --- |"
+assert_contains "skills/spec/references/spec.md.tmpl" "## 文档引用"
+assert_contains "skills/spec/references/spec.md.tmpl" "| 关系 | 当前范围 | 目标文档 | 目标标识 | 说明 |"
+assert_contains "skills/spec/references/spec.md.tmpl" "| 未声明。 | - | - | - | - |"
+assert_contains "skills/spec/references/spec.md.tmpl" "## 9. 验收标准"
 assert_contains "skills/spec/SKILL.md" "[<dr-id>](../decisions/<dr-id>.md)"
 
 assert_contains "skills/plan/SKILL.md" "description: Create an implementation plan from approved spec or accepted code-class DR"
@@ -59,10 +65,12 @@ assert_contains "skills/plan/SKILL.md" 'DR `class` is `code`'
 assert_contains "skills/plan/SKILL.md" 'DR `plan_required: no`'
 assert_contains "skills/plan/SKILL.md" 'use `/sdd:code <id>` for eligible lightweight fix DRs'
 assert_file_exists "skills/plan/references/plan.md.tmpl"
-assert_contains "skills/plan/references/plan.md.tmpl" "## Technical Design"
-assert_contains "skills/plan/references/plan.md.tmpl" "## Implementation Tasks"
+assert_contains "skills/plan/references/plan.md.tmpl" "## 文档引用"
+assert_contains "skills/plan/references/plan.md.tmpl" "| 关系 | 当前范围 | 目标文档 | 目标标识 | 说明 |"
+assert_contains "skills/plan/references/plan.md.tmpl" "| 未声明。 | - | - | - | - |"
+assert_contains "skills/plan/references/plan.md.tmpl" "## 6. Implementation Tasks"
+assert_contains "skills/plan/references/plan.md.tmpl" "## 7. Self-Review"
 assert_contains "skills/plan/SKILL.md" '写入 `关联 DR` 时，使用 Markdown 链接格式'
-assert_contains "skills/plan/references/plan.md.tmpl" "- 关联 DR：null"
 assert_contains "skills/plan/SKILL.md" "[<dr-id>](../decisions/<dr-id>.md)"
 
 assert_contains "skills/code/SKILL.md" "description: Execute an SDD implementation plan or eligible lightweight fix DR"
@@ -118,10 +126,14 @@ assert_contains "skills/dr/references/dr.md.tmpl" "- class：code | document"
 assert_contains "skills/dr/references/dr.md.tmpl" "- spec_change：yes | no | maybe"
 assert_contains "skills/dr/references/dr.md.tmpl" "- plan_required：yes | no"
 assert_contains "skills/dr/references/dr.md.tmpl" "- code_required：yes | no"
-assert_contains "skills/dr/references/dr.md.tmpl" "## 契约影响"
-assert_contains "skills/dr/references/dr.md.tmpl" "## 实现影响"
-assert_contains "skills/dr/references/dr.md.tmpl" "## 文档影响"
-assert_contains "skills/dr/references/dr.md.tmpl" "## 验证方式"
+assert_contains "skills/dr/references/dr.md.tmpl" "## 文档引用"
+assert_contains "skills/dr/references/dr.md.tmpl" "| 关系 | 当前范围 | 目标文档 | 目标标识 | 说明 |"
+assert_contains "skills/dr/references/dr.md.tmpl" "| 未声明。 | - | - | - | - |"
+assert_contains "skills/dr/references/dr.md.tmpl" "## 7. 影响资产"
+assert_contains "skills/dr/references/dr.md.tmpl" "### 4.1 契约影响"
+assert_contains "skills/dr/references/dr.md.tmpl" "### 4.2 实现影响"
+assert_contains "skills/dr/references/dr.md.tmpl" "### 4.3 文档影响"
+assert_contains "skills/dr/references/dr.md.tmpl" "## 6. 验证方式"
 assert_contains "skills/dr/references/dr.md.tmpl" "| 资产 | 章节 / ID |"
 
 assert_contains "skills/triage/SKILL.md" "description: Triage user questions after implementation, review, or testing"
