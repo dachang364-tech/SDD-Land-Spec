@@ -48,8 +48,10 @@ try:
     data=json.load(open(sys.argv[1]))
 except Exception:
     sys.exit(3)
-v=data.get(sys.argv[2])
-print("" if v is None else v)' "$state_file" "$field"
+if sys.argv[2] not in data:
+    sys.exit(4)
+v=data[sys.argv[2]]
+print("null" if v is None else v)' "$state_file" "$field"
   else
     sed -n "s/.*\"$field\"[[:space:]]*:[[:space:]]*\"\{0,1\}\([^\",}]*\)\"\{0,1\}.*/\1/p" "$state_file" | head -n 1
   fi
@@ -64,15 +66,12 @@ sdd_active_version_dir() {
   fi
 
   local actives=()
-  local path base state version
+  local path base state version created_at archived_at
   shopt -s nullglob
   for path in "$versions_dir"/v*; do
     [[ -d "$path" ]] || continue
     base="$(basename "$path")"
-    case "$base" in
-      v[0-9]*.[0-9]*.[0-9]*) ;;
-      *) continue ;;
-    esac
+    [[ "$base" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || continue
     if [[ ! -f "$path/state.json" ]]; then
       printf '版本目录缺少 state.json：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
       shopt -u nullglob
@@ -85,6 +84,21 @@ sdd_active_version_dir() {
     }
     if [[ "$version" != "$base" ]]; then
       printf 'state.json.version 与目录名不一致：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+      shopt -u nullglob
+      return 2
+    fi
+    created_at="$(sdd_state_field "$path/state.json" created_at 2>/dev/null)" || {
+      printf 'state.json 缺少必需字段：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+      shopt -u nullglob
+      return 2
+    }
+    archived_at="$(sdd_state_field "$path/state.json" archived_at 2>/dev/null)" || {
+      printf 'state.json 缺少必需字段：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+      shopt -u nullglob
+      return 2
+    }
+    if [[ -z "$created_at" || -z "$archived_at" ]]; then
+      printf 'state.json 缺少必需字段：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
       shopt -u nullglob
       return 2
     fi

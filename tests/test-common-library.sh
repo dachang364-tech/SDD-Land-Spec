@@ -53,4 +53,24 @@ fi
 assert_contains "/tmp/sdd-zero.err" "未发现 active version"
 assert_contains "/tmp/sdd-zero.err" "/sdd:new"
 
+bash tests/fixtures/valid-project.sh "$tmp/missing-required"
+printf '{\n  "version": "v0.1.0",\n  "state": "active",\n  "archived_at": null\n}\n' > "$tmp/missing-required/docs/versions/v0.1.0/state.json"
+if sdd_active_version_dir "$tmp/missing-required" >/tmp/sdd-missing-required.out 2>/tmp/sdd-missing-required.err; then
+  fail "expected state.json without created_at to fail"
+fi
+assert_contains "/tmp/sdd-missing-required.err" "state.json 缺少必需字段"
+
+bash tests/fixtures/valid-project.sh "$tmp/missing-archived-at"
+printf '{\n  "version": "v0.1.0",\n  "state": "active",\n  "created_at": "2026-07-14T00:00:00Z"\n}\n' > "$tmp/missing-archived-at/docs/versions/v0.1.0/state.json"
+if sdd_active_version_dir "$tmp/missing-archived-at" >/tmp/sdd-missing-archived-at.out 2>/tmp/sdd-missing-archived-at.err; then
+  fail "expected state.json without archived_at to fail"
+fi
+assert_contains "/tmp/sdd-missing-archived-at.err" "state.json 缺少必需字段"
+
+bash tests/fixtures/valid-project.sh "$tmp/non-semver"
+mkdir -p "$tmp/non-semver/docs/versions/v0.2.0-beta"
+printf '{\n  "version": "v0.2.0-beta",\n  "state": "active",\n  "created_at": "2026-07-14T00:00:00Z",\n  "archived_at": null\n}\n' > "$tmp/non-semver/docs/versions/v0.2.0-beta/state.json"
+active="$(sdd_active_version_dir "$tmp/non-semver")"
+[[ "$active" == "docs/versions/v0.1.0" ]] || fail "expected non-semver directory to be ignored, got $active"
+
 printf 'PASS: common library\n'
