@@ -37,6 +37,9 @@ assert_contains "$readme_tmp" "# SDD Plugin"
 assert_contains "$readme_tmp" "## 安装"
 assert_contains "$readme_tmp" "## 使用"
 assert_contains "$readme_tmp" "/sdd:init"
+assert_contains "$readme_tmp" "用户自行安装"
+assert_contains "$readme_tmp" "可选辅助脚本"
+assert_contains "$readme_tmp" '`/sdd:init` 不会自动安装依赖插件'
 if grep -Eq '本项目验证|测试指南|worktree|合并|开发' "$readme_tmp"; then
   fail "packaged README must focus on user usage, not plugin development"
 fi

@@ -3,7 +3,7 @@
   "description": "Local marketplace for SDD Plugin development",
   "metadata": {
     "description": "Local marketplace for SDD Plugin development",
-    "version": "0.2.1"
+    "version": "0.3.1"
   },
   "owner": {
     "name": "SDD Plugin",
@@ -13,7 +13,7 @@
     {
       "name": "sdd",
       "description": "Specification Driven Development workflow plugin for Claude Code",
-      "version": "0.2.1",
+      "version": "0.3.1",
       "source": "./"
     }
   ]
