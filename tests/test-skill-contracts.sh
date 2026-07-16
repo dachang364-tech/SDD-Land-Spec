@@ -3,6 +3,18 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 . tests/test-common.sh
 
+assert_not_contains() {
+  local path="$1"
+  local needle="$2"
+  [[ "$(<"$path")" != *"$needle"* ]] || fail "expected $path not to contain: $needle"
+}
+
+assert_not_matches() {
+  local path="$1"
+  local pattern="$2"
+  ! grep -Eq -- "$pattern" "$path" || fail "expected $path not to match regex: $pattern"
+}
+
 for skill in init new research prd spec plan code dr triage status doctor archive; do
   assert_file_exists "skills/$skill/SKILL.md"
 done
@@ -12,6 +24,18 @@ assert_contains "skills/init/SKILL.md" "docs/CONSTITUTION.md 已存在"
 assert_contains "skills/init/SKILL.md" "docs/versions/"
 assert_contains "skills/init/SKILL.md" "不创建任何版本目录或版本级 state.json"
 assert_contains "skills/init/SKILL.md" "允许处于 0 active version 状态"
+assert_contains "skills/init/SKILL.md" "只提示用户安装依赖插件"
+assert_contains "skills/init/SKILL.md" '不执行 `scripts/install-deps.sh`'
+assert_contains "skills/init/SKILL.md" '`superpowers`'
+assert_contains "skills/init/SKILL.md" '`spec-kit`'
+assert_not_contains "skills/init/SKILL.md" 'Run `scripts/install-deps.sh`.'
+assert_not_contains "skills/init/SKILL.md" "If dependency installation fails"
+assert_contains "scripts/hooks/session-start.sh" "claude plugin list"
+assert_contains "scripts/hooks/session-start.sh" "superpowers([[:space:]]|$)"
+assert_contains "scripts/hooks/session-start.sh" "spec-kit([[:space:]]|$)"
+assert_contains "scripts/hooks/session-start.sh" "README 安装说明"
+assert_contains "scripts/hooks/session-start.sh" "手动安装该插件"
+assert_not_contains "scripts/hooks/session-start.sh" "scripts/install-deps.sh"
 
 assert_contains "skills/new/SKILL.md" "description: Create the unique active SDD version directory"
 assert_contains "skills/new/SKILL.md" "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
@@ -43,18 +67,6 @@ assert_contains "skills/research/SKILL.md" "不要求 active version"
 assert_contains "skills/research/SKILL.md" "不读取或修改 state.json"
 assert_contains "skills/research/references/research.md.tmpl" "# Research：<topic>"
 assert_contains "skills/research/references/research.md.tmpl" "## 7. 可引用结论"
-
-assert_not_contains() {
-  local path="$1"
-  local needle="$2"
-  ! grep -Fq -- "$needle" "$path" || fail "expected $path not to contain: $needle"
-}
-
-assert_not_matches() {
-  local path="$1"
-  local pattern="$2"
-  ! grep -Eq -- "$pattern" "$path" || fail "expected $path not to match regex: $pattern"
-}
 
 assert_no_legacy_docs_v_paths() {
   local path="$1"
@@ -195,6 +207,10 @@ assert_contains "README.md" "用户疑问分诊"
 assert_contains "README.md" "轻量 fix DR"
 assert_contains "README.md" "Markdown 链接"
 assert_contains "README.md" "最终由用户选择"
+assert_contains "README.md" "用户自行安装"
+assert_contains "README.md" "可选辅助脚本"
+assert_contains "README.md" '`/sdd:init` 不会自动安装依赖插件'
+assert_not_contains "README.md" "scripts/install-deps.sh"$'\n```'$'\n\n该脚本会检查并从 GitHub 仓库安装依赖 plugin，不依赖 Claude plugin marketplace：'
 
 assert_contains "skills/status/SKILL.md" "description: Show current SDD version status and next-step guidance"
 assert_contains "skills/status/SKILL.md" "扫描 docs/versions/v*/state.json"
@@ -268,6 +284,9 @@ assert_contains "TESTING.md" 'docs/versions/v0.1.0/prd.md'
 assert_contains "TESTING.md" 'docs/versions/v0.1.0/plans/001-login.md'
 assert_contains "TESTING.md" 'docs/versions/v0.2.0/state.json'
 assert_contains "TESTING.md" 'docs/versions/v0.2.0/specs/'
+assert_contains "TESTING.md" '`/sdd:init` 创建 `docs/CONSTITUTION.md`、`docs/requirements/`、`docs/versions/`、`docs/archive/`。'
+assert_contains "TESTING.md" '`/sdd:init` 不自动安装依赖插件'
+assert_contains "TESTING.md" '`/sdd:init` 会提示用户手动安装 `superpowers` 与 `spec-kit`'
 assert_not_contains "TESTING.md" 'mkdir -p "$tmp/docs/v0.1.0/specs" "$tmp/docs/v0.1.0/plans" "$tmp/docs/v0.1.0/decisions"'
 assert_not_contains "TESTING.md" 'docs/v0.1.0/specs/spec.md'
 assert_not_contains "TESTING.md" 'docs/v0.1.0/plans/001-feature-login.md'

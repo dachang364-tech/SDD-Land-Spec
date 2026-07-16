@@ -50,16 +50,20 @@ cd /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/document-ref
 
 ### 2. 安装依赖 plugin
 
+请用户自行安装依赖插件：
+
+```bash
+claude plugin install https://github.com/obra/superpowers.git
+claude plugin install https://github.com/github/spec-kit.git
+```
+
+如需快捷安装，也可以使用可选辅助脚本：
+
 ```bash
 scripts/install-deps.sh
 ```
 
-该脚本会检查并从 GitHub 仓库安装依赖 plugin，不依赖 Claude plugin marketplace：
-
-```text
-superpowers: https://github.com/obra/superpowers.git
-spec-kit: https://github.com/github/spec-kit.git
-```
+`/sdd:init` 不会自动安装依赖插件，只会提示用户完成上述安装。
 
 ### 3. 添加本地 plugin marketplace
 

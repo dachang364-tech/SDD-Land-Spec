@@ -121,7 +121,9 @@ claude plugin list
 
 重点确认：
 
-- `/sdd:init` 创建 `docs/CONSTITUTION.md`、`docs/requirements/`、`docs/archive/`。
+- `/sdd:init` 创建 `docs/CONSTITUTION.md`、`docs/requirements/`、`docs/versions/`、`docs/archive/`。
+- `/sdd:init` 不自动安装依赖插件。
+- `/sdd:init` 会提示用户手动安装 `superpowers` 与 `spec-kit`。
 - `/sdd:new v0.2.0` 创建 `docs/versions/v0.2.0/state.json`、`docs/versions/v0.2.0/specs/`、`plans/`、`decisions/`。
 - `/sdd:status` 能展示当前版本状态和下一步建议。
 - feature plan 在 `spec.md` 未 `approved` 时会被拒绝。

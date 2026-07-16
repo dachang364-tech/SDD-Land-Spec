@@ -14,17 +14,17 @@ Initialize the current project for SDD. Create the project-level skeleton only; 
 
 ## Steps
 
-1. Run `scripts/install-deps.sh`.
-2. If dependency installation fails, stop and ask the user to run `scripts/install-deps.sh` manually.
-3. Create project-level directories:
+1. Create project-level directories:
    - `docs/requirements/`
    - `docs/versions/`
    - `docs/archive/`
-4. Copy `CONSTITUTION.default.md` to `docs/CONSTITUTION.md`.
-5. Do not create `.sdd/state.json`.
-6. 不创建任何版本目录或版本级 state.json。
-7. Do not create `prd.md`, `specs/*.md`, `plans/*.md`, or `decisions/*.md`.
-8. Do not modify `CLAUDE.md` or `AGENTS.md`.
+2. Copy `CONSTITUTION.default.md` to `docs/CONSTITUTION.md`.
+3. Do not create `.sdd/state.json`.
+4. 不创建任何版本目录或版本级 state.json。
+5. Do not create `prd.md`, `specs/*.md`, `plans/*.md`, or `decisions/*.md`.
+6. Do not modify `CLAUDE.md` or `AGENTS.md`.
+7. 只提示用户安装依赖插件，不执行 `scripts/install-deps.sh`。
+8. 提醒用户本插件依赖 `superpowers` 与 `spec-kit`，请按 README 安装说明手动安装；`scripts/install-deps.sh` 仅作为可选辅助脚本。
 
 ## Output
 
