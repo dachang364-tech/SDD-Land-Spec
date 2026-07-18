@@ -239,6 +239,8 @@ docs/
         │   └── NNN-*.md
         └── decisions/
             └── NNN-<tag>-<slug>.md
+
+Decision Record 标准输出路径为 `docs/versions/vX.Y.Z/decisions/NNN-<tag>-<slug>.md`。
 ```
 
 ## Hook 门控

@@ -223,7 +223,7 @@ assert_contains "README.md" "最终由用户选择"
 assert_contains "README.md" "用户自行安装"
 assert_contains "README.md" "可选辅助脚本"
 assert_contains "README.md" '`/sdd:init` 不会自动安装依赖插件'
-assert_not_contains "README.md" "scripts/install-deps.sh"$'\n```'$'\n\n该脚本会检查并从 GitHub 仓库安装依赖 plugin，不依赖 Claude plugin marketplace：'
+assert_contains "README.md" 'scripts/install-deps.sh'
 assert_contains "README.md" 'docs/versions/vX.Y.Z/decisions/NNN-<tag>-<slug>.md'
 assert_contains "README.md" '`/sdd:dr accept 001-fix-login-null`'
 assert_contains "README.md" '`plans/002-001-fix-login-null.md`'
