@@ -66,11 +66,12 @@ case "$target_path" in
   docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-fix-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-feat-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-chg-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-arch-*.md)
     version="${target_path#docs/versions/}"
     version="${version%%/*}"
-    base="$(basename "$target_path")"
-    dr_id="$(sdd_plan_dr_id_from_basename "$base")" || {
+    base="$(basename "$target_path" .md)"
+    dr_id="${base#???-}"
+    if [[ ! "$dr_id" =~ ^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(fix|feat|chg|arch)-[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
       printf '无法写入 %s：\n非法 DR ID。\n' "$target_path" >&2
       exit 2
-    }
+    fi
     dr="docs/versions/$version/decisions/$dr_id.md"
     status="$(sdd_read_status "$dr")" || exit 2
     if [[ "$status" != "accepted" ]]; then
@@ -79,7 +80,7 @@ case "$target_path" in
     fi
     exit 0
     ;;
-  docs/versions/v*/plans/[0-9][0-9][0-9]-fix-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-feat-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-chg-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-arch-*.md)
+  docs/versions/v*/plans/[0-9][0-9][0-9]-fix-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-feat-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-chg-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-arch-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-spec-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-doc-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-typo-*.md)
     printf '无法写入 %s：\n非法 DR ID。\n' "$target_path" >&2
     exit 2
     ;;

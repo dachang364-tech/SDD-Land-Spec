@@ -78,6 +78,23 @@ if run_hook "$tmp" "docs/versions/v0.1.0/plans/005-003-feat-rollout.md" >/tmp/sd
 fi
 assert_contains "/tmp/sdd-hook4.err" "前置 DR docs/versions/v0.1.0/decisions/003-feat-rollout.md 状态为 drafting，期望 accepted"
 
+printf '# DR-010-fix：Trailing Zero\n\n- 状态：drafting\n- class：code\n- tag：fix\n- spec_change：yes\n- plan_required：yes\n- code_required：yes\n' > "$tmp/docs/versions/v0.1.0/decisions/010-fix-trailing-zero.md"
+if run_hook "$tmp" "docs/versions/v0.1.0/plans/006-010-fix-trailing-zero.md" >/tmp/sdd-hook5.out 2>/tmp/sdd-hook5.err; then
+  fail "expected trailing-zero code DR plan write with drafting DR to fail"
+fi
+assert_contains "/tmp/sdd-hook5.err" "前置 DR docs/versions/v0.1.0/decisions/010-fix-trailing-zero.md 状态为 drafting，期望 accepted"
+
+printf '# DR-100-arch：Hundred\n\n- 状态：drafting\n- class：code\n- tag：arch\n- spec_change：yes\n- plan_required：yes\n- code_required：yes\n' > "$tmp/docs/versions/v0.1.0/decisions/100-arch-hundred.md"
+if run_hook "$tmp" "docs/versions/v0.1.0/plans/007-100-arch-hundred.md" >/tmp/sdd-hook6.out 2>/tmp/sdd-hook6.err; then
+  fail "expected hundred code DR plan write with drafting DR to fail"
+fi
+assert_contains "/tmp/sdd-hook6.err" "前置 DR docs/versions/v0.1.0/decisions/100-arch-hundred.md 状态为 drafting，期望 accepted"
+
+if run_hook "$tmp" "docs/versions/v0.1.0/plans/008-003-doc-release-notes.md" >/tmp/sdd-hook-doc.out 2>/tmp/sdd-hook-doc.err; then
+  fail "expected document-class DR-shaped plan basename to fail"
+fi
+assert_contains "/tmp/sdd-hook-doc.err" "非法 DR ID"
+
 if run_hook "$tmp" "docs/versions/v0.1.0/plans/006-fix-0002-legacy.md" >/tmp/sdd-hook-legacy.out 2>/tmp/sdd-hook-legacy.err; then
   fail "expected legacy DR-style plan basename to fail"
 fi
