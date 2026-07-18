@@ -171,7 +171,7 @@ sdd_next_plan_number() {
 
 sdd_is_dr_id() {
   local value="$1"
-  [[ "$value" =~ ^[0-9][0-9][1-9]-(fix|feat|chg|arch|spec|doc|typo)-[a-z0-9]+(-[a-z0-9]+)*$ ]]
+  [[ "$value" =~ ^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(fix|feat|chg|arch|spec|doc|typo)-[a-z0-9]+(-[a-z0-9]+)*$ ]]
 }
 
 sdd_next_dr_number() {
@@ -198,7 +198,7 @@ sdd_plan_dr_id_from_basename() {
   local plan_basename="$1"
   local base="${plan_basename%.md}"
   local rest="${base#???-}"
-  if [[ ! "$base" =~ ^[0-9][0-9][1-9]-[0-9][0-9][1-9]-(fix|feat|chg|arch)-[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+  if [[ ! "$base" =~ ^[0-9][0-9][0-9]-(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(fix|feat|chg|arch)-[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
     printf '不是 code-class DR plan：%s\n' "$plan_basename" >&2
     return 2
   fi
