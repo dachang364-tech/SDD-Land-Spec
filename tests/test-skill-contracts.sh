@@ -155,6 +155,8 @@ assert_contains "skills/dr/SKILL.md" "spec_change: no\`、\`plan_required: no\`�
 assert_contains "skills/dr/SKILL.md" "class: document\`：运行 \`/sdd:spec\` 或对应文档 Skill，不进入 \`/sdd:plan\`"
 assert_contains "skills/dr/SKILL.md" "docs/versions/vX.Y.Z/decisions/NNN-<tag>-<slug>.md"
 assert_contains "skills/dr/SKILL.md" "Generate version-local increasing DR number \`NNN\`; if none, use \`001\`."
+assert_contains "skills/dr/SKILL.md" "Fail DR creation when the next DR number would exceed \`999\`."
+assert_contains "skills/dr/SKILL.md" "Slugify title into a non-empty lowercase kebab-case slug using only ASCII lowercase letters, digits, and hyphens."
 assert_contains "skills/dr/SKILL.md" "\`DR ID\` 指去掉 \`.md\` 后的完整 DR basename"
 assert_contains "skills/dr/SKILL.md" "标题标识格式固定为 \`DR-NNN-<tag>\`"
 assert_contains "skills/dr/SKILL.md" "\`/sdd:dr accept 001-fix-login-null\`"

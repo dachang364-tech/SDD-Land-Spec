@@ -51,8 +51,8 @@ Input: `/sdd:dr <tag> <title>`
 Steps:
 
 1. Scan `docs/versions/vX.Y.Z/decisions/*.md`.
-2. Generate version-local increasing DR number `NNN`; if none, use `001`.
-3. Slugify title.
+2. Generate version-local increasing DR number `NNN`; if none, use `001`. Fail DR creation when the next DR number would exceed `999`.
+3. Slugify title into a non-empty lowercase kebab-case slug using only ASCII lowercase letters, digits, and hyphens.
 4. Write `docs/versions/vX.Y.Z/decisions/NNN-<tag>-<slug>.md` from `skills/dr/references/dr.md.tmpl`.
 5. `DR ID` 指去掉 `.md` 后的完整 DR basename。
 6. 标题标识格式固定为 `DR-NNN-<tag>`，slug 不进入标题标识。
