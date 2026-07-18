@@ -96,6 +96,8 @@ Input: `/sdd:dr dismiss <id> <reason>`
 
 Precondition: DR 状态为 drafting。
 
+Example: `/sdd:dr dismiss 001-fix-login-null <reason>`
+
 Steps:
 
 1. Change `drafting → closed`.

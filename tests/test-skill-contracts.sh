@@ -160,6 +160,7 @@ assert_contains "skills/dr/SKILL.md" "Slugify title into a non-empty lowercase k
 assert_contains "skills/dr/SKILL.md" "\`DR ID\` 指去掉 \`.md\` 后的完整 DR basename"
 assert_contains "skills/dr/SKILL.md" "标题标识格式固定为 \`DR-NNN-<tag>\`"
 assert_contains "skills/dr/SKILL.md" "\`/sdd:dr accept 001-fix-login-null\`"
+assert_contains "skills/dr/SKILL.md" "\`/sdd:dr dismiss 001-fix-login-null <reason>\`"
 assert_contains "skills/dr/SKILL.md" "不兼容 \`<tag>-NNNN-<slug>\` 旧格式"
 assert_contains "skills/dr/references/dr.md.tmpl" "# DR-NNN-<tag>：<标题>"
 assert_not_contains "skills/dr/references/dr.md.tmpl" "# DR-<tag>-NNNN：<标题>"
