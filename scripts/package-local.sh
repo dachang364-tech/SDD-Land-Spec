@@ -158,6 +158,8 @@ claude plugin list
 /sdd:code <NNN|id>
 ```
 
+例如：`/sdd:plan 001-fix-login-null` 会生成 `plans/002-001-fix-login-null.md`。
+
 文档类变更使用：
 
 ```text
@@ -175,13 +177,18 @@ docs/
 ├── CONSTITUTION.md
 ├── requirements/
 ├── archive/
-└── vX.Y.Z/
-    ├── prd.md
-    ├── specs/
-    │   └── spec.md
-    ├── plans/
-    └── decisions/
+└── versions/
+    └── vX.Y.Z/
+        ├── prd.md
+        ├── specs/
+        │   └── spec.md
+        ├── plans/
+        └── decisions/
 ```
+
+其中，版本级文档目录为 `docs/versions/vX.Y.Z/`。
+
+其中，Decision Record 的标准输出路径为 `docs/versions/vX.Y.Z/decisions/NNN-<tag>-<slug>.md`。
 README
 
 (

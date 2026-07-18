@@ -3,12 +3,6 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 . tests/test-common.sh
 
-assert_not_contains() {
-  local path="$1"
-  local needle="$2"
-  [[ "$(<"$path")" != *"$needle"* ]] || fail "expected $path not to contain: $needle"
-}
-
 assert_not_matches() {
   local path="$1"
   local pattern="$2"
@@ -97,6 +91,10 @@ assert_contains "skills/spec/SKILL.md" "不再使用独立 `## 关联 DRs`"
 assert_contains "skills/plan/SKILL.md" "description: Create an implementation plan from approved spec or accepted code-class DR"
 assert_contains "skills/plan/SKILL.md" "docs/versions/vX.Y.Z/plans/NNN-<slug>.md"
 assert_contains "skills/plan/SKILL.md" "docs/versions/vX.Y.Z/plans/NNN-<dr-id>.md"
+assert_contains "skills/plan/SKILL.md" "If \`<work-item>\` matches \`^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(fix|feat|chg|arch)-[a-z0-9]+(-[a-z0-9]+)*$\`, use code-class DR mode."
+assert_contains "skills/plan/SKILL.md" "If \`<work-item>\` matches \`^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(spec|doc|typo)-[a-z0-9]+(-[a-z0-9]+)*$\`, refuse"
+assert_contains "skills/plan/SKILL.md" "If \`<work-item>\` is DR-like (starts with three digits and a hyphen) but is not a valid full DR ID"
+assert_contains "skills/plan/SKILL.md" "Do not fall through to spec mode."
 assert_contains "skills/plan/SKILL.md" "扫描 docs/versions/v*/state.json"
 assert_contains "skills/plan/SKILL.md" "## 文档引用"
 assert_contains "skills/plan/SKILL.md" 'plan 引用 spec 时，关系应为 `implements`'
@@ -123,7 +121,14 @@ assert_contains "skills/code/SKILL.md" "verification passes"
 assert_contains "skills/code/SKILL.md" 'code_required: yes'
 assert_contains "skills/code/SKILL.md" 'associated DR remains accepted'
 assert_contains "skills/code/SKILL.md" 'closed_reason: committed'
-assert_contains "skills/code/SKILL.md" "If input matches a code-class DR id"
+assert_contains "skills/code/SKILL.md" "If input is a complete plan basename, match the same \`.md\` basename and use plan execution mode. This lookup occurs before DR-like validation"
+assert_contains "skills/code/SKILL.md" "If input matches a document-class DR id \`^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(spec|doc|typo)-[a-z0-9]+(-[a-z0-9]+)*$\`, refuse"
+assert_contains "skills/code/SKILL.md" "If input is DR-like (starts with three digits and a hyphen) but is not a valid full DR ID, fail explicitly"
+assert_contains "skills/code/SKILL.md" "001..999-<fix|feat|chg|arch|spec|doc|typo>-<lowercase-kebab-slug>"
+assert_contains "skills/code/SKILL.md" "Do not fall through to plan or feature-name lookup."
+assert_contains "skills/code/SKILL.md" "If input matches a code-class DR id \`^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(fix|feat|chg|arch)-[a-z0-9]+(-[a-z0-9]+)*$\`"
+assert_contains "skills/code/SKILL.md" "first check for a matching plan by exact DR ID suffix"
+assert_contains "skills/code/SKILL.md" "If zero plans match and no eligible lightweight fix DR matches"
 assert_contains "skills/code/SKILL.md" "plan_required: no"
 assert_contains "skills/code/SKILL.md" 'use lightweight fix DR mode only when DR `tag` is `fix` and `plan_required: no`'
 assert_contains "skills/code/SKILL.md" "lightweight fix DR"
@@ -153,12 +158,24 @@ assert_contains "skills/dr/SKILL.md" "doc | document | maybe | no | no"
 assert_contains "skills/dr/SKILL.md" "typo | document | no | no | no"
 assert_contains "skills/dr/SKILL.md" "spec_change: no\`、\`plan_required: no\`：运行 \`/sdd:code <id>\`"
 assert_contains "skills/dr/SKILL.md" "class: document\`：运行 \`/sdd:spec\` 或对应文档 Skill，不进入 \`/sdd:plan\`"
-assert_contains "skills/dr/SKILL.md" "docs/versions/vX.Y.Z/decisions/<tag>-NNNN-<slug>.md"
+assert_contains "skills/dr/SKILL.md" "docs/versions/vX.Y.Z/decisions/NNN-<tag>-<slug>.md"
+assert_contains "skills/dr/SKILL.md" "Generate version-local increasing DR number \`NNN\`; if none, use \`001\`."
+assert_contains "skills/dr/SKILL.md" "Fail DR creation when the next DR number would exceed \`999\`."
+assert_contains "skills/dr/SKILL.md" "Slugify title into a non-empty lowercase kebab-case slug using only ASCII lowercase letters, digits, and hyphens."
+assert_contains "skills/dr/SKILL.md" "\`DR ID\` 指去掉 \`.md\` 后的完整 DR basename"
+assert_contains "skills/dr/SKILL.md" "标题标识格式固定为 \`DR-NNN-<tag>\`"
+assert_contains "skills/dr/SKILL.md" "\`/sdd:dr accept 001-fix-login-null\`"
+assert_contains "skills/dr/SKILL.md" "\`/sdd:dr dismiss 001-fix-login-null <reason>\`"
+assert_contains "skills/dr/SKILL.md" "不兼容 \`<tag>-NNNN-<slug>\` 旧格式"
+assert_contains "skills/dr/references/dr.md.tmpl" "# DR-NNN-<tag>：<标题>"
+assert_not_contains "skills/dr/references/dr.md.tmpl" "# DR-<tag>-NNNN：<标题>"
 assert_contains "skills/dr/SKILL.md" "扫描 docs/versions/v*/state.json"
 assert_contains "skills/dr/SKILL.md" "## 文档引用"
 assert_contains "skills/dr/SKILL.md" "## 影响资产\` 只做摘要"
 assert_contains "skills/dr/SKILL.md" "project:requirements/<file>.md"
 assert_contains "skills/dr/SKILL.md" "closed_reason: dismissed"
+assert_contains "skills/dr/SKILL.md" "只按完整 \`DR ID\` 精确查找"
+assert_contains "skills/dr/SKILL.md" "无效 DR ID、缺失 DR 或旧格式 \`<tag>-NNNN-<slug>\` 均必须显式失败"
 assert_file_exists "skills/dr/references/dr.md.tmpl"
 assert_contains "skills/dr/references/dr.md.tmpl" "- closed_reason: null"
 assert_contains "skills/dr/references/dr.md.tmpl" "- class：code | document"
@@ -210,7 +227,12 @@ assert_contains "README.md" "最终由用户选择"
 assert_contains "README.md" "用户自行安装"
 assert_contains "README.md" "可选辅助脚本"
 assert_contains "README.md" '`/sdd:init` 不会自动安装依赖插件'
-assert_not_contains "README.md" "scripts/install-deps.sh"$'\n```'$'\n\n该脚本会检查并从 GitHub 仓库安装依赖 plugin，不依赖 Claude plugin marketplace：'
+assert_contains "README.md" 'scripts/install-deps.sh'
+assert_contains "README.md" 'docs/versions/vX.Y.Z/decisions/NNN-<tag>-<slug>.md'
+assert_contains "README.md" '`/sdd:dr accept 001-fix-login-null`'
+assert_contains "README.md" '`plans/002-001-fix-login-null.md`'
+assert_not_contains "README.md" 'docs/versions/vX.Y.Z/decisions/<tag>-NNNN-<slug>.md'
+assert_not_contains "README.md" '[feat-0001-example](../decisions/feat-0001-example.md)'
 
 assert_contains "skills/status/SKILL.md" "description: Show current SDD version status and next-step guidance"
 assert_contains "skills/status/SKILL.md" "扫描 docs/versions/v*/state.json"
@@ -225,6 +247,10 @@ assert_contains "skills/doctor/SKILL.md" "skills/research/SKILL.md"
 assert_contains "skills/doctor/SKILL.md" "scripts/lib/sdd-common.sh"
 assert_contains "skills/doctor/SKILL.md" "scripts/lib/sdd-references.sh"
 assert_contains "skills/doctor/SKILL.md" "scripts/hooks/pre-tool-use.sh"
+assert_contains "skills/doctor/SKILL.md" "strip the leading \`plan number\` and hyphen"
+assert_contains "skills/doctor/SKILL.md" "the remaining plan basename must equal the full \`DR ID\`"
+assert_contains "skills/doctor/SKILL.md" "A DR-like plan basename with an invalid DR ID, a missing exact \`decisions/<dr-id>.md\`, or legacy \`<tag>-NNNN-<slug>\` form is an \`ERROR\`"
+assert_not_contains "skills/doctor/SKILL.md" "plan filename minus \`NNN-\` equals DR slug"
 assert_contains "skills/doctor/SKILL.md" "docs/versions/"
 assert_contains "skills/doctor/SKILL.md" "state.json.version 必须等于版本目录名"
 assert_contains "skills/doctor/SKILL.md" "旧草案结构"

@@ -177,7 +177,9 @@ V0.2.0 起，新建 DR 模板会显式记录 `class / spec_change / plan_require
   → /sdd:code <NNN|id>
 ```
 
-其中，spec-changing code-class DR 在 spec 批准后仍保持 `accepted`，下一步继续进入 `/sdd:plan <id>`，不能在 spec 修订完成时直接关闭。
+其中，spec-changing code-class DR 在 spec 批准后仍保持 `accepted`，下一步继续进入 `/sdd:plan <id>`，不能在 spec 修订完成时直接关闭。DR ID 是完整文件基名，例如使用 `/sdd:dr accept 001-fix-login-null` 接受 DR。
+
+例如：`/sdd:plan 001-fix-login-null` 会生成 `plans/002-001-fix-login-null.md`。
 
 只修代码且不改契约时，fix DR 通常使用 `spec_change: no`，并生成新的增量 plan。
 
@@ -185,7 +187,7 @@ V0.2.0 起，新建 DR 模板会显式记录 `class / spec_change / plan_require
 
 用户在实现后、验收中或测试中提出疑问时，应先运行 `/sdd:triage` 判断问题更可能属于 code、plan、spec、新需求或仅解释。`/sdd:triage` 只输出分类、置信度、已读取依据、原因、推荐路径和可选路径，不创建 DR、不修改 spec、不修改 plan、不修改 code。
 
-spec、plan、DR 之间的引用应使用 Markdown 链接，例如 `[feat-0001-example](../decisions/feat-0001-example.md)`。章节号和标题可以作为普通文本放在链接后，不强制使用 Markdown anchor。
+spec、plan、DR 之间的引用应使用 Markdown 链接，例如 `[001-feat-example](../decisions/001-feat-example.md)`。章节号和标题可以作为普通文本放在链接后，不强制使用 Markdown anchor。
 
 文档类变更使用：
 
@@ -236,7 +238,9 @@ docs/
         ├── plans/
         │   └── NNN-*.md
         └── decisions/
-            └── <tag>-NNNN-<slug>.md
+            └── NNN-<tag>-<slug>.md
+
+Decision Record 标准输出路径为 `docs/versions/vX.Y.Z/decisions/NNN-<tag>-<slug>.md`。
 ```
 
 ## Hook 门控
@@ -244,8 +248,8 @@ docs/
 MVP 只实现 PreToolUse L1 文档门控：
 
 - 写 `docs/versions/vX.Y.Z/specs/spec.md` 前要求 `docs/versions/vX.Y.Z/prd.md` 存在
-- 写 `docs/versions/vX.Y.Z/plans/NNN-<slug>.md`（不含 `NNN-{fix,feat,chg,arch}-*.md`）前要求 `specs/*.md` 中至少一个目标 Functional Specification 状态为 `approved`
-- 写 `docs/versions/vX.Y.Z/plans/NNN-{fix,feat,chg,arch}-*.md` 前要求对应 DR 状态为 `accepted`
+- 写 `docs/versions/vX.Y.Z/plans/NNN-<slug>.md`（不含 `NNN-<dr-id>.md`，其中 `<dr-id>` 为 `NNN-{fix,feat,chg,arch}-<slug>`）前要求 `specs/*.md` 中至少一个目标 Functional Specification 状态为 `approved`
+- 写 `docs/versions/vX.Y.Z/plans/NNN-<dr-id>.md`，其中 `<dr-id>` 为 `NNN-{fix,feat,chg,arch}-<slug>`，前要求对应 DR 状态为 `accepted`
 - 允许写 `docs/versions/vX.Y.Z/state.json`、`docs/versions/vX.Y.Z/ARCHIVE.md` 和 `docs/archive/INDEX.md`
 - 不拦截 `src/**`
 - 不解析 `docs/CONSTITUTION.md` 的 `must` / `should`

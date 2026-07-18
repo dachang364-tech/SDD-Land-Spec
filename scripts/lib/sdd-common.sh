@@ -166,24 +166,51 @@ sdd_next_plan_number() {
     fi
   done
   shopt -u nullglob
+  if (( max >= 999 )); then
+    printf 'Plan 编号已达到上限 999：%s\n' "$plans_dir" >&2
+    return 2
+  fi
   printf '%03d\n' "$((max + 1))"
+}
+
+sdd_is_dr_id() {
+  local value="$1"
+  [[ "$value" =~ ^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(fix|feat|chg|arch|spec|doc|typo)-[a-z0-9]+(-[a-z0-9]+)*$ ]]
 }
 
 sdd_next_dr_number() {
   local decisions_dir="$1"
   local max=0
-  local file base rest number
+  local file base number
   shopt -s nullglob
   for file in "$decisions_dir"/*.md; do
     base="$(basename "$file" .md)"
-    rest="${base#*-}"
-    number="${rest%%-*}"
-    if [[ "$number" =~ ^[0-9][0-9][0-9][0-9]$ ]] && (( 10#$number > max )); then
+    number="${base%%-*}"
+    if sdd_is_dr_id "$base" && [[ "$number" =~ ^[0-9][0-9][0-9]$ ]] && (( 10#$number > max )); then
       max=$((10#$number))
     fi
   done
   shopt -u nullglob
-  printf '%04d\n' "$((max + 1))"
+  if (( max >= 999 )); then
+    printf 'DR 编号已达到上限 999：%s\n' "$decisions_dir" >&2
+    return 2
+  fi
+  printf '%03d\n' "$((max + 1))"
+}
+
+sdd_plan_dr_id_from_basename() {
+  local plan_basename="$1"
+  local base="${plan_basename%.md}"
+  local rest="${base#???-}"
+  if [[ ! "$base" =~ ^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(fix|feat|chg|arch)-[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+    printf '不是 code-class DR plan：%s\n' "$plan_basename" >&2
+    return 2
+  fi
+  if ! sdd_is_dr_id "$rest"; then
+    printf '非法 DR ID：%s\n' "$rest" >&2
+    return 2
+  fi
+  printf '%s\n' "$rest"
 }
 
 sdd_json_target_path() {

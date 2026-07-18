@@ -63,18 +63,31 @@ case "$target_path" in
     fi
     exit 0
     ;;
-  docs/versions/v*/plans/[0-9][0-9][0-9]-fix-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-feat-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-chg-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-arch-*.md)
+  docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-fix-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-feat-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-chg-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-arch-*.md)
     version="${target_path#docs/versions/}"
     version="${version%%/*}"
-    base="$(basename "$target_path" .md)"
-    dr_id="${base#???-}"
+    base="$(basename "$target_path")"
+    dr_id="$(sdd_plan_dr_id_from_basename "$base")" || {
+      printf '无法写入 %s：\n非法 DR ID。\n' "$target_path" >&2
+      exit 2
+    }
     dr="docs/versions/$version/decisions/$dr_id.md"
     status="$(sdd_read_status "$dr")" || exit 2
+    class="$(grep -E '^- class：' "$dr" | head -n 1 || true)"
+    class="${class#- class：}"
+    if [[ "$class" != "code" ]]; then
+      printf '无法写入 %s：\n前置 DR %s class 为 %s，期望 code。\n' "$target_path" "$dr" "${class:-缺失}" >&2
+      exit 2
+    fi
     if [[ "$status" != "accepted" ]]; then
       printf '无法写入 %s：\n前置 DR %s 状态为 %s，期望 accepted。\n请先运行 /sdd:dr accept %s。\n' "$target_path" "$dr" "$status" "$dr_id" >&2
       exit 2
     fi
     exit 0
+    ;;
+  docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9]*-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-fix-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-feat-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-chg-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-arch-*.md)
+    printf '无法写入 %s：\n非法 DR ID。\n' "$target_path" >&2
+    exit 2
     ;;
   docs/versions/v*/plans/[0-9][0-9][0-9]-*.md)
     version="${target_path#docs/versions/}"

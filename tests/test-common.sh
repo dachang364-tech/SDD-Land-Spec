@@ -22,6 +22,12 @@ assert_contains() {
   grep -Fq -- "$needle" "$path" || fail "expected $path to contain: $needle"
 }
 
+assert_not_contains() {
+  local path="$1"
+  local needle="$2"
+  ! grep -Fq -- "$needle" "$path" || fail "expected $path not to contain: $needle"
+}
+
 sdd_plugin_version() {
   local path="$1"
   awk -F'"' '/"version"[[:space:]]*:/ { print $4; exit }' "$path"

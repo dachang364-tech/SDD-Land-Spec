@@ -40,8 +40,15 @@ assert_contains "/tmp/sdd-missing-field.err" "state.json 缺少字段"
 number="$(sdd_next_plan_number "$tmp/valid/docs/versions/v0.1.0/plans")"
 [[ "$number" == "002" ]] || fail "expected next plan 002, got $number"
 
+mkdir -p "$tmp/overflow-plans"
+printf '# Plan\n\n- 状态：planned\n' > "$tmp/overflow-plans/999-final.md"
+if sdd_next_plan_number "$tmp/overflow-plans" >/tmp/sdd-next-plan-overflow.out 2>/tmp/sdd-next-plan-overflow.err; then
+  fail "expected plan number overflow to fail"
+fi
+assert_contains "/tmp/sdd-next-plan-overflow.err" "Plan 编号已达到上限 999"
+
 dr_number="$(sdd_next_dr_number "$tmp/valid/docs/versions/v0.1.0/decisions")"
-[[ "$dr_number" == "0002" ]] || fail "expected next DR 0002, got $dr_number"
+[[ "$dr_number" == "002" ]] || fail "expected next DR 002, got $dr_number"
 
 slug="$(sdd_slug 'Login Null Error!')"
 [[ "$slug" == "login-null-error" ]] || fail "expected login-null-error, got $slug"
@@ -109,5 +116,53 @@ mkdir -p "$tmp/non-semver/docs/versions/v0.2.0-beta"
 printf '{\n  "version": "v0.2.0-beta",\n  "state": "active",\n  "created_at": "2026-07-14T00:00:00Z",\n  "archived_at": null\n}\n' > "$tmp/non-semver/docs/versions/v0.2.0-beta/state.json"
 active="$(sdd_active_version_dir "$tmp/non-semver")"
 [[ "$active" == "docs/versions/v0.1.0" ]] || fail "expected non-semver directory to be ignored, got $active"
+
+sdd_is_dr_id "001-fix-login-null" || fail "expected new DR ID to be valid"
+sdd_is_dr_id "001-spec-release-note" || fail "expected document-class DR ID to be valid"
+if sdd_is_dr_id "fix-0001-login-null"; then
+  fail "expected legacy DR ID to be invalid"
+fi
+if sdd_is_dr_id "1000-fix-login-null"; then
+  fail "expected 4-digit DR number to be invalid"
+fi
+if sdd_is_dr_id "001-fix-"; then
+  fail "expected empty slug DR ID to be invalid"
+fi
+if sdd_is_dr_id "000-fix-login-null"; then
+  fail "expected zero DR number to be invalid"
+fi
+
+plan_dr_id="$(sdd_plan_dr_id_from_basename "007-001-fix-login-null.md")"
+[[ "$plan_dr_id" == "001-fix-login-null" ]] || fail "expected 001-fix-login-null, got $plan_dr_id"
+
+if sdd_plan_dr_id_from_basename "007-feature-login.md" >/tmp/sdd-plan-dr-id.out 2>/tmp/sdd-plan-dr-id.err; then
+  fail "expected spec-mode plan basename to fail code-class DR parsing"
+fi
+assert_contains "/tmp/sdd-plan-dr-id.err" "不是 code-class DR plan"
+
+if sdd_plan_dr_id_from_basename "000-001-fix-login-null.md" >/tmp/sdd-plan-zero-number.out 2>/tmp/sdd-plan-zero-number.err; then
+  fail "expected zero plan number to be invalid"
+fi
+if sdd_plan_dr_id_from_basename "007-000-fix-login-null.md" >/tmp/sdd-plan-zero-dr.out 2>/tmp/sdd-plan-zero-dr.err; then
+  fail "expected zero DR number in plan to be invalid"
+fi
+
+mkdir -p "$tmp/empty-decisions"
+first_dr_number="$(sdd_next_dr_number "$tmp/empty-decisions")"
+[[ "$first_dr_number" == "001" ]] || fail "expected first DR number 001, got $first_dr_number"
+
+mkdir -p "$tmp/multi-tag-decisions"
+printf '# DR-001-fix：A\n\n- 状态：accepted\n' > "$tmp/multi-tag-decisions/001-fix-a.md"
+printf '# DR-002-feat：B\n\n- 状态：accepted\n' > "$tmp/multi-tag-decisions/002-feat-b.md"
+printf '# DR-009-doc：C\n\n- 状态：accepted\n' > "$tmp/multi-tag-decisions/009-doc-c.md"
+shared_number="$(sdd_next_dr_number "$tmp/multi-tag-decisions")"
+[[ "$shared_number" == "010" ]] || fail "expected cross-tag next DR number 010, got $shared_number"
+
+mkdir -p "$tmp/overflow-decisions"
+printf '# DR-999-fix：Overflow\n\n- 状态：accepted\n' > "$tmp/overflow-decisions/999-fix-overflow.md"
+if sdd_next_dr_number "$tmp/overflow-decisions" >/tmp/sdd-next-dr-overflow.out 2>/tmp/sdd-next-dr-overflow.err; then
+  fail "expected DR number overflow to fail"
+fi
+assert_contains "/tmp/sdd-next-dr-overflow.err" "DR 编号已达到上限 999"
 
 printf 'PASS: common library\n'

@@ -7,4 +7,4 @@ printf '{\n  "version": "v0.1.0",\n  "state": "active",\n  "created_at": "2026-0
 printf '# PRD\n' > "$root/docs/versions/v0.1.0/prd.md"
 printf '# Functional Specification\n\n- 状态：approved\n' > "$root/docs/versions/v0.1.0/specs/spec.md"
 printf '# Plan\n\n- 状态：planned\n' > "$root/docs/versions/v0.1.0/plans/001-feature-login.md"
-printf '# DR\n\n- 状态：accepted\n- class：code\n- tag：fix\n- spec_change：no\n- plan_required：yes\n- code_required：yes\n- closed_reason: null\n' > "$root/docs/versions/v0.1.0/decisions/fix-0001-login-null.md"
+printf '# DR-001-fix：Login null\n\n- 状态：accepted\n- class：code\n- tag：fix\n- spec_change：no\n- plan_required：yes\n- code_required：yes\n- closed_reason: null\n' > "$root/docs/versions/v0.1.0/decisions/001-fix-login-null.md"

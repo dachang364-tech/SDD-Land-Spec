@@ -35,4 +35,8 @@ assert_file_exists "README.md"
 assert_contains "README.md" "/sdd:init"
 assert_contains "README.md" "/sdd:archive"
 
+assert_contains "skills/doctor/SKILL.md" 'the remaining plan basename must equal the full `DR ID`'
+assert_contains "skills/doctor/SKILL.md" 'A DR-like plan basename with an invalid DR ID, a missing exact `decisions/<dr-id>.md`, or legacy `<tag>-NNNN-<slug>` form is an `ERROR`'
+assert_not_contains "skills/doctor/SKILL.md" 'plan filename minus `NNN-` equals DR slug'
+
 printf 'PASS: skeleton contract\n'
