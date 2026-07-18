@@ -66,17 +66,22 @@ printf '# Functional Specification\n\n- 状态：approved\n' > "$tmp/docs/versio
 run_hook "$tmp" "docs/versions/v0.1.0/plans/003-login.md"
 run_hook "$tmp" "docs/versions/v0.1.0/plans/003-feature-settings.md"
 
-printf '# DR\n\n- 状态：drafting\n- class：code\n- tag：chg\n- spec_change：yes\n- plan_required：yes\n- code_required：yes\n' > "$tmp/docs/versions/v0.1.0/decisions/chg-0002-policy.md"
-if run_hook "$tmp" "docs/versions/v0.1.0/plans/004-chg-0002-policy.md" >/tmp/sdd-hook3.out 2>/tmp/sdd-hook3.err; then
+printf '# DR-002-chg：Policy\n\n- 状态：drafting\n- class：code\n- tag：chg\n- spec_change：yes\n- plan_required：yes\n- code_required：yes\n' > "$tmp/docs/versions/v0.1.0/decisions/002-chg-policy.md"
+if run_hook "$tmp" "docs/versions/v0.1.0/plans/004-002-chg-policy.md" >/tmp/sdd-hook3.out 2>/tmp/sdd-hook3.err; then
   fail "expected code DR plan write with drafting DR to fail"
 fi
-assert_contains "/tmp/sdd-hook3.err" "前置 DR docs/versions/v0.1.0/decisions/chg-0002-policy.md 状态为 drafting，期望 accepted"
+assert_contains "/tmp/sdd-hook3.err" "前置 DR docs/versions/v0.1.0/decisions/002-chg-policy.md 状态为 drafting，期望 accepted"
 
-printf '# DR\n\n- 状态：drafting\n- class：code\n- tag：feat\n- spec_change：yes\n- plan_required：yes\n- code_required：yes\n' > "$tmp/docs/versions/v0.1.0/decisions/feat-0002-rollout.md"
-if run_hook "$tmp" "docs/versions/v0.1.0/plans/005-feat-0002-rollout.md" >/tmp/sdd-hook4.out 2>/tmp/sdd-hook4.err; then
+printf '# DR-003-feat：Rollout\n\n- 状态：drafting\n- class：code\n- tag：feat\n- spec_change：yes\n- plan_required：yes\n- code_required：yes\n' > "$tmp/docs/versions/v0.1.0/decisions/003-feat-rollout.md"
+if run_hook "$tmp" "docs/versions/v0.1.0/plans/005-003-feat-rollout.md" >/tmp/sdd-hook4.out 2>/tmp/sdd-hook4.err; then
   fail "expected feat DR plan write with drafting DR to fail"
 fi
-assert_contains "/tmp/sdd-hook4.err" "前置 DR docs/versions/v0.1.0/decisions/feat-0002-rollout.md 状态为 drafting，期望 accepted"
+assert_contains "/tmp/sdd-hook4.err" "前置 DR docs/versions/v0.1.0/decisions/003-feat-rollout.md 状态为 drafting，期望 accepted"
+
+if run_hook "$tmp" "docs/versions/v0.1.0/plans/006-fix-0002-legacy.md" >/tmp/sdd-hook-legacy.out 2>/tmp/sdd-hook-legacy.err; then
+  fail "expected legacy DR-style plan basename to fail"
+fi
+assert_contains "/tmp/sdd-hook-legacy.err" "非法 DR ID"
 
 run_hook "$tmp" "docs/archive/INDEX.md"
 run_hook "$tmp" "docs/versions/v0.1.0/ARCHIVE.md"
