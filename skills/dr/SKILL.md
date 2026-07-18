@@ -51,19 +51,24 @@ Input: `/sdd:dr <tag> <title>`
 Steps:
 
 1. Scan `docs/versions/vX.Y.Z/decisions/*.md`.
-2. Generate version-local increasing DR number `NNNN`; if none, use `0001`.
+2. Generate version-local increasing DR number `NNN`; if none, use `001`.
 3. Slugify title.
-4. Write `docs/versions/vX.Y.Z/decisions/<tag>-NNNN-<slug>.md` from `skills/dr/references/dr.md.tmpl`.
-5. Derive `class`, `spec_change`, `plan_required`, `code_required` from the tag defaults table.
-6. Initial status is `drafting`.
-7. If the user chooses lightweight fix, set `plan_required: no` but keep `class: code` and `code_required: yes`.
-8. Write the `## 文档引用` table; if no formal reference, use the fixed empty-set row `| 未声明。 | - | - | - | - |`.
+4. Write `docs/versions/vX.Y.Z/decisions/NNN-<tag>-<slug>.md` from `skills/dr/references/dr.md.tmpl`.
+5. `DR ID` 指去掉 `.md` 后的完整 DR basename。
+6. 标题标识格式固定为 `DR-NNN-<tag>`，slug 不进入标题标识。
+7. 不兼容 `<tag>-NNNN-<slug>` 旧格式，不提供 alias、双写或模糊读取。
+8. Derive `class`, `spec_change`, `plan_required`, `code_required` from the tag defaults table.
+9. Initial status is `drafting`.
+10. If the user chooses lightweight fix, set `plan_required: no` but keep `class: code` and `code_required: yes`.
+11. Write the `## 文档引用` table; if no formal reference, use the fixed empty-set row `| 未声明。 | - | - | - | - |`.
    - 引用 project-level requirements：同时写相对 Markdown link 和 `project:requirements/<file>.md` locator。
    - 引用跨版本文档：同时写相对 Markdown link 和版本 locator。
    - `## 文档引用` 是 DR 的正式关系来源；`## 影响资产` 只做摘要，不作为正式关系来源。
-9. Output next step:
+12. Output next step:
    - code-class DR: run `/sdd:dr accept <id>`; after accept, next step depends on `plan_required` and may be `/sdd:plan <id>` or `/sdd:code <id>`. If `spec_change` is `yes` or `maybe`, first evaluate whether `/sdd:spec` is needed.
    - document-class DR: run `/sdd:dr accept <id>`, then `/sdd:spec` or the corresponding document Skill.
+
+Example: `/sdd:dr accept 001-fix-login-null`
 
 ## Accept mode
 
