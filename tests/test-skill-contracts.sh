@@ -3,12 +3,6 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 . tests/test-common.sh
 
-assert_not_contains() {
-  local path="$1"
-  local needle="$2"
-  [[ "$(<"$path")" != *"$needle"* ]] || fail "expected $path not to contain: $needle"
-}
-
 assert_not_matches() {
   local path="$1"
   local pattern="$2"
@@ -97,6 +91,8 @@ assert_contains "skills/spec/SKILL.md" "不再使用独立 `## 关联 DRs`"
 assert_contains "skills/plan/SKILL.md" "description: Create an implementation plan from approved spec or accepted code-class DR"
 assert_contains "skills/plan/SKILL.md" "docs/versions/vX.Y.Z/plans/NNN-<slug>.md"
 assert_contains "skills/plan/SKILL.md" "docs/versions/vX.Y.Z/plans/NNN-<dr-id>.md"
+assert_contains "skills/plan/SKILL.md" "If \`<work-item>\` matches \`^[0-9]{3}-(fix|feat|chg|arch)-[a-z0-9-]+$\`, use code-class DR mode."
+assert_contains "skills/plan/SKILL.md" "If \`<work-item>\` matches \`^[0-9]{3}-(spec|doc|typo)-[a-z0-9-]+$\`, refuse"
 assert_contains "skills/plan/SKILL.md" "扫描 docs/versions/v*/state.json"
 assert_contains "skills/plan/SKILL.md" "## 文档引用"
 assert_contains "skills/plan/SKILL.md" 'plan 引用 spec 时，关系应为 `implements`'
@@ -123,7 +119,9 @@ assert_contains "skills/code/SKILL.md" "verification passes"
 assert_contains "skills/code/SKILL.md" 'code_required: yes'
 assert_contains "skills/code/SKILL.md" 'associated DR remains accepted'
 assert_contains "skills/code/SKILL.md" 'closed_reason: committed'
-assert_contains "skills/code/SKILL.md" "If input matches a code-class DR id"
+assert_contains "skills/code/SKILL.md" "If input matches a code-class DR id \`^[0-9]{3}-(fix|feat|chg|arch)-[a-z0-9-]+$\`"
+assert_contains "skills/code/SKILL.md" "first check for a matching plan by exact DR ID suffix"
+assert_contains "skills/code/SKILL.md" "If zero plans match and no eligible lightweight fix DR matches"
 assert_contains "skills/code/SKILL.md" "plan_required: no"
 assert_contains "skills/code/SKILL.md" 'use lightweight fix DR mode only when DR `tag` is `fix` and `plan_required: no`'
 assert_contains "skills/code/SKILL.md" "lightweight fix DR"
@@ -235,6 +233,9 @@ assert_contains "skills/doctor/SKILL.md" "skills/research/SKILL.md"
 assert_contains "skills/doctor/SKILL.md" "scripts/lib/sdd-common.sh"
 assert_contains "skills/doctor/SKILL.md" "scripts/lib/sdd-references.sh"
 assert_contains "skills/doctor/SKILL.md" "scripts/hooks/pre-tool-use.sh"
+assert_contains "skills/doctor/SKILL.md" "strip the leading \`plan number\` and hyphen"
+assert_contains "skills/doctor/SKILL.md" "the remaining plan basename must equal the full \`DR ID\`"
+assert_not_contains "skills/doctor/SKILL.md" "plan filename minus \`NNN-\` equals DR slug"
 assert_contains "skills/doctor/SKILL.md" "docs/versions/"
 assert_contains "skills/doctor/SKILL.md" "state.json.version 必须等于版本目录名"
 assert_contains "skills/doctor/SKILL.md" "旧草案结构"

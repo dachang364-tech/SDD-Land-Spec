@@ -21,7 +21,7 @@ Execute an existing Implementation Plan, or execute an accepted lightweight fix 
 1. If input is `NNN`, match `docs/versions/vX.Y.Z/plans/NNN-*.md` and use plan execution mode.
 2. If input is a complete plan basename, match the same `.md` basename and use plan execution mode.
 3. If input is a feature name, match by plan suffix and use plan execution mode.
-4. If input matches a code-class DR id `^(fix|feat|chg|arch)-[0-9]{4}-[a-z0-9-]+$`, first check for a matching plan by suffix. If no plan matches, read `docs/versions/vX.Y.Z/decisions/<dr-id>.md` and use lightweight fix DR mode only when DR `tag` is `fix` and `plan_required: no`.
+4. If input matches a code-class DR id `^[0-9]{3}-(fix|feat|chg|arch)-[a-z0-9-]+$`, first check for a matching plan by exact DR ID suffix. If no plan matches, read `docs/versions/vX.Y.Z/decisions/<dr-id>.md` and use lightweight fix DR mode only when DR `tag` is `fix` and `plan_required: no`.
 5. If zero plans match and no eligible lightweight fix DR matches, stop and ask the user to run `/sdd:plan <work-item>` or confirm a lightweight fix DR.
 6. If multiple plans match, stop and ask the user to use the plan number, for example `/sdd:code 002`.
 

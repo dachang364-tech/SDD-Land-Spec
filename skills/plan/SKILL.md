@@ -18,8 +18,8 @@ Generate a new incremental Implementation Plan under `docs/versions/vX.Y.Z/plans
 
 ## Mode detection
 
-1. If `<work-item>` matches `^(fix|feat|chg|arch)-[0-9]{4}-[a-z0-9-]+$`, use code-class DR mode.
-2. If `<work-item>` matches `^(spec|doc|typo)-[0-9]{4}-[a-z0-9-]+$`, refuse: `文档类 DR 不生成 Implementation Plan，不执行 /sdd:code。`
+1. If `<work-item>` matches `^[0-9]{3}-(fix|feat|chg|arch)-[a-z0-9-]+$`, use code-class DR mode.
+2. If `<work-item>` matches `^[0-9]{3}-(spec|doc|typo)-[a-z0-9-]+$`, refuse: `文档类 DR 不生成 Implementation Plan，不执行 /sdd:code。`
 3. Otherwise use spec mode.
 
 ## Plan number allocation
