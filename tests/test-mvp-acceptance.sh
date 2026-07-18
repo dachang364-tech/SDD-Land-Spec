@@ -37,4 +37,6 @@ assert_contains "/tmp/sdd-common.out" "PASS: common library"
 bash tests/test-skill-contracts.sh >/tmp/sdd-skills.out
 assert_contains "/tmp/sdd-skills.out" "PASS: skill contracts"
 
+bash tests/test-dr-filename-contract.sh
+
 printf 'PASS: MVP acceptance\n'
