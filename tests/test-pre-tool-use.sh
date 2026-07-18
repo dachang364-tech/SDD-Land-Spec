@@ -90,6 +90,12 @@ if run_hook "$tmp" "docs/versions/v0.1.0/plans/007-100-arch-hundred.md" >/tmp/sd
 fi
 assert_contains "/tmp/sdd-hook6.err" "前置 DR docs/versions/v0.1.0/decisions/100-arch-hundred.md 状态为 drafting，期望 accepted"
 
+printf '# DR-011-fix：Metadata Mismatch\n\n- 状态：accepted\n- class：document\n- tag：fix\n- spec_change：no\n- plan_required：no\n- code_required：no\n' > "$tmp/docs/versions/v0.1.0/decisions/011-fix-metadata-mismatch.md"
+if run_hook "$tmp" "docs/versions/v0.1.0/plans/008-011-fix-metadata-mismatch.md" >/tmp/sdd-hook-class-mismatch.out 2>/tmp/sdd-hook-class-mismatch.err; then
+  fail "expected code-looking DR with document-class metadata to fail"
+fi
+assert_contains "/tmp/sdd-hook-class-mismatch.err" "前置 DR docs/versions/v0.1.0/decisions/011-fix-metadata-mismatch.md class 为 document，期望 code"
+
 if run_hook "$tmp" "docs/versions/v0.1.0/plans/008-003-doc-release-notes.md" >/tmp/sdd-hook-doc.out 2>/tmp/sdd-hook-doc.err; then
   fail "expected document-class DR-shaped plan basename to fail"
 fi

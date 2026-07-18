@@ -73,6 +73,12 @@ case "$target_path" in
     }
     dr="docs/versions/$version/decisions/$dr_id.md"
     status="$(sdd_read_status "$dr")" || exit 2
+    class="$(grep -E '^- class：' "$dr" | head -n 1 || true)"
+    class="${class#- class：}"
+    if [[ "$class" != "code" ]]; then
+      printf '无法写入 %s：\n前置 DR %s class 为 %s，期望 code。\n' "$target_path" "$dr" "${class:-缺失}" >&2
+      exit 2
+    fi
     if [[ "$status" != "accepted" ]]; then
       printf '无法写入 %s：\n前置 DR %s 状态为 %s，期望 accepted。\n请先运行 /sdd:dr accept %s。\n' "$target_path" "$dr" "$status" "$dr_id" >&2
       exit 2
