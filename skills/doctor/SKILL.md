@@ -77,6 +77,7 @@ spec-kit
 - accepted code-class DR with `plan_required: yes` should have a matching plan.
 - For a code-class DR plan, strip the leading `plan number` and hyphen from the plan basename.
 - the remaining plan basename must equal the full `DR ID`.
+- A DR-like plan basename with an invalid DR ID, a missing exact `decisions/<dr-id>.md`, or legacy `<tag>-NNNN-<slug>` form is an `ERROR`; do not use aliases or fuzzy lookup.
 - accepted lightweight fix DR (`tag: fix`, `class: code`, `spec_change: no`, `plan_required: no`, `code_required: yes`) needs no plan; suggest `/sdd:code <dr-id>`.
 - done code-class DR whose DR is still `accepted`: report as a close reminder.
 

@@ -40,6 +40,13 @@ assert_contains "/tmp/sdd-missing-field.err" "state.json 缺少字段"
 number="$(sdd_next_plan_number "$tmp/valid/docs/versions/v0.1.0/plans")"
 [[ "$number" == "002" ]] || fail "expected next plan 002, got $number"
 
+mkdir -p "$tmp/overflow-plans"
+printf '# Plan\n\n- 状态：planned\n' > "$tmp/overflow-plans/999-final.md"
+if sdd_next_plan_number "$tmp/overflow-plans" >/tmp/sdd-next-plan-overflow.out 2>/tmp/sdd-next-plan-overflow.err; then
+  fail "expected plan number overflow to fail"
+fi
+assert_contains "/tmp/sdd-next-plan-overflow.err" "Plan 编号已达到上限 999"
+
 dr_number="$(sdd_next_dr_number "$tmp/valid/docs/versions/v0.1.0/decisions")"
 [[ "$dr_number" == "002" ]] || fail "expected next DR 002, got $dr_number"
 

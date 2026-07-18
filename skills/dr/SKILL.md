@@ -74,7 +74,9 @@ Example: `/sdd:dr accept 001-fix-login-null`
 
 Input: `/sdd:dr accept <id>`
 
-Precondition: DR 状态为 drafting。
+Precondition: `<id>` 必须是有效完整 `DR ID`：`001..999-<fix|feat|chg|arch|spec|doc|typo>-<lowercase-kebab-slug>`，并且对应 active version 的 `decisions/<id>.md` 精确存在且状态为 drafting。
+
+Lookup and failure rules: 只按完整 `DR ID` 精确查找 `docs/versions/vX.Y.Z/decisions/<id>.md`，不使用 alias、部分编号、tag/slug 模糊匹配或自动补全。无效 DR ID、缺失 DR 或旧格式 `<tag>-NNNN-<slug>` 均必须显式失败，不得修改任何文件。
 
 Steps:
 
@@ -94,7 +96,9 @@ Steps:
 
 Input: `/sdd:dr dismiss <id> <reason>`
 
-Precondition: DR 状态为 drafting。
+Precondition: `<id>` 必须是有效完整 `DR ID`：`001..999-<fix|feat|chg|arch|spec|doc|typo>-<lowercase-kebab-slug>`，并且对应 active version 的 `decisions/<id>.md` 精确存在且状态为 drafting。
+
+Lookup and failure rules: 只按完整 `DR ID` 精确查找 `docs/versions/vX.Y.Z/decisions/<id>.md`，不使用 alias、部分编号、tag/slug 模糊匹配或自动补全。无效 DR ID、缺失 DR 或旧格式 `<tag>-NNNN-<slug>` 均必须显式失败，不得修改任何文件。
 
 Example: `/sdd:dr dismiss 001-fix-login-null <reason>`
 

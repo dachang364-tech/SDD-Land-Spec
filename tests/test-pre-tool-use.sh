@@ -106,6 +106,18 @@ fi
 assert_contains "/tmp/sdd-hook-four-digit-dr.err" "非法 DR ID"
 assert_not_contains "/tmp/sdd-hook-four-digit-dr.err" "前置规格"
 
+if run_hook "$tmp" "docs/versions/v0.1.0/plans/002-001-unknown-login.md" >/tmp/sdd-hook-unknown-tag.out 2>/tmp/sdd-hook-unknown-tag.err; then
+  fail "expected unknown DR tag plan basename to fail"
+fi
+assert_contains "/tmp/sdd-hook-unknown-tag.err" "非法 DR ID"
+assert_not_contains "/tmp/sdd-hook-unknown-tag.err" "前置规格"
+
+if run_hook "$tmp" "docs/versions/v0.1.0/plans/002-001-FIX-login.md" >/tmp/sdd-hook-case-tag.out 2>/tmp/sdd-hook-case-tag.err; then
+  fail "expected case-invalid DR tag plan basename to fail"
+fi
+assert_contains "/tmp/sdd-hook-case-tag.err" "非法 DR ID"
+assert_not_contains "/tmp/sdd-hook-case-tag.err" "前置规格"
+
 run_hook "$tmp" "docs/archive/INDEX.md"
 run_hook "$tmp" "docs/versions/v0.1.0/ARCHIVE.md"
 

@@ -166,6 +166,10 @@ sdd_next_plan_number() {
     fi
   done
   shopt -u nullglob
+  if (( max >= 999 )); then
+    printf 'Plan 编号已达到上限 999：%s\n' "$plans_dir" >&2
+    return 2
+  fi
   printf '%03d\n' "$((max + 1))"
 }
 
