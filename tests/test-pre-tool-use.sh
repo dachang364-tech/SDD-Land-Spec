@@ -100,6 +100,12 @@ if run_hook "$tmp" "docs/versions/v0.1.0/plans/006-fix-0002-legacy.md" >/tmp/sdd
 fi
 assert_contains "/tmp/sdd-hook-legacy.err" "非法 DR ID"
 
+if run_hook "$tmp" "docs/versions/v0.1.0/plans/001-1000-fix-login.md" >/tmp/sdd-hook-four-digit-dr.out 2>/tmp/sdd-hook-four-digit-dr.err; then
+  fail "expected four-digit DR number plan basename to fail"
+fi
+assert_contains "/tmp/sdd-hook-four-digit-dr.err" "非法 DR ID"
+assert_not_contains "/tmp/sdd-hook-four-digit-dr.err" "前置规格"
+
 run_hook "$tmp" "docs/archive/INDEX.md"
 run_hook "$tmp" "docs/versions/v0.1.0/ARCHIVE.md"
 

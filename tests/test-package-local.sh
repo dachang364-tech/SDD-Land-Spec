@@ -37,6 +37,7 @@ assert_contains "$readme_tmp" "# SDD Plugin"
 assert_contains "$readme_tmp" 'docs/versions/vX.Y.Z'
 assert_contains "$readme_tmp" '001-fix-login-null'
 assert_contains "$readme_tmp" 'plans/002-001-fix-login-null.md'
+assert_contains "$readme_tmp" 'docs/versions/vX.Y.Z/decisions/NNN-<tag>-<slug>.md'
 assert_contains "$readme_tmp" 'NNN-<tag>-<slug>.md'
 assert_not_contains "$readme_tmp" '<tag>-NNNN-<slug>'
 assert_contains "$readme_tmp" "## 安装"

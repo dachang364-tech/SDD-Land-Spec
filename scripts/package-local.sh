@@ -188,7 +188,7 @@ docs/
 
 其中，版本级文档目录为 `docs/versions/vX.Y.Z/`。
 
-其中，Decision Record 的标准文件名为 `NNN-<tag>-<slug>.md`。
+其中，Decision Record 的标准输出路径为 `docs/versions/vX.Y.Z/decisions/NNN-<tag>-<slug>.md`。
 README
 
 (

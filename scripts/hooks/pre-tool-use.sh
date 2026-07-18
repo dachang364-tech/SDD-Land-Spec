@@ -79,7 +79,7 @@ case "$target_path" in
     fi
     exit 0
     ;;
-  docs/versions/v*/plans/[0-9][0-9][0-9]-fix-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-feat-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-chg-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-arch-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-spec-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-doc-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-typo-*.md)
+  docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9]*-fix-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9]*-feat-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9]*-chg-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9]*-arch-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9]*-spec-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9]*-doc-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9]*-typo-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-fix-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-feat-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-chg-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-arch-*.md)
     printf '无法写入 %s：\n非法 DR ID。\n' "$target_path" >&2
     exit 2
     ;;
