@@ -21,6 +21,7 @@ assert_contains "/tmp/sdd-doc-plan-id.err" "不是 code-class DR plan"
 assert_contains "skills/dr/SKILL.md" '`/sdd:dr accept 001-fix-login-null`'
 assert_contains "skills/plan/SKILL.md" 'If `<work-item>` matches `^[0-9]{3}-(fix|feat|chg|arch)-[a-z0-9-]+$`, use code-class DR mode.'
 assert_contains "skills/plan/SKILL.md" 'If `<work-item>` matches `^[0-9]{3}-(spec|doc|typo)-[a-z0-9-]+$`, refuse'
+assert_contains "skills/code/SKILL.md" 'If input is a complete plan basename, match the same `.md` basename and use plan execution mode. This lookup occurs before DR-like validation'
 assert_contains "skills/code/SKILL.md" 'If input matches a document-class DR id `^[0-9]{3}-(spec|doc|typo)-[a-z0-9-]+$`, refuse'
 assert_contains "skills/code/SKILL.md" 'If input is DR-like (starts with three digits and a hyphen) but is not a valid full DR ID, fail explicitly'
 assert_contains "skills/code/SKILL.md" '001..999-<fix|feat|chg|arch|spec|doc|typo>-<lowercase-kebab-slug>'

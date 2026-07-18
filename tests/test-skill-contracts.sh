@@ -119,6 +119,7 @@ assert_contains "skills/code/SKILL.md" "verification passes"
 assert_contains "skills/code/SKILL.md" 'code_required: yes'
 assert_contains "skills/code/SKILL.md" 'associated DR remains accepted'
 assert_contains "skills/code/SKILL.md" 'closed_reason: committed'
+assert_contains "skills/code/SKILL.md" "If input is a complete plan basename, match the same \`.md\` basename and use plan execution mode. This lookup occurs before DR-like validation"
 assert_contains "skills/code/SKILL.md" "If input matches a document-class DR id \`^[0-9]{3}-(spec|doc|typo)-[a-z0-9-]+$\`, refuse"
 assert_contains "skills/code/SKILL.md" "If input is DR-like (starts with three digits and a hyphen) but is not a valid full DR ID, fail explicitly"
 assert_contains "skills/code/SKILL.md" "001..999-<fix|feat|chg|arch|spec|doc|typo>-<lowercase-kebab-slug>"
