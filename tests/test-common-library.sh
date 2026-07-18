@@ -121,6 +121,9 @@ fi
 if sdd_is_dr_id "001-fix-"; then
   fail "expected empty slug DR ID to be invalid"
 fi
+if sdd_is_dr_id "000-fix-login-null"; then
+  fail "expected zero DR number to be invalid"
+fi
 
 plan_dr_id="$(sdd_plan_dr_id_from_basename "007-001-fix-login-null.md")"
 [[ "$plan_dr_id" == "001-fix-login-null" ]] || fail "expected 001-fix-login-null, got $plan_dr_id"
@@ -129,6 +132,13 @@ if sdd_plan_dr_id_from_basename "007-feature-login.md" >/tmp/sdd-plan-dr-id.out 
   fail "expected spec-mode plan basename to fail code-class DR parsing"
 fi
 assert_contains "/tmp/sdd-plan-dr-id.err" "不是 code-class DR plan"
+
+if sdd_plan_dr_id_from_basename "000-001-fix-login-null.md" >/tmp/sdd-plan-zero-number.out 2>/tmp/sdd-plan-zero-number.err; then
+  fail "expected zero plan number to be invalid"
+fi
+if sdd_plan_dr_id_from_basename "007-000-fix-login-null.md" >/tmp/sdd-plan-zero-dr.out 2>/tmp/sdd-plan-zero-dr.err; then
+  fail "expected zero DR number in plan to be invalid"
+fi
 
 mkdir -p "$tmp/empty-decisions"
 first_dr_number="$(sdd_next_dr_number "$tmp/empty-decisions")"
