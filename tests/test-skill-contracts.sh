@@ -119,6 +119,10 @@ assert_contains "skills/code/SKILL.md" "verification passes"
 assert_contains "skills/code/SKILL.md" 'code_required: yes'
 assert_contains "skills/code/SKILL.md" 'associated DR remains accepted'
 assert_contains "skills/code/SKILL.md" 'closed_reason: committed'
+assert_contains "skills/code/SKILL.md" "If input matches a document-class DR id \`^[0-9]{3}-(spec|doc|typo)-[a-z0-9-]+$\`, refuse"
+assert_contains "skills/code/SKILL.md" "If input is DR-like (starts with three digits and a hyphen) but is not a valid full DR ID, fail explicitly"
+assert_contains "skills/code/SKILL.md" "001..999-<fix|feat|chg|arch|spec|doc|typo>-<lowercase-kebab-slug>"
+assert_contains "skills/code/SKILL.md" "Do not fall through to plan or feature-name lookup."
 assert_contains "skills/code/SKILL.md" "If input matches a code-class DR id \`^[0-9]{3}-(fix|feat|chg|arch)-[a-z0-9-]+$\`"
 assert_contains "skills/code/SKILL.md" "first check for a matching plan by exact DR ID suffix"
 assert_contains "skills/code/SKILL.md" "If zero plans match and no eligible lightweight fix DR matches"
