@@ -212,6 +212,7 @@ spec、plan、DR 之间的引用应使用 Markdown 链接，例如 `[001-feat-ex
 | `/sdd:prd` | 生成产品需求文档 PRD |
 | `/sdd:spec` | 基于 PRD 生成 Functional Specification |
 | `/sdd:plan <work-item>` | 基于 approved spec 或 accepted code-class DR 生成 Implementation Plan |
+| `/sdd:review [doc-path] [mode?]` | 对已有 PRD、spec 或 plan 重新执行 reviewer |
 | `/sdd:code <NNN|work-item>` | 按计划执行代码实现 |
 | `/sdd:dr <tag> <title>` | 创建 Decision Record |
 | `/sdd:dr accept <id>` | 接受 DR，允许后续落地 |

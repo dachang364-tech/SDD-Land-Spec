@@ -13,6 +13,19 @@ for skill in init new research prd spec plan code dr triage status doctor archiv
   assert_file_exists "skills/$skill/SKILL.md"
 done
 
+assert_file_exists "skills/review/SKILL.md"
+assert_file_exists "skills/review/references/reviewer-result.schema.json"
+assert_contains "skills/review/SKILL.md" "description: Review and improve PRD, spec, or plan documents"
+assert_contains "skills/review/SKILL.md" '`quality`'
+assert_contains "skills/review/SKILL.md" '`feasibility`'
+assert_contains "skills/review/SKILL.md" 'review -> update -> review'
+assert_contains "skills/review/SKILL.md" '单次 subagent 调用内部'
+assert_contains "skills/review/SKILL.md" '机器输出'
+assert_contains "skills/review/SKILL.md" '用户输出'
+assert_contains "skills/review/references/reviewer-result.schema.json" '"document_type"'
+assert_contains "skills/review/references/reviewer-result.schema.json" '"requires_user_confirmation"'
+assert_contains "skills/review/references/reviewer-result.schema.json" '"candidate_rewrites"'
+
 assert_contains "skills/init/SKILL.md" "description: Initialize SDD project structure"
 assert_contains "skills/init/SKILL.md" "docs/CONSTITUTION.md 已存在"
 assert_contains "skills/init/SKILL.md" "继续初始化"
