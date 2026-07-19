@@ -3,9 +3,50 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 . tests/test-common.sh
 . scripts/lib/sdd-common.sh
+. scripts/lib/sdd-template-assets.sh
+
+plugin_tmp_assets="$(mktemp -d)"
+project_tmp_assets="$(mktemp -d)"
+trap 'rm -rf "${tmp:-}" "$plugin_tmp_assets" "$project_tmp_assets"' EXIT
+mkdir -p "$plugin_tmp_assets/assets/template-packs/default-backend/prd"
+mkdir -p "$plugin_tmp_assets/assets/template-packs/default-backend/spec"
+mkdir -p "$plugin_tmp_assets/assets/template-packs/default-backend/plan"
+printf '# PRD\n' > "$plugin_tmp_assets/assets/template-packs/default-backend/prd/template.md"
+printf '# quality\n' > "$plugin_tmp_assets/assets/template-packs/default-backend/prd/quality.standard.md"
+printf '# Spec\n' > "$plugin_tmp_assets/assets/template-packs/default-backend/spec/template.md"
+printf '# quality\n' > "$plugin_tmp_assets/assets/template-packs/default-backend/spec/quality.standard.md"
+printf '# feasibility\n' > "$plugin_tmp_assets/assets/template-packs/default-backend/spec/feasibility.standard.md"
+printf '# Plan\n' > "$plugin_tmp_assets/assets/template-packs/default-backend/plan/template.md"
+printf '# quality\n' > "$plugin_tmp_assets/assets/template-packs/default-backend/plan/quality.standard.md"
+printf '# feasibility\n' > "$plugin_tmp_assets/assets/template-packs/default-backend/plan/feasibility.standard.md"
+
+pack_name="$(sdd_default_template_pack)"
+[[ "$pack_name" == "default-backend" ]] || fail "expected default-backend, got $pack_name"
+
+pack_root="$(sdd_template_pack_root "$plugin_tmp_assets" "default-backend")"
+[[ "$pack_root" == "$plugin_tmp_assets/assets/template-packs/default-backend" ]] || fail "expected default pack root, got $pack_root"
+
+list_output="$(sdd_list_template_packs "$plugin_tmp_assets")"
+[[ "$list_output" == "default-backend" ]] || fail "expected default-backend listing, got $list_output"
+
+sdd_copy_template_pack "$plugin_tmp_assets" "$project_tmp_assets" "default-backend"
+assert_file_exists "$project_tmp_assets/.sdd/templates/prd/template.md"
+assert_file_exists "$project_tmp_assets/.sdd/templates/spec/feasibility.standard.md"
+assert_file_exists "$project_tmp_assets/.sdd/templates/plan/quality.standard.md"
+
+project_templates_root="$(sdd_project_templates_root "$project_tmp_assets")"
+[[ "$project_templates_root" == "$project_tmp_assets/.sdd/templates" ]] || fail "expected project templates root, got $project_templates_root"
+
+prd_template="$(sdd_require_template_asset "$project_tmp_assets" "prd" "template.md")"
+[[ "$prd_template" == "$project_tmp_assets/.sdd/templates/prd/template.md" ]] || fail "expected prd template path, got $prd_template"
+
+if sdd_require_template_asset "$project_tmp_assets" "spec" "missing.standard.md" >/tmp/sdd-missing-template.out 2>/tmp/sdd-missing-template.err; then
+  fail "expected missing template asset to fail"
+fi
+assert_contains "/tmp/sdd-missing-template.err" "缺少项目模板资产"
 
 tmp="$(mktemp -d)"
-trap 'rm -rf "$tmp"' EXIT
+trap 'rm -rf "$tmp" "$plugin_tmp_assets" "$project_tmp_assets"' EXIT
 
 bash tests/fixtures/valid-project.sh "$tmp/valid"
 
