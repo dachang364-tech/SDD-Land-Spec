@@ -20,9 +20,9 @@ Initialize the current project for SDD. Create the project-level skeleton only; 
    - `docs/archive/`
    - `.sdd/`
 2. Copy `CONSTITUTION.default.md` to `docs/CONSTITUTION.md`.
-3. 展示可选模板包列表。
-4. 如果用户未显式切换，则使用默认模板包 `default-backend`。
-5. 将所选模板包中的 `PRD / Spec / Plan` 模板与标准完整展开到 `.sdd/templates/`。
+3. 展示可选模板包列表：通过 `sdd_list_template_packs <plugin_root>` 解析并展示 Plugin `assets/template-packs/` 下的可选模板包列表。
+4. 如果用户未显式切换，则使用默认模板包：通过 `sdd_default_template_pack` 获取默认模板包标识。
+5. 使用 `sdd_copy_template_pack <plugin_root> <project_root> <pack_name>` 将所选模板包中的 `PRD / Spec / Plan` 模板与标准完整展开到 `.sdd/templates/`。
 6. 不创建任何版本目录或版本级 state.json。
 7. 不要求把“用户选择了哪个模板包”写入项目元数据文件。
 8. 不创建 `prd.md`、`specs/*.md`、`plans/*.md` 或 `decisions/*.md`。

@@ -29,6 +29,12 @@ assert_contains "skills/init/SKILL.md" '将所选模板包中的 `PRD / Spec / P
 assert_contains "skills/init/SKILL.md" '如果用户未显式切换，则使用默认模板包'
 assert_contains "skills/init/SKILL.md" '不要求把“用户选择了哪个模板包”写入项目元数据文件'
 assert_contains "skills/init/SKILL.md" '.sdd/templates/'
+assert_contains "skills/init/SKILL.md" "sdd_list_template_packs"
+assert_contains "skills/init/SKILL.md" "sdd_default_template_pack"
+assert_contains "skills/init/SKILL.md" "sdd_copy_template_pack"
+assert_contains "scripts/lib/sdd-template-assets.sh" "sdd_list_template_packs"
+assert_contains "scripts/lib/sdd-template-assets.sh" "sdd_default_template_pack"
+assert_contains "scripts/lib/sdd-template-assets.sh" "sdd_copy_template_pack"
 assert_not_contains "skills/init/SKILL.md" 'Do not create `.sdd/state.json`.'
 assert_contains "scripts/hooks/session-start.sh" "claude plugin list"
 assert_contains "scripts/hooks/session-start.sh" "superpowers([[:space:]]|$)"
