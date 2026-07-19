@@ -5,7 +5,9 @@ cd "$(dirname "$0")/.."
 . scripts/lib/sdd-template-assets.sh
 
 tmp_project="$(mktemp -d)"
-trap 'rm -rf "$tmp_project"' EXIT
+error_output="$(mktemp)"
+error_status="$(mktemp)"
+trap 'rm -rf "$tmp_project" "$error_output" "$error_status"' EXIT
 mkdir -p "$tmp_project/.sdd/templates/prd"
 mkdir -p "$tmp_project/.sdd/templates/spec"
 mkdir -p "$tmp_project/.sdd/templates/plan"
@@ -19,13 +21,18 @@ printf '# quality\n' > "$tmp_project/.sdd/templates/plan/quality.standard.md"
 printf '# feasibility\n' > "$tmp_project/.sdd/templates/plan/feasibility.standard.md"
 
 assert_file_exists "$(sdd_require_template_asset "$tmp_project" prd template.md)"
+assert_file_exists "$(sdd_require_template_asset "$tmp_project" prd quality.standard.md)"
+assert_file_exists "$(sdd_require_template_asset "$tmp_project" spec template.md)"
+assert_file_exists "$(sdd_require_template_asset "$tmp_project" spec quality.standard.md)"
 assert_file_exists "$(sdd_require_template_asset "$tmp_project" spec feasibility.standard.md)"
+assert_file_exists "$(sdd_require_template_asset "$tmp_project" plan template.md)"
 assert_file_exists "$(sdd_require_template_asset "$tmp_project" plan quality.standard.md)"
+assert_file_exists "$(sdd_require_template_asset "$tmp_project" plan feasibility.standard.md)"
 
 rm "$tmp_project/.sdd/templates/spec/feasibility.standard.md"
-if sdd_require_template_asset "$tmp_project" spec feasibility.standard.md >/tmp/sdd-spec-template.out 2>/tmp/sdd-spec-template.err; then
+if sdd_require_template_asset "$tmp_project" spec feasibility.standard.md >"$error_status" 2>"$error_output"; then
   fail "expected missing spec feasibility standard to fail"
 fi
-assert_contains "/tmp/sdd-spec-template.err" "缺少项目模板资产"
+assert_contains "$error_output" "缺少项目模板资产"
 
 printf 'PASS: template runtime contract\n'

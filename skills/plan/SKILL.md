@@ -58,6 +58,9 @@ Generate a new incremental Implementation Plan under `docs/versions/vX.Y.Z/plans
 ## Plan quality rules
 
 - 只读取 `.sdd/templates/plan/` 下的模板与标准。
+- 生成必须使用 `.sdd/templates/plan/template.md`，并读取 `.sdd/templates/plan/quality.standard.md`。
+- 同时读取 `.sdd/templates/plan/feasibility.standard.md`。
+- `.sdd/templates/plan/template.md`、`.sdd/templates/plan/quality.standard.md`、`.sdd/templates/plan/feasibility.standard.md` 任一缺失，则直接失败，不降级到 Plugin 内置资产。
 - 如果项目模板资产缺失，则直接失败，不降级到 Plugin 内置资产。
 - 写入完成并通过最小结构校验后，自动按顺序触发 `quality -> feasibility`。
 - `quality` 未通过时阻断。
