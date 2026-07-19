@@ -112,6 +112,7 @@ assert_contains "skills/spec/SKILL.md" "不再使用独立 `## 关联 DRs`"
 assert_contains "skills/spec/SKILL.md" '只读取 `.sdd/templates/spec/` 下的模板与标准'
 assert_contains "skills/spec/SKILL.md" '自动按顺序触发 `quality -> feasibility`'
 assert_contains "skills/spec/SKILL.md" '如果项目模板资产缺失，则直接失败，不降级到 Plugin 内置资产'
+assert_contains "skills/spec/SKILL.md" 'reviewer 只消费当前项目 `.sdd/templates/spec/` 中的模板与标准，与生成阶段使用同一套项目级有效资产'
 assert_not_contains "skills/spec/SKILL.md" 'skills/spec/references/spec.md.tmpl'
 
 assert_contains "skills/plan/SKILL.md" "description: Create an implementation plan from approved spec or accepted code-class DR"
@@ -141,6 +142,7 @@ assert_contains "skills/plan/SKILL.md" '读取 `.sdd/templates/plan/feasibility.
 assert_contains "skills/plan/SKILL.md" '`.sdd/templates/plan/template.md`、`.sdd/templates/plan/quality.standard.md`、`.sdd/templates/plan/feasibility.standard.md` 任一缺失，则直接失败'
 assert_contains "skills/plan/SKILL.md" '自动按顺序触发 `quality -> feasibility`'
 assert_contains "skills/plan/SKILL.md" '如果项目模板资产缺失，则直接失败，不降级到 Plugin 内置资产'
+assert_contains "skills/plan/SKILL.md" 'reviewer 只消费当前项目 `.sdd/templates/plan/` 中的模板与标准，与生成阶段使用同一套项目级有效资产'
 assert_not_contains "skills/plan/SKILL.md" 'skills/plan/references/plan.md.tmpl'
 
 assert_contains "skills/code/SKILL.md" "description: Execute an SDD implementation plan or eligible lightweight fix DR"

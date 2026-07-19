@@ -62,6 +62,7 @@ Generate a new incremental Implementation Plan under `docs/versions/vX.Y.Z/plans
 - 同时读取 `.sdd/templates/plan/feasibility.standard.md`。
 - `.sdd/templates/plan/template.md`、`.sdd/templates/plan/quality.standard.md`、`.sdd/templates/plan/feasibility.standard.md` 任一缺失，则直接失败，不降级到 Plugin 内置资产。
 - 如果项目模板资产缺失，则直接失败，不降级到 Plugin 内置资产。
+- reviewer 只消费当前项目 `.sdd/templates/plan/` 中的模板与标准，与生成阶段使用同一套项目级有效资产。
 - 写入完成并通过最小结构校验后，自动按顺序触发 `quality -> feasibility`。
 - `quality` 未通过时阻断。
 - `feasibility` 在 `plan` 上比 `spec` 更严格，但仍保留高杠杆技术决策的用户确认边界。

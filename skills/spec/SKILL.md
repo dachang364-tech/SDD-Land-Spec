@@ -45,12 +45,13 @@ Write formal relationships into the unified `## 文档引用` table:
 2. 只读取 `.sdd/templates/spec/` 下的模板与标准。
 3. 读取 `.sdd/templates/spec/template.md`、`.sdd/templates/spec/quality.standard.md`、`.sdd/templates/spec/feasibility.standard.md`。
 4. 如果项目模板资产缺失，则直接失败，不降级到 Plugin 内置资产。
-5. Write `docs/versions/vX.Y.Z/specs/<spec-name>.md` with `- 状态：draft`.
-6. 目标文档写入完成并通过最小结构校验后，自动按顺序触发 `quality -> feasibility`。
-7. `quality` 强阻断。
-8. `feasibility` 默认弱阻断，但必须输出风险与建议。
-9. Ask the user to approve or request changes.
-10. 用户确认后，将状态切换为 `approved`。
+5. reviewer 只消费当前项目 `.sdd/templates/spec/` 中的模板与标准，与生成阶段使用同一套项目级有效资产。
+6. Write `docs/versions/vX.Y.Z/specs/<spec-name>.md` with `- 状态：draft`.
+7. 目标文档写入完成并通过最小结构校验后，自动按顺序触发 `quality -> feasibility`。
+8. `quality` 强阻断。
+9. `feasibility` 默认弱阻断，但必须输出风险与建议。
+10. Ask the user to approve or request changes.
+11. 用户确认后，将状态切换为 `approved`。
 
 ## DR status handling
 

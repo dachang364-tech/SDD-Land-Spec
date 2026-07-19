@@ -29,8 +29,6 @@ assert_file_exists "$(sdd_require_template_asset "$tmp_project" plan template.md
 assert_file_exists "$(sdd_require_template_asset "$tmp_project" plan quality.standard.md)"
 assert_file_exists "$(sdd_require_template_asset "$tmp_project" plan feasibility.standard.md)"
 
-assert_file_exists "$(sdd_require_template_asset "$tmp_project" plan feasibility.standard.md)"
-
 for asset in template.md quality.standard.md; do
   rm "$tmp_project/.sdd/templates/prd/$asset"
   if sdd_require_template_asset "$tmp_project" prd "$asset" >"$error_status" 2>"$error_output"; then
