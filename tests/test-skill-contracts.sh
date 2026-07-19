@@ -74,6 +74,9 @@ assert_contains "skills/prd/SKILL.md" "扫描 docs/versions/v*/state.json"
 assert_contains "skills/prd/SKILL.md" "project:requirements/<file>.md"
 assert_contains "skills/prd/SKILL.md" "## 文档引用"
 assert_contains "skills/prd/SKILL.md" '不写 `- 状态：'
+assert_contains "skills/prd/SKILL.md" '只读取 `.sdd/templates/prd/template.md`'
+assert_contains "skills/prd/SKILL.md" '如果 `.sdd/templates/prd/` 下必要文件缺失，则直接失败'
+assert_not_contains "skills/prd/SKILL.md" 'skills/prd/references/prd.md.tmpl'
 
 assert_contains "skills/research/SKILL.md" "docs/requirements/<topic-slug>-<yyyy-mm>.md"
 assert_contains "skills/research/SKILL.md" "不要求 active version"
@@ -106,6 +109,9 @@ assert_contains "skills/spec/SKILL.md" '用户确认后，将状态切换为 `ap
 assert_contains "skills/spec/SKILL.md" "closed_reason: document-updated"
 assert_contains "skills/spec/SKILL.md" 'code-class DR 必须保持 `accepted`'
 assert_contains "skills/spec/SKILL.md" "不再使用独立 `## 关联 DRs`"
+assert_contains "skills/spec/SKILL.md" '只读取 `.sdd/templates/spec/` 下的模板与标准'
+assert_contains "skills/spec/SKILL.md" '自动按顺序触发 `quality -> feasibility`'
+assert_contains "skills/spec/SKILL.md" '如果项目模板资产缺失，则直接失败，不降级到 Plugin 内置资产'
 
 assert_contains "skills/plan/SKILL.md" "description: Create an implementation plan from approved spec or accepted code-class DR"
 assert_contains "skills/plan/SKILL.md" "docs/versions/vX.Y.Z/plans/NNN-<slug>.md"
@@ -127,6 +133,9 @@ assert_contains "skills/plan/SKILL.md" "引用同版本文档时，只写相对 
 assert_contains "skills/plan/SKILL.md" '引用跨版本文档时，必须同时写相对 Markdown link 和版本 locator，例如 `v0.2.0:plans/001-archive.md`。'
 assert_contains "skills/plan/references/plan.md.tmpl" "## 6. Implementation Tasks"
 assert_contains "skills/plan/references/plan.md.tmpl" "## 7. Self-Review"
+assert_contains "skills/plan/SKILL.md" '只读取 `.sdd/templates/plan/` 下的模板与标准'
+assert_contains "skills/plan/SKILL.md" '自动按顺序触发 `quality -> feasibility`'
+assert_contains "skills/plan/SKILL.md" '如果项目模板资产缺失，则直接失败，不降级到 Plugin 内置资产'
 
 assert_contains "skills/code/SKILL.md" "description: Execute an SDD implementation plan or eligible lightweight fix DR"
 assert_contains "skills/code/SKILL.md" "docs/versions/vX.Y.Z/plans/NNN-*.md"

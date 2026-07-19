@@ -57,7 +57,11 @@ Generate a new incremental Implementation Plan under `docs/versions/vX.Y.Z/plans
 
 ## Plan quality rules
 
-- Use `skills/plan/references/plan.md.tmpl`.
+- 只读取 `.sdd/templates/plan/` 下的模板与标准。
+- 如果项目模板资产缺失，则直接失败，不降级到 Plugin 内置资产。
+- 写入完成并通过最小结构校验后，自动按顺序触发 `quality -> feasibility`。
+- `quality` 未通过时阻断。
+- `feasibility` 在 `plan` 上比 `spec` 更严格，但仍保留高杠杆技术决策的用户确认边界。
 - `Implementation Tasks` 必须是可由 agentic worker 直接执行的 TDD 手册，不是概要 TODO。
 - 每个 task 必须包含精确 `Files`、`Interfaces`、`Acceptance Mapping` 和 checkbox steps。
 - 测试步骤包含实际测试代码或 contract assertion、运行命令和 expected FAIL/PASS 输出。
