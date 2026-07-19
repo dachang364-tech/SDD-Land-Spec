@@ -146,6 +146,26 @@ claude
   - `docs/versions/v0.2.0/decisions/`
 - `/sdd:status` 展示当前活跃版本状态和下一步建议。
 
+## 项目模板资产
+
+`/sdd:init` 会将所选模板包展开到 `.sdd/templates/`，这是 `/sdd:prd`、`/sdd:spec`、`/sdd:plan` 和 `/sdd:review` 的运行时唯一模板来源。
+
+```text
+.sdd/
+└── templates/
+    ├── prd/
+    │   ├── template.md
+    │   └── quality.standard.md
+    ├── spec/
+    │   ├── template.md
+    │   ├── quality.standard.md
+    │   └── feasibility.standard.md
+    └── plan/
+        ├── template.md
+        ├── quality.standard.md
+        └── feasibility.standard.md
+```
+
 ## 主流程
 
 SDD Plugin 的主流程是：

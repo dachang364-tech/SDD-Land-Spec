@@ -309,6 +309,9 @@ assert_contains "skills/doctor/SKILL.md" "docs/archive/INDEX.md"
 assert_contains "skills/doctor/SKILL.md" "sdd_refs_validate <project-root> <source.md>"
 assert_contains "skills/doctor/SKILL.md" "blocking"
 assert_contains "skills/doctor/SKILL.md" "warning"
+assert_contains "skills/doctor/SKILL.md" '.sdd/templates/'
+assert_contains "skills/doctor/SKILL.md" '缺少项目模板资产'
+assert_contains "skills/doctor/SKILL.md" '/sdd:review'
 
 assert_contains "skills/archive/SKILL.md" "description: Archive the current active SDD version"
 assert_contains "skills/archive/SKILL.md" "不移动版本目录"
@@ -346,6 +349,8 @@ assert_contains "README.md" 'docs/versions/vX.Y.Z/plans/NNN-<slug>.md'
 assert_contains "README.md" 'specs/*.md` 中至少一个目标 Functional Specification 状态为 `approved`'
 assert_contains "README.md" 'docs/versions/vX.Y.Z/ARCHIVE.md'
 assert_contains "README.md" 'docs/archive/INDEX.md'
+assert_contains "README.md" '.sdd/templates/'
+assert_contains "README.md" '/sdd:review'
 assert_not_contains "README.md" '创建唯一活跃版本目录 `docs/vX.Y.Z/`'
 assert_not_contains "README.md" '生成无状态 PRD：`docs/vX.Y.Z/prd.md`'
 assert_not_contains "README.md" 'docs/vX.Y.Z/specs/spec.md'
@@ -362,6 +367,9 @@ assert_contains "TESTING.md" 'docs/versions/v0.2.0/specs/'
 assert_contains "TESTING.md" '`/sdd:init` 创建 `docs/CONSTITUTION.md`、`docs/requirements/`、`docs/versions/`、`docs/archive/`。'
 assert_contains "TESTING.md" '`/sdd:init` 不自动安装依赖插件'
 assert_contains "TESTING.md" '`/sdd:init` 会提示用户手动安装 `superpowers` 与 `spec-kit`'
+assert_contains "TESTING.md" '模板包选择'
+assert_contains "TESTING.md" '.sdd/templates/'
+assert_contains "TESTING.md" 'reviewer'
 assert_not_contains "TESTING.md" 'mkdir -p "$tmp/docs/v0.1.0/specs" "$tmp/docs/v0.1.0/plans" "$tmp/docs/v0.1.0/decisions"'
 assert_not_contains "TESTING.md" 'docs/v0.1.0/specs/spec.md'
 assert_not_contains "TESTING.md" 'docs/v0.1.0/plans/001-feature-login.md'

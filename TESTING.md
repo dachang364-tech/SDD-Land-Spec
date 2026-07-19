@@ -37,6 +37,15 @@ PASS: skill contracts
 PASS: MVP acceptance
 ```
 
+## 模板包与 reviewer 手工验证
+
+1. 运行 `/sdd:init`，确认会提示模板包选择，未显式切换时默认使用 `default-backend`。
+2. 确认项目生成 `.sdd/templates/prd/`、`.sdd/templates/spec/`、`.sdd/templates/plan/`。
+3. 手工删除 `.sdd/templates/spec/feasibility.standard.md` 后再次运行 `/sdd:spec`，期望命令明确失败，并提示缺少项目模板资产。
+4. 重新执行 `/sdd:init` 恢复模板资产。
+5. 生成或修改 `prd.md`、`spec.md`、`plan.md` 后，确认 reviewer 自动触发。
+6. 对已有文档执行 `/sdd:review <doc-path>`，确认只返回一份聚合用户回执。
+
 ## 3. 检查禁止路径
 
 ```bash

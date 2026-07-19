@@ -112,3 +112,12 @@ The helper owns the reference-table contract, including:
 ## Boundaries
 
 - 不自动创建或修改文件、不修复 state.json、不创建 active version、不归档版本、不生成 ARCHIVE.md、不更新 INDEX.md、不读取 git log、不审计源码、不机器解析 CONSTITUTION must/should、不做正文链接语义启发式扫描。
+
+## Template asset checks
+
+- 检查项目 `.sdd/templates/` 是否存在。
+- 检查 `prd/template.md`、`prd/quality.standard.md` 是否存在。
+- 检查 `spec/template.md`、`spec/quality.standard.md`、`spec/feasibility.standard.md` 是否存在。
+- 检查 `plan/template.md`、`plan/quality.standard.md`、`plan/feasibility.standard.md` 是否存在。
+- 如缺失，报告 `缺少项目模板资产`，提示重新执行 `/sdd:init` 或手工修复。
+- 可提示用户使用 `/sdd:review` 对现有文档重新收敛质量。
