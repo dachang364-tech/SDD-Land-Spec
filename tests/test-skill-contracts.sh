@@ -18,6 +18,9 @@ assert_contains "skills/init/SKILL.md" "docs/CONSTITUTION.md 已存在"
 assert_contains "skills/init/SKILL.md" "继续初始化"
 assert_contains "skills/init/SKILL.md" '确保或恢复缺失 `.sdd/templates/` 资产'
 assert_contains "skills/init/SKILL.md" '重新执行 `/sdd:init`'
+assert_contains "skills/init/SKILL.md" '仅当 `docs/CONSTITUTION.md` 缺失时，复制 `CONSTITUTION.default.md`'
+assert_contains "skills/init/SKILL.md" '如果 `docs/CONSTITUTION.md` 已存在，则保留现有文件，不覆盖用户内容'
+assert_not_contains "skills/init/SKILL.md" '2. Copy `CONSTITUTION.default.md` to `docs/CONSTITUTION.md`.'
 assert_not_contains "skills/init/SKILL.md" "stop and say"
 assert_contains "skills/init/SKILL.md" "docs/versions/"
 assert_contains "skills/init/SKILL.md" "不创建任何版本目录或版本级 state.json"

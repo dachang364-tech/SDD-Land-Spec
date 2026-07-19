@@ -126,9 +126,34 @@ PASS: MVP acceptance
 
 `git diff --check` produced no output and exited successfully.
 
-## Review Fix: Allow `/sdd:init` to recover template assets
+## Review Fix: Preserve an existing Constitution on rerun
 
-Addressed the additional Important review findings about re-running initialization.
+Fixed the remaining Important review finding: when restoring template assets, `/sdd:init` must not imply overwriting the user's existing Constitution.
+
+Updated `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/skills/init/SKILL.md` Step 2 to state explicitly that `CONSTITUTION.default.md` is copied only when `docs/CONSTITUTION.md` is missing; when the file exists, its contents are preserved and not overwritten. Added matching positive and negative contract assertions in `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/tests/test-skill-contracts.sh` to prevent conflict between recovery semantics and Constitution handling.
+
+### Constitution recovery fix verification
+
+Commands run:
+
+```bash
+bash tests/test-skill-contracts.sh
+bash tests/test-package-local.sh
+bash tests/test-mvp-acceptance.sh
+git diff --check
+```
+
+Output summary:
+
+```text
+PASS: skill contracts
+PASS: local package script
+PASS: DR filename contract
+PASS: MVP acceptance
+```
+
+`git diff --check` produced no output and exited successfully.
+
 
 Updated `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/skills/init/SKILL.md` so an existing `docs/CONSTITUTION.md` is preserved and no longer terminates `/sdd:init`. The contract now explicitly requires continuing initialization, ensuring or restoring missing `.sdd/templates/` assets, and re-running the template-pack materialization flow when `.sdd/templates/` is missing or incomplete.
 

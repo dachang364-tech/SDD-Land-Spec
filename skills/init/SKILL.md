@@ -20,7 +20,7 @@ Initialize the current project for SDD. Create the project-level skeleton only; 
    - `docs/versions/`
    - `docs/archive/`
    - `.sdd/`
-2. Copy `CONSTITUTION.default.md` to `docs/CONSTITUTION.md`.
+2. 仅当 `docs/CONSTITUTION.md` 缺失时，复制 `CONSTITUTION.default.md`；如果 `docs/CONSTITUTION.md` 已存在，则保留现有文件，不覆盖用户内容。
 3. 展示可选模板包列表：通过 `sdd_list_template_packs <plugin_root>` 解析并展示 Plugin `assets/template-packs/` 下的可选模板包列表。
 4. 如果用户未显式切换，则使用默认模板包：通过 `sdd_default_template_pack` 获取默认模板包标识。
 5. 使用 `sdd_copy_template_pack <plugin_root> <project_root> <pack_name>` 将所选模板包中的 `PRD / Spec / Plan` 模板与标准完整展开到 `.sdd/templates/`。
