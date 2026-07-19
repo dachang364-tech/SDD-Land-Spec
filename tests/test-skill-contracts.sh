@@ -310,6 +310,14 @@ assert_contains "skills/doctor/SKILL.md" "sdd_refs_validate <project-root> <sour
 assert_contains "skills/doctor/SKILL.md" "blocking"
 assert_contains "skills/doctor/SKILL.md" "warning"
 assert_contains "skills/doctor/SKILL.md" '.sdd/templates/'
+assert_contains "skills/doctor/SKILL.md" 'prd/template.md'
+assert_contains "skills/doctor/SKILL.md" 'prd/quality.standard.md'
+assert_contains "skills/doctor/SKILL.md" 'spec/template.md'
+assert_contains "skills/doctor/SKILL.md" 'spec/quality.standard.md'
+assert_contains "skills/doctor/SKILL.md" 'spec/feasibility.standard.md'
+assert_contains "skills/doctor/SKILL.md" 'plan/template.md'
+assert_contains "skills/doctor/SKILL.md" 'plan/quality.standard.md'
+assert_contains "skills/doctor/SKILL.md" 'plan/feasibility.standard.md'
 assert_contains "skills/doctor/SKILL.md" '缺少项目模板资产'
 assert_contains "skills/doctor/SKILL.md" '/sdd:review'
 
