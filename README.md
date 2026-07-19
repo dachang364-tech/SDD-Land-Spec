@@ -38,14 +38,10 @@ SDD Plugin MVP 提供以下能力：
 
 ### 1. 克隆或进入本插件项目
 
+进入本插件仓库根目录：
+
 ```bash
 cd /path/to/sdd-plugin
-```
-
-如果你正在使用本仓库当前 worktree，可进入：
-
-```bash
-cd /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/document-references-advanced-fresh
 ```
 
 ### 2. 安装依赖 plugin
@@ -80,12 +76,6 @@ Claude Code 2.1.29 起，`claude plugin install <plugin>` 会从已配置的 mar
 
 ```bash
 claude plugin marketplace add /path/to/sdd-plugin
-```
-
-当前 worktree 示例：
-
-```bash
-claude plugin marketplace add /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/document-references-advanced-fresh
 ```
 
 ### 4. 从本地 marketplace 安装 SDD plugin

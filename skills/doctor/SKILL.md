@@ -30,11 +30,22 @@ skills/triage/SKILL.md
 skills/status/SKILL.md
 skills/doctor/SKILL.md
 skills/archive/SKILL.md
+skills/review/SKILL.md
+skills/review/references/reviewer-result.schema.json
 hooks/hooks.json
 scripts/install-deps.sh
 scripts/hooks/pre-tool-use.sh
 scripts/lib/sdd-common.sh
 scripts/lib/sdd-references.sh
+scripts/lib/sdd-template-assets.sh
+assets/template-packs/default-backend/prd/template.md
+assets/template-packs/default-backend/prd/quality.standard.md
+assets/template-packs/default-backend/spec/template.md
+assets/template-packs/default-backend/spec/quality.standard.md
+assets/template-packs/default-backend/spec/feasibility.standard.md
+assets/template-packs/default-backend/plan/template.md
+assets/template-packs/default-backend/plan/quality.standard.md
+assets/template-packs/default-backend/plan/feasibility.standard.md
 CONSTITUTION.default.md
 ```
 

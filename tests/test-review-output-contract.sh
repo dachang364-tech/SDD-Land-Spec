@@ -7,6 +7,24 @@ assert_file_exists "skills/review/references/reviewer-result.schema.json"
 assert_contains "skills/review/references/reviewer-result.schema.json" '"blocked"'
 assert_contains "skills/review/references/reviewer-result.schema.json" '"auto_repairs"'
 assert_contains "skills/review/references/reviewer-result.schema.json" '"user_receipt"'
+python3 - <<'PY'
+import json
+from pathlib import Path
+
+schema = json.loads(Path("skills/review/references/reviewer-result.schema.json").read_text())
+receipt = schema["properties"]["user_receipt"]
+assert receipt["required"] == [
+    "document_type",
+    "executed_modes",
+    "iterations",
+    "auto_repairs_summary",
+    "remaining_or_confirmation_items",
+    "blocked",
+    "quality_summary",
+]
+assert receipt["additionalProperties"] is False
+PY
+
 assert_contains "README.md" '/sdd:review'
 assert_contains "README.md" '运行时唯一模板来源'
 assert_contains "README.md" '`/sdd:init` 会将所选模板包展开到 `.sdd/templates/`'

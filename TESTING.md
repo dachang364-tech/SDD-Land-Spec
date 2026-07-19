@@ -2,23 +2,9 @@
 
 本文档用于在合并到 `main` 前，手动验证 SDD Plugin MVP 是否可用。
 
-## 1. 进入实现分支
+## 1. 进入插件项目
 
-```bash
-cd /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/document-references-advanced-fresh
-```
-
-确认当前分支：
-
-```bash
-git branch --show-current
-```
-
-期望输出：
-
-```text
-feature-document-references-advanced-fresh
-```
+在插件仓库根目录运行以下命令。
 
 ## 2. 运行自动化验证
 
@@ -76,7 +62,7 @@ mkdir -p "$tmp/docs/versions/v0.1.0/specs" "$tmp/docs/versions/v0.1.0/plans" "$t
 
 ```bash
 cd "$tmp"
-printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/specs/spec.md"}}' | /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/document-references-advanced-fresh/scripts/hooks/pre-tool-use.sh
+printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/specs/spec.md"}}' | /path/to/sdd-plugin/scripts/hooks/pre-tool-use.sh
 ```
 
 期望：退出码为 `2`，并输出中文错误，提示先完成 `/sdd:prd`。
@@ -86,7 +72,7 @@ printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/specs/spec.md"}}' | /Us
 ```bash
 printf '# PRD\n' > docs/versions/v0.1.0/prd.md
 printf '# Functional Specification\n\n- 状态：draft\n' > docs/versions/v0.1.0/specs/spec.md
-printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/plans/001-login.md"}}' | /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/document-references-advanced-fresh/scripts/hooks/pre-tool-use.sh
+printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/plans/001-login.md"}}' | /path/to/sdd-plugin/scripts/hooks/pre-tool-use.sh
 ```
 
 期望：退出码为 `2`，并输出中文错误，提示先完成 `/sdd:spec` 并批准目标 Functional Specification。
@@ -95,7 +81,7 @@ printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/plans/001-login.md"}}' 
 
 ```bash
 printf '# Functional Specification\n\n- 状态：approved\n' > docs/versions/v0.1.0/specs/document-references.md
-printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/plans/001-login.md"}}' | /Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.worktrees/document-references-advanced-fresh/scripts/hooks/pre-tool-use.sh
+printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/plans/001-login.md"}}' | /path/to/sdd-plugin/scripts/hooks/pre-tool-use.sh
 ```
 
 期望：无输出，退出码为 `0`。
@@ -108,7 +94,7 @@ rm -rf "$tmp"
 
 ## 6. 可选：本地安装后试用
 
-在 Claude Code 2.1.29 中，先把当前 worktree 添加为本地 marketplace，再安装 `sdd` plugin：
+在 Claude Code 2.1.29 中，先把插件目录添加为本地 marketplace，再安装 `sdd` plugin：
 
 ```bash
 claude plugin marketplace add /path/to/sdd-plugin
@@ -139,14 +125,4 @@ claude plugin list
 
 ## 7. 验收通过后
 
-如果测试无误，再执行合并流程：
-
-```text
-Merge back to main locally
-```
-
-当前实现分支：
-
-```text
-feature-document-references-advanced-fresh
-```
+完成合并或发布所需的仓库流程。

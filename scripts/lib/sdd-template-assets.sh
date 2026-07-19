@@ -45,11 +45,12 @@ sdd_copy_template_pack() {
   local target_root
   target_root="$(sdd_project_templates_root "$project_root")"
   mkdir -p "$project_root/.sdd"
-  rm -rf "$target_root"
-  mkdir -p "$target_root"
-  cp -R "$pack_root/prd" "$target_root/prd"
-  cp -R "$pack_root/spec" "$target_root/spec"
-  cp -R "$pack_root/plan" "$target_root/plan"
+  mkdir -p "$target_root/prd" "$target_root/spec" "$target_root/plan"
+
+  # Recovery fills missing packaged assets but never overwrites project-local edits.
+  cp -R -n "$pack_root/prd/." "$target_root/prd/" || true
+  cp -R -n "$pack_root/spec/." "$target_root/spec/" || true
+  cp -R -n "$pack_root/plan/." "$target_root/plan/" || true
 }
 
 sdd_require_template_asset() {

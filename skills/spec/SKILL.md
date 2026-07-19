@@ -47,11 +47,11 @@ Write formal relationships into the unified `## 文档引用` table:
 4. 如果项目模板资产缺失，则直接失败，不降级到 Plugin 内置资产。
 5. reviewer 只消费当前项目 `.sdd/templates/spec/` 中的模板与标准，与生成阶段使用同一套项目级有效资产。
 6. Write `docs/versions/vX.Y.Z/specs/<spec-name>.md` with `- 状态：draft`.
-7. 目标文档写入完成并通过最小结构校验后，自动按顺序触发 `quality -> feasibility`。
-8. `quality` 强阻断。
-9. `feasibility` 默认弱阻断，但必须输出风险与建议。
-10. Ask the user to approve or request changes.
-11. 用户确认后，将状态切换为 `approved`。
+7. 目标文档写入完成并通过命令层 pre-review gate 后，必须按 `/sdd:review` 的 `doc Reviewer-Subagent` JSON 调用合同自动按顺序触发 `quality -> feasibility`；每个 mode 的机器结果均须先通过 schema 校验。
+8. `quality` JSON 无效、admission check 失败、`blocked: true` 或 `requires_user_confirmation: true` 时，停止，不执行 `feasibility`，聚合已执行结果为一份回执，并保留 `draft`。
+9. 只有 `quality` 的有效结果未阻断且无需确认时才执行 `feasibility`。`feasibility` 默认弱阻断：未阻断的风险只进入聚合回执；若它返回 `blocked: true`、需要确认或无效 JSON，则保留 `draft`。
+10. 仅在所有应执行 reviewer 结果有效、未阻断且无需用户确认后，才 Ask the user to approve or request changes。
+11. 用户确认审批后，将状态切换为 `approved`；reviewer 的候选改写或确认项必须先由用户明确确认、写回并重新复审，普通审批不得绕过。
 
 ## DR status handling
 

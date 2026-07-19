@@ -21,13 +21,11 @@ printf '# quality\n' > "$tmp_plugin/assets/template-packs/default-backend/plan/q
 printf '# feasibility\n' > "$tmp_plugin/assets/template-packs/default-backend/plan/feasibility.standard.md"
 
 sdd_copy_template_pack "$tmp_plugin" "$tmp_project" "default-backend"
-assert_file_exists "$tmp_project/.sdd/templates/prd/template.md"
-assert_file_exists "$tmp_project/.sdd/templates/prd/quality.standard.md"
-assert_file_exists "$tmp_project/.sdd/templates/spec/template.md"
-assert_file_exists "$tmp_project/.sdd/templates/spec/quality.standard.md"
+printf '# Project PRD customization\n' > "$tmp_project/.sdd/templates/prd/template.md"
+rm "$tmp_project/.sdd/templates/spec/feasibility.standard.md"
+sdd_copy_template_pack "$tmp_plugin" "$tmp_project" "default-backend"
+assert_contains "$tmp_project/.sdd/templates/prd/template.md" '# Project PRD customization'
 assert_file_exists "$tmp_project/.sdd/templates/spec/feasibility.standard.md"
-assert_file_exists "$tmp_project/.sdd/templates/plan/template.md"
-assert_file_exists "$tmp_project/.sdd/templates/plan/quality.standard.md"
-assert_file_exists "$tmp_project/.sdd/templates/plan/feasibility.standard.md"
+assert_contains "$tmp_project/.sdd/templates/spec/feasibility.standard.md" '# feasibility'
 
 printf 'PASS: template assets\n'

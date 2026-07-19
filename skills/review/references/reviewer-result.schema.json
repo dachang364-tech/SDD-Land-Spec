@@ -18,6 +18,7 @@
     "stopped_for_no_improvement",
     "user_receipt"
   ],
+  "additionalProperties": false,
   "properties": {
     "document_type": { "type": "string", "enum": ["prd", "spec", "plan"] },
     "mode": { "type": "string", "enum": ["quality", "feasibility"] },
@@ -34,10 +35,28 @@
     "stopped_for_no_improvement": { "type": "boolean" },
     "user_receipt": {
       "type": "object",
-      "required": ["summary", "blocked"],
+      "additionalProperties": false,
+      "required": [
+        "document_type",
+        "executed_modes",
+        "iterations",
+        "auto_repairs_summary",
+        "remaining_or_confirmation_items",
+        "blocked",
+        "quality_summary"
+      ],
       "properties": {
-        "summary": { "type": "string" },
-        "blocked": { "type": "boolean" }
+        "document_type": { "type": "string", "enum": ["prd", "spec", "plan"] },
+        "executed_modes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "enum": ["quality", "feasibility"] }
+        },
+        "iterations": { "type": "integer", "minimum": 0 },
+        "auto_repairs_summary": { "type": "array", "items": { "type": "string" } },
+        "remaining_or_confirmation_items": { "type": "array", "items": { "type": "string" } },
+        "blocked": { "type": "boolean" },
+        "quality_summary": { "type": "string" }
       }
     }
   }

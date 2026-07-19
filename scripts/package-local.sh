@@ -140,6 +140,7 @@ claude plugin list
 | `/sdd:prd` | 生成产品需求文档 PRD |
 | `/sdd:spec` | 生成或修订 Functional Specification |
 | `/sdd:plan <work-item>` | 基于 approved spec 或 accepted code-class DR 生成 Implementation Plan |
+| `/sdd:review [doc-path] [mode?]` | 对已有 PRD、spec 或 plan 重新执行 reviewer |
 | `/sdd:code <NNN|work-item>` | 按计划执行代码实现 |
 | `/sdd:dr <tag> <title>` | 创建 Decision Record |
 | `/sdd:dr accept <id>` | 接受 DR，允许后续落地 |
