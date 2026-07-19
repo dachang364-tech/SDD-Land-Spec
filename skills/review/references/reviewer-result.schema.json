@@ -19,7 +19,7 @@
     "user_receipt"
   ],
   "properties": {
-    "document_type": { "type": "string" },
+    "document_type": { "type": "string", "enum": ["prd", "spec", "plan"] },
     "mode": { "type": "string", "enum": ["quality", "feasibility"] },
     "passed": { "type": "boolean" },
     "blocked": { "type": "boolean" },
