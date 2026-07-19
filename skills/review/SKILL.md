@@ -5,12 +5,12 @@ description: Review and improve PRD, spec, or plan documents. Use for /sdd:revie
 
 # /sdd:review
 
-Review a target document using the project runtime template assets in `.sdd/templates/`.
+Review a target document using the project runtime template assets in `${CLAUDE_PROJECT_DIR}/.sdd/templates/`.
 
 ## Preconditions
 
 1. Read `docs/CONSTITUTION.md`; if missing, stop and ask the user to run `/sdd:init`.
-2. Require `.sdd/templates/` to exist; if missing, stop and ask the user to run `/sdd:init`.
+2. Require `${CLAUDE_PROJECT_DIR}/.sdd/templates/` to exist; if missing, stop and ask the user to run `/sdd:init`.
 3. Require the target document to exist and pass the minimum pre-review structure gate.
 4. 如果必要模板或标准文件缺失，直接失败，不降级到 Plugin 内置资产。
 
@@ -23,8 +23,8 @@ Review a target document using the project runtime template assets in `.sdd/temp
   "document_path": "<project-relative path>",
   "document_type": "prd|spec|plan",
   "mode": "quality|feasibility",
-  "template_path": ".sdd/templates/<type>/template.md",
-  "standard_path": ".sdd/templates/<type>/<mode>.standard.md",
+  "template_path": "${CLAUDE_PROJECT_DIR}/.sdd/templates/<type>/template.md",
+  "standard_path": "${CLAUDE_PROJECT_DIR}/.sdd/templates/<type>/<mode>.standard.md",
   "repair_policy": "<resolved policy>",
   "upstream_paths": ["<project-relative path>"],
   "invocation_source": "automatic|manual",
@@ -52,7 +52,7 @@ subagent 必须只返回一个 JSON 对象，且该对象必须通过 `reference
 - 调用来源：`invocation_source`（自动触发 / 手动复审）
 - 最大循环轮次：`max_rounds`
 
-`template_path` 和 `standard_path` 必须来自当前项目 `.sdd/templates/`，由 `/sdd:prd`、`/sdd:spec`、`/sdd:plan` 传入运行时模板资产。
+`template_path` 和 `standard_path` 必须来自当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/`，由 `/sdd:prd`、`/sdd:spec`、`/sdd:plan` 传入运行时模板资产。
 
 ## Modes
 
@@ -72,7 +72,7 @@ reviewer 对外保持单入口，对内支持：
 在执行任何评审或自动修复前，reviewer 必须独立重复以下防御性准入检查，不能只信任调用者的 pre-review gate：
 
 1. `document_path` 存在、是可读的常规文件且非空。
-2. `document_type` 和 `mode` 属于支持枚举，且 `template_path`、`standard_path` 都位于当前项目 `.sdd/templates/<document_type>/` 下、存在且可读。
+2. `document_type` 和 `mode` 属于支持枚举，且 `template_path`、`standard_path` 都位于当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/<document_type>/` 下、存在且可读。
 3. 文档包含该类型模板定义的核心章节、必要元信息和 `## 文档引用` 表；文档不得只是未替换的模板占位稿。
 4. `upstream_paths` 中声明的依赖存在且满足调用该文档类型的最小前置条件。
 5. `repair_policy`、`invocation_source` 和正整数 `max_rounds` 均存在且可用。

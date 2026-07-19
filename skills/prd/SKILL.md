@@ -31,11 +31,11 @@ Create or update `docs/versions/vX.Y.Z/prd.md` for the unique active version.
 
 ## Output
 
-Write `docs/versions/vX.Y.Z/prd.md` using `.sdd/templates/prd/template.md`.
+Write `docs/versions/vX.Y.Z/prd.md` using `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/template.md`.
 
-- 只读取 `.sdd/templates/prd/template.md` 和同目录下的质量标准。
-- 生成前必须读取 `.sdd/templates/prd/template.md` 和 `.sdd/templates/prd/quality.standard.md`。
-- 如果 `.sdd/templates/prd/` 下必要文件缺失，则直接失败并提示重新执行 `/sdd:init` 或手工修复项目模板资产。
+- 只读取 `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/template.md` 和同目录下的质量标准。
+- 生成前必须读取 `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/template.md` 和 `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/quality.standard.md`。
+- 如果 `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/` 下必要文件缺失，则直接失败并提示重新执行 `/sdd:init` 或手工修复项目模板资产。
 - `## 文档引用` 是正式机器可检查引用关系。
 - `## 上游需求资料` 是人类阅读摘要。
 - 影响 PRD 契约内容的 requirement 必须同时出现在 `## 文档引用`。
@@ -44,7 +44,7 @@ Write `docs/versions/vX.Y.Z/prd.md` using `.sdd/templates/prd/template.md`.
 ## Review flow
 
 - 目标文档写入完成并通过命令层 pre-review gate 后，必须按 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同自动触发 `quality` reviewer，并消费通过 schema 校验的机器结果。
-- reviewer 只消费当前项目 `.sdd/templates/prd/` 中的模板与标准。
+- reviewer 只消费当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/` 中的模板与标准。
 - 低风险结构、术语、引用表和一致性问题允许自动修复。
 - 需求语义不清时生成候选改写并等待用户确认。
 - JSON 无效、reviewer admission check 失败、`quality` 阻断或需要用户确认时，阻断进入下一稳定状态；用户确认并完成有效复审前，不得绕过该结果推进流程。

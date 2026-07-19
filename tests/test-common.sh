@@ -11,6 +11,11 @@ assert_file_exists() {
   [[ -f "$path" ]] || fail "expected file to exist: $path"
 }
 
+assert_file_not_exists() {
+  local path="$1"
+  [[ ! -e "$path" ]] || fail "expected path not to exist: $path"
+}
+
 assert_executable() {
   local path="$1"
   [[ -x "$path" ]] || fail "expected file to be executable: $path"

@@ -42,10 +42,10 @@ Write formal relationships into the unified `## 文档引用` table:
 ## Steps
 
 1. Read `prd.md`.
-2. 只读取 `.sdd/templates/spec/` 下的模板与标准。
-3. 读取 `.sdd/templates/spec/template.md`、`.sdd/templates/spec/quality.standard.md`、`.sdd/templates/spec/feasibility.standard.md`。
+2. 只读取 `${CLAUDE_PROJECT_DIR}/.sdd/templates/spec/` 下的模板与标准。
+3. 读取 `${CLAUDE_PROJECT_DIR}/.sdd/templates/spec/template.md`、`${CLAUDE_PROJECT_DIR}/.sdd/templates/spec/quality.standard.md`、`${CLAUDE_PROJECT_DIR}/.sdd/templates/spec/feasibility.standard.md`。
 4. 如果项目模板资产缺失，则直接失败，不降级到 Plugin 内置资产。
-5. reviewer 只消费当前项目 `.sdd/templates/spec/` 中的模板与标准，与生成阶段使用同一套项目级有效资产。
+5. reviewer 只消费当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/spec/` 中的模板与标准，与生成阶段使用同一套项目级有效资产。
 6. Write `docs/versions/vX.Y.Z/specs/<spec-name>.md` with `- 状态：draft`.
 7. 目标文档写入完成并通过命令层 pre-review gate 后，必须按 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同自动按顺序触发 `quality -> feasibility`；每个 mode 的机器结果均须先通过 schema 校验。
 8. `quality` JSON 无效、admission check 失败、`blocked: true` 或 `requires_user_confirmation: true` 时，停止，不执行 `feasibility`，聚合已执行结果为一份回执，并保留 `draft`。

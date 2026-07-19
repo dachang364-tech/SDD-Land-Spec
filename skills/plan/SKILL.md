@@ -57,12 +57,12 @@ Generate a new incremental Implementation Plan under `docs/versions/vX.Y.Z/plans
 
 ## Plan quality rules
 
-- 只读取 `.sdd/templates/plan/` 下的模板与标准。
-- 生成必须使用 `.sdd/templates/plan/template.md`，并读取 `.sdd/templates/plan/quality.standard.md`。
-- 同时读取 `.sdd/templates/plan/feasibility.standard.md`。
-- `.sdd/templates/plan/template.md`、`.sdd/templates/plan/quality.standard.md`、`.sdd/templates/plan/feasibility.standard.md` 任一缺失，则直接失败，不降级到 Plugin 内置资产。
+- 只读取 `${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/` 下的模板与标准。
+- 生成必须使用 `${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/template.md`，并读取 `${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/quality.standard.md`。
+- 同时读取 `${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/feasibility.standard.md`。
+- `${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/template.md`、`${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/quality.standard.md`、`${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/feasibility.standard.md` 任一缺失，则直接失败，不降级到 Plugin 内置资产。
 - 如果项目模板资产缺失，则直接失败，不降级到 Plugin 内置资产。
-- reviewer 只消费当前项目 `.sdd/templates/plan/` 中的模板与标准，与生成阶段使用同一套项目级有效资产。
+- reviewer 只消费当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/` 中的模板与标准，与生成阶段使用同一套项目级有效资产。
 - 写入完成并通过命令层 pre-review gate 后，必须按 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同自动按顺序触发 `quality -> feasibility`；每个 mode 的机器结果均须先通过 schema 校验。
 - `quality` JSON 无效、admission check 失败、`blocked: true` 或 `requires_user_confirmation: true` 时，停止，不执行 `feasibility`，聚合已执行结果为一份回执，并保留 `draft`。
 - 只有 `quality` 的有效结果未阻断且无需确认时才执行 `feasibility`。`feasibility` 在 `plan` 上比 `spec` 更严格；它返回 `blocked: true`、需要确认或无效 JSON 时保留 `draft`，高杠杆技术决策仍必须等待用户确认。
