@@ -10,7 +10,8 @@ Initialize the current project for SDD. Create the project-level skeleton only; 
 ## Preconditions
 
 1. Check whether `docs/CONSTITUTION.md` exists.
-2. If `docs/CONSTITUTION.md` exists, stop and say: `docs/CONSTITUTION.md 已存在；已初始化，请运行 /sdd:status 查看当前状态。`
+2. 如果 `docs/CONSTITUTION.md` 已存在，保留现有文件并继续初始化；`docs/CONSTITUTION.md 已存在` 不再是停止条件，以便确保或恢复缺失 `.sdd/templates/` 资产。
+3. 如果 `.sdd/templates/` 缺失或不完整，重新执行 `/sdd:init` 以恢复模板资产；不要仅因 `docs/CONSTITUTION.md` 已存在而停止。
 
 ## Steps
 

@@ -125,3 +125,38 @@ PASS: MVP acceptance
 ```
 
 `git diff --check` produced no output and exited successfully.
+
+## Review Fix: Allow `/sdd:init` to recover template assets
+
+Addressed the additional Important review findings about re-running initialization.
+
+Updated `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/skills/init/SKILL.md` so an existing `docs/CONSTITUTION.md` is preserved and no longer terminates `/sdd:init`. The contract now explicitly requires continuing initialization, ensuring or restoring missing `.sdd/templates/` assets, and re-running the template-pack materialization flow when `.sdd/templates/` is missing or incomplete.
+
+Added contract coverage in `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/tests/test-skill-contracts.sh` that verifies:
+
+- Existing `docs/CONSTITUTION.md` leads to continued initialization.
+- Re-running `/sdd:init` is the documented recovery path.
+- Missing or incomplete `.sdd/templates/` assets are restored.
+- The old stop-only behavior is absent.
+
+### Recovery-fix verification
+
+Commands run:
+
+```bash
+bash tests/test-skill-contracts.sh
+bash tests/test-package-local.sh
+bash tests/test-mvp-acceptance.sh
+git diff --check
+```
+
+Output summary:
+
+```text
+PASS: skill contracts
+PASS: local package script
+PASS: DR filename contract
+PASS: MVP acceptance
+```
+
+`git diff --check` produced no output and exited successfully.

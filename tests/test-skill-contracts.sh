@@ -15,6 +15,10 @@ done
 
 assert_contains "skills/init/SKILL.md" "description: Initialize SDD project structure"
 assert_contains "skills/init/SKILL.md" "docs/CONSTITUTION.md 已存在"
+assert_contains "skills/init/SKILL.md" "继续初始化"
+assert_contains "skills/init/SKILL.md" '确保或恢复缺失 `.sdd/templates/` 资产'
+assert_contains "skills/init/SKILL.md" '重新执行 `/sdd:init`'
+assert_not_contains "skills/init/SKILL.md" "stop and say"
 assert_contains "skills/init/SKILL.md" "docs/versions/"
 assert_contains "skills/init/SKILL.md" "不创建任何版本目录或版本级 state.json"
 assert_contains "skills/init/SKILL.md" "允许处于 0 active version 状态"
