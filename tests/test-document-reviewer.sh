@@ -5,6 +5,16 @@ cd "$(dirname "$0")/.."
 
 assert_file_exists "skills/review/SKILL.md"
 assert_file_exists "skills/review/references/reviewer-result.schema.json"
+assert_file_exists "agents/doc-reviewer.md"
+assert_contains "agents/doc-reviewer.md" 'name: doc-reviewer'
+assert_contains "agents/doc-reviewer.md" 'description:'
+assert_contains "agents/doc-reviewer.md" 'document_path'
+assert_contains "agents/doc-reviewer.md" 'document_type'
+assert_contains "agents/doc-reviewer.md" 'standard_path'
+assert_contains "agents/doc-reviewer.md" 'reviewer-result.schema.json'
+assert_contains "agents/doc-reviewer.md" '"blocked": true'
+assert_contains "agents/doc-reviewer.md" '"iterations": 0'
+assert_contains "agents/doc-reviewer.md" 'exactly one JSON object'
 assert_contains "skills/review/SKILL.md" '文档路径'
 assert_contains "skills/review/SKILL.md" '文档类型'
 assert_contains "skills/review/SKILL.md" '当前 mode'
@@ -14,7 +24,8 @@ assert_contains "skills/review/SKILL.md" '进入需要用户确认的状态'
 assert_contains "skills/review/SKILL.md" '无法继续产生有效改进'
 assert_contains "skills/review/SKILL.md" '默认只向用户返回 1 份聚合后的简洁回执'
 
-assert_contains "skills/review/SKILL.md" 'doc Reviewer-Subagent'
+assert_contains "skills/review/SKILL.md" 'doc-reviewer'
+assert_not_contains "skills/review/SKILL.md" 'doc Reviewer-Subagent'
 assert_contains "skills/review/SKILL.md" '唯一的输入载荷'
 assert_contains "skills/review/SKILL.md" '必须只返回一个 JSON 对象'
 assert_contains "skills/review/SKILL.md" 'references/reviewer-result.schema.json'

@@ -16,7 +16,7 @@ Review a target document using the project runtime template assets in `.sdd/temp
 
 ## Invocation and structured handoff
 
-命令层或手动 `/sdd:review` 必须启动一个 `doc Reviewer-Subagent`，每次调用只评审一个 `mode`，并将以下 JSON 对象作为 subagent 唯一的输入载荷。不得以自由文本替代或省略字段：
+命令层或手动 `/sdd:review` 必须启动插件提供的 `doc-reviewer` agent。每次调用只评审一个 `mode`，并将以下 JSON 对象作为 agent 唯一的输入载荷。不得以自由文本替代或省略字段：
 
 ```json
 {
@@ -31,6 +31,8 @@ Review a target document using the project runtime template assets in `.sdd/temp
   "max_rounds": 1
 }
 ```
+
+`doc-reviewer` 必须解析为插件根目录 `agents/doc-reviewer.md` 定义的 Claude Code agent；调用方不得用普通文本模拟该 agent，也不得把 review 逻辑替换为当前主 agent 的非隔离推理。
 
 subagent 必须只返回一个 JSON 对象，且该对象必须通过 `references/reviewer-result.schema.json` 校验；禁止在机器输出前后附加 Markdown、解释或多个 JSON 对象。命令层在读取任何字段、生成用户回执或改变文档状态前必须校验该 JSON：解析失败、schema 校验失败、`document_type` / `mode` 与输入不匹配时，将本次 review 视为 `blocked: true` 的执行失败，保留 `draft` 或原有稳定状态，不得继续审批或状态推进。
 

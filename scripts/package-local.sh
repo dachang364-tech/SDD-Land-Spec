@@ -61,7 +61,7 @@ trap 'rm -rf "$tmp_dir"' EXIT
 package_dir="$tmp_dir/$package_root"
 mkdir -p "$package_dir"
 
-for path in .claude-plugin CONSTITUTION.default.md LICENSE hooks scripts skills assets; do
+for path in .claude-plugin CONSTITUTION.default.md LICENSE hooks scripts skills agents assets; do
   if [[ -e "$root_dir/$path" ]]; then
     cp -R "$root_dir/$path" "$package_dir/$path"
   fi

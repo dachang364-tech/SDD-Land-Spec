@@ -43,7 +43,7 @@ Write `docs/versions/vX.Y.Z/prd.md` using `.sdd/templates/prd/template.md`.
 
 ## Review flow
 
-- 目标文档写入完成并通过命令层 pre-review gate 后，必须按 `/sdd:review` 的 `doc Reviewer-Subagent` JSON 调用合同自动触发 `quality` reviewer，并消费通过 schema 校验的机器结果。
+- 目标文档写入完成并通过命令层 pre-review gate 后，必须按 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同自动触发 `quality` reviewer，并消费通过 schema 校验的机器结果。
 - reviewer 只消费当前项目 `.sdd/templates/prd/` 中的模板与标准。
 - 低风险结构、术语、引用表和一致性问题允许自动修复。
 - 需求语义不清时生成候选改写并等待用户确认。

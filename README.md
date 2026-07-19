@@ -70,6 +70,7 @@ Claude Code 2.1.29 起，`claude plugin install <plugin>` 会从已配置的 mar
 ```text
 .claude-plugin/plugin.json
 .claude-plugin/marketplace.json
+agents/doc-reviewer.md
 ```
 
 添加本地 marketplace：
@@ -139,6 +140,8 @@ claude
 ## 项目模板资产
 
 `/sdd:init` 会将所选模板包展开到 `.sdd/templates/`，这是 `/sdd:prd`、`/sdd:spec`、`/sdd:plan` 和 `/sdd:review` 的运行时唯一模板来源。
+
+`/sdd:review` 的实际执行单元是插件安装内容中的 `agents/doc-reviewer.md`；`skills/review/SKILL.md` 负责编排调用合同、mode 顺序和聚合回执约束。
 
 ```text
 .sdd/

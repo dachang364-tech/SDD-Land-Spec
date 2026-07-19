@@ -32,6 +32,7 @@ skills/doctor/SKILL.md
 skills/archive/SKILL.md
 skills/review/SKILL.md
 skills/review/references/reviewer-result.schema.json
+agents/doc-reviewer.md
 hooks/hooks.json
 scripts/install-deps.sh
 scripts/hooks/pre-tool-use.sh
@@ -119,6 +120,13 @@ The helper owns the reference-table contract, including:
 
 - Group output by check range; each group reports `OK`, `WARNING`, or `ERROR`.
 - Final next-step suggestions per state (not initialized → `/sdd:init`; 0 active → `/sdd:new vX.Y.Z`; multiple active/broken state → manual `state.json` fix; archive index issue → fix `docs/archive/INDEX.md`; reference table issue → fix reference tables).
+
+## Reviewer agent checks
+
+- 检查插件根目录 `agents/doc-reviewer.md` 是否存在。
+- 检查 agent frontmatter 包含 `name: doc-reviewer` 和 `description`。
+- 检查最终 ZIP/TAR 包包含 `agents/doc-reviewer.md`。
+- 如缺失，报告 `缺少 doc-reviewer agent`，并阻止宣称 reviewer runtime 完整。
 
 ## Boundaries
 

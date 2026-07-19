@@ -30,6 +30,9 @@ if ! grep -Fxq "${package_root}/.claude-plugin/plugin.json" "$archive_contents";
   fail "package must include plugin metadata under package root"
 fi
 
+assert_contains "$archive_contents" "${package_root}/agents/doc-reviewer.md"
+assert_contains "$zip_listing" "${package_root}/agents/doc-reviewer.md"
+
 assert_contains "$archive_contents" "${package_root}/assets/template-packs/default-backend/prd/template.md"
 assert_contains "$archive_contents" "${package_root}/assets/template-packs/default-backend/spec/feasibility.standard.md"
 assert_contains "$archive_contents" "${package_root}/assets/template-packs/default-backend/plan/quality.standard.md"

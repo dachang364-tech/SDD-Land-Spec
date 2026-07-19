@@ -30,7 +30,8 @@ PASS: MVP acceptance
 3. 手工删除 `.sdd/templates/spec/feasibility.standard.md` 后再次运行 `/sdd:spec`，期望命令明确失败，并提示缺少项目模板资产。
 4. 重新执行 `/sdd:init` 恢复模板资产。
 5. 生成或修改 `prd.md`、`spec.md`、`plan.md` 后，确认 reviewer 自动触发。
-6. 对已有文档执行 `/sdd:review <doc-path>`，确认只返回一份聚合用户回执。
+6. 确认插件安装后的组件目录包含 `agents/doc-reviewer.md`。
+7. 对已有文档执行 `/sdd:review <doc-path>`，确认 reviewer 使用该 agent，而不是仅依据 review skill 文本模拟执行，并且只返回一份聚合用户回执。
 
 ## 3. 检查禁止路径
 
