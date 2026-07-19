@@ -14,6 +14,10 @@ for skill in init new research prd spec plan code dr status doctor archive; do
   assert_file_exists "skills/$skill/SKILL.md"
 done
 
+assert_file_exists "assets/template-packs/default-backend/prd/template.md"
+assert_file_exists "assets/template-packs/default-backend/spec/feasibility.standard.md"
+assert_file_exists "assets/template-packs/default-backend/plan/quality.standard.md"
+
 # No forbidden centralized state implementation.
 # Scan implementation and generated contract files only, so documentation that
 # describes the prohibition is not treated as a violation.

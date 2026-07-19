@@ -135,6 +135,10 @@ claude
   - `docs/CONSTITUTION.md`
   - `docs/requirements/`
   - `docs/archive/`
+  - `.sdd/templates/prd/`
+  - `.sdd/templates/spec/`
+  - `.sdd/templates/plan/`
+- `/sdd:init` 会提示模板包选择；未显式切换时默认使用 `default-backend`。
 - `/sdd:new v0.2.0` 创建：
   - `docs/versions/v0.2.0/state.json`
   - `docs/versions/v0.2.0/specs/`

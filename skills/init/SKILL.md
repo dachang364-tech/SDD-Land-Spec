@@ -18,13 +18,17 @@ Initialize the current project for SDD. Create the project-level skeleton only; 
    - `docs/requirements/`
    - `docs/versions/`
    - `docs/archive/`
+   - `.sdd/`
 2. Copy `CONSTITUTION.default.md` to `docs/CONSTITUTION.md`.
-3. Do not create `.sdd/state.json`.
-4. 不创建任何版本目录或版本级 state.json。
-5. Do not create `prd.md`, `specs/*.md`, `plans/*.md`, or `decisions/*.md`.
-6. Do not modify `CLAUDE.md` or `AGENTS.md`.
-7. 只提示用户安装依赖插件，不执行 `scripts/install-deps.sh`。
-8. 提醒用户本插件依赖 `superpowers` 与 `spec-kit`，请按 README 安装说明手动安装；`scripts/install-deps.sh` 仅作为可选辅助脚本。
+3. 展示可选模板包列表。
+4. 如果用户未显式切换，则使用默认模板包 `default-backend`。
+5. 将所选模板包中的 `PRD / Spec / Plan` 模板与标准完整展开到 `.sdd/templates/`。
+6. 不创建任何版本目录或版本级 state.json。
+7. 不要求把“用户选择了哪个模板包”写入项目元数据文件。
+8. 不创建 `prd.md`、`specs/*.md`、`plans/*.md` 或 `decisions/*.md`。
+9. 不修改 `CLAUDE.md` 或 `AGENTS.md`。
+10. 只提示用户安装依赖插件，不执行 `scripts/install-deps.sh`。
+11. 提醒用户本插件依赖 `superpowers` 与 `spec-kit`，请按 README 安装说明手动安装；`scripts/install-deps.sh` 仅作为可选辅助脚本。
 
 ## Output
 
@@ -35,6 +39,7 @@ docs/CONSTITUTION.md
 docs/requirements/
 docs/versions/
 docs/archive/
+.sdd/templates/
 ```
 
 ## State semantics

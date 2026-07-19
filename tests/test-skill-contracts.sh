@@ -24,6 +24,12 @@ assert_contains "skills/init/SKILL.md" '`superpowers`'
 assert_contains "skills/init/SKILL.md" '`spec-kit`'
 assert_not_contains "skills/init/SKILL.md" 'Run `scripts/install-deps.sh`.'
 assert_not_contains "skills/init/SKILL.md" "If dependency installation fails"
+assert_contains "skills/init/SKILL.md" "展示可选模板包列表"
+assert_contains "skills/init/SKILL.md" '将所选模板包中的 `PRD / Spec / Plan` 模板与标准完整展开到 `.sdd/templates/`'
+assert_contains "skills/init/SKILL.md" '如果用户未显式切换，则使用默认模板包'
+assert_contains "skills/init/SKILL.md" '不要求把“用户选择了哪个模板包”写入项目元数据文件'
+assert_contains "skills/init/SKILL.md" '.sdd/templates/'
+assert_not_contains "skills/init/SKILL.md" 'Do not create `.sdd/state.json`.'
 assert_contains "scripts/hooks/session-start.sh" "claude plugin list"
 assert_contains "scripts/hooks/session-start.sh" "superpowers([[:space:]]|$)"
 assert_contains "scripts/hooks/session-start.sh" "spec-kit([[:space:]]|$)"

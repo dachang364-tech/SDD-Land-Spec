@@ -19,6 +19,8 @@ assert_contains "/tmp/sdd-package-local.out" "dist/sdd-plugin-v${plugin_version}
 
 archive_contents="/tmp/sdd-package-local-contents.out"
 tar -tzf "dist/sdd-plugin-v${plugin_version}.tar.gz" >"$archive_contents"
+zip_listing="/tmp/sdd-package-local-zip-contents.out"
+unzip -Z1 "dist/sdd-plugin-v${plugin_version}.zip" >"$zip_listing"
 
 if grep -Eq "^${package_root}/(dist|docs|tests)(/|$)|^${package_root}/TESTING\\.md$|^${package_root}/\\.git/" "$archive_contents"; then
   fail "package must not include development-only files"
@@ -27,6 +29,13 @@ fi
 if ! grep -Fxq "${package_root}/.claude-plugin/plugin.json" "$archive_contents"; then
   fail "package must include plugin metadata under package root"
 fi
+
+assert_contains "$archive_contents" "${package_root}/assets/template-packs/default-backend/prd/template.md"
+assert_contains "$archive_contents" "${package_root}/assets/template-packs/default-backend/spec/feasibility.standard.md"
+assert_contains "$archive_contents" "${package_root}/assets/template-packs/default-backend/plan/quality.standard.md"
+assert_contains "$zip_listing" "${package_root}/assets/template-packs/default-backend/prd/template.md"
+assert_contains "$zip_listing" "${package_root}/assets/template-packs/default-backend/spec/feasibility.standard.md"
+assert_contains "$zip_listing" "${package_root}/assets/template-packs/default-backend/plan/quality.standard.md"
 
 readme_tmp="/tmp/sdd-package-local-readme.md"
 rm -rf "/tmp/${package_root}"
@@ -46,6 +55,8 @@ assert_contains "$readme_tmp" "/sdd:init"
 assert_contains "$readme_tmp" "用户自行安装"
 assert_contains "$readme_tmp" "可选辅助脚本"
 assert_contains "$readme_tmp" '`/sdd:init` 不会自动安装依赖插件'
+assert_contains "$readme_tmp" '`/sdd:init` 会在项目中初始化 `.sdd/templates/`，并将所选模板包展开为运行时唯一生效资产。'
+assert_contains "$readme_tmp" '.sdd/templates/'
 if grep -Eq '本项目验证|测试指南|worktree|合并|开发' "$readme_tmp"; then
   fail "packaged README must focus on user usage, not plugin development"
 fi

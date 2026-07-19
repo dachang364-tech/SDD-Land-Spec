@@ -61,7 +61,7 @@ trap 'rm -rf "$tmp_dir"' EXIT
 package_dir="$tmp_dir/$package_root"
 mkdir -p "$package_dir"
 
-for path in .claude-plugin CONSTITUTION.default.md LICENSE hooks scripts skills; do
+for path in .claude-plugin CONSTITUTION.default.md LICENSE hooks scripts skills assets; do
   if [[ -e "$root_dir/$path" ]]; then
     cp -R "$root_dir/$path" "$package_dir/$path"
   fi
@@ -112,6 +112,8 @@ claude plugin list
 如果 marketplace 名称不是 `sdd-local`，以 `.claude-plugin/marketplace.json` 中的 `name` 字段为准。
 
 `/sdd:init` 不会自动安装依赖插件，只会提示用户完成上述安装。
+
+`/sdd:init` 会在项目中初始化 `.sdd/templates/`，并将所选模板包展开为运行时唯一生效资产。
 
 ## 使用
 
@@ -189,6 +191,14 @@ docs/
 其中，版本级文档目录为 `docs/versions/vX.Y.Z/`。
 
 其中，Decision Record 的标准输出路径为 `docs/versions/vX.Y.Z/decisions/NNN-<tag>-<slug>.md`。
+
+```text
+.sdd/
+└── templates/
+    ├── prd/
+    ├── spec/
+    └── plan/
+```
 README
 
 (
