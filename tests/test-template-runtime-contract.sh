@@ -29,10 +29,33 @@ assert_file_exists "$(sdd_require_template_asset "$tmp_project" plan template.md
 assert_file_exists "$(sdd_require_template_asset "$tmp_project" plan quality.standard.md)"
 assert_file_exists "$(sdd_require_template_asset "$tmp_project" plan feasibility.standard.md)"
 
-rm "$tmp_project/.sdd/templates/spec/feasibility.standard.md"
-if sdd_require_template_asset "$tmp_project" spec feasibility.standard.md >"$error_status" 2>"$error_output"; then
-  fail "expected missing spec feasibility standard to fail"
-fi
-assert_contains "$error_output" "缺少项目模板资产"
+assert_file_exists "$(sdd_require_template_asset "$tmp_project" plan feasibility.standard.md)"
+
+for asset in template.md quality.standard.md; do
+  rm "$tmp_project/.sdd/templates/prd/$asset"
+  if sdd_require_template_asset "$tmp_project" prd "$asset" >"$error_status" 2>"$error_output"; then
+    fail "expected missing prd $asset to fail"
+  fi
+  assert_contains "$error_output" "缺少项目模板资产"
+  printf '# restored\n' > "$tmp_project/.sdd/templates/prd/$asset"
+done
+
+for asset in template.md quality.standard.md feasibility.standard.md; do
+  rm "$tmp_project/.sdd/templates/spec/$asset"
+  if sdd_require_template_asset "$tmp_project" spec "$asset" >"$error_status" 2>"$error_output"; then
+    fail "expected missing spec $asset to fail"
+  fi
+  assert_contains "$error_output" "缺少项目模板资产"
+  printf '# restored\n' > "$tmp_project/.sdd/templates/spec/$asset"
+done
+
+for asset in template.md quality.standard.md feasibility.standard.md; do
+  rm "$tmp_project/.sdd/templates/plan/$asset"
+  if sdd_require_template_asset "$tmp_project" plan "$asset" >"$error_status" 2>"$error_output"; then
+    fail "expected missing plan $asset to fail"
+  fi
+  assert_contains "$error_output" "缺少项目模板资产"
+  printf '# restored\n' > "$tmp_project/.sdd/templates/plan/$asset"
+done
 
 printf 'PASS: template runtime contract\n'
