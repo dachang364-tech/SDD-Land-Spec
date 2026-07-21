@@ -44,14 +44,45 @@ sdd_copy_template_pack() {
   pack_root="$(sdd_template_pack_root "$plugin_root" "$pack_name")" || return 2
   local target_root
   target_root="$(sdd_project_templates_root "$project_root")"
-  mkdir -p "$project_root/.sdd"
-  mkdir -p "$target_root/research" "$target_root/prd" "$target_root/spec" "$target_root/plan" "$target_root/dr"
+  local required_dir
+  local source_dir
+  local target_dir
+  local source_entry
+  local entry_name
 
-  cp -R -n "$pack_root/research/." "$target_root/research/" || true
-  cp -R -n "$pack_root/prd/." "$target_root/prd/" || true
-  cp -R -n "$pack_root/spec/." "$target_root/spec/" || true
-  cp -R -n "$pack_root/plan/." "$target_root/plan/" || true
-  cp -R -n "$pack_root/dr/." "$target_root/dr/" || true
+  for required_dir in research prd spec plan dr; do
+    if [[ ! -d "$pack_root/$required_dir" ]]; then
+      printf '模板包缺少必需目录：%s\n' "$pack_root/$required_dir" >&2
+      return 2
+    fi
+  done
+
+  mkdir -p "$project_root/.sdd" || {
+    printf '无法创建目录：%s/.sdd\n' "$project_root" >&2
+    return 2
+  }
+  mkdir -p "$target_root/research" "$target_root/prd" "$target_root/spec" "$target_root/plan" "$target_root/dr" || {
+    printf '无法创建模板目标目录：%s\n' "$target_root" >&2
+    return 2
+  }
+
+  for required_dir in research prd spec plan dr; do
+    source_dir="$pack_root/$required_dir"
+    target_dir="$target_root/$required_dir"
+    shopt -s dotglob nullglob
+    for source_entry in "$source_dir"/*; do
+      entry_name="$(basename "$source_entry")"
+      if [[ -e "$target_dir/$entry_name" ]]; then
+        continue
+      fi
+      cp -R -n "$source_entry" "$target_dir/" || {
+        printf '模板资产复制失败：%s -> %s/\n' "$source_entry" "$target_dir" >&2
+        shopt -u dotglob nullglob
+        return 2
+      }
+    done
+    shopt -u dotglob nullglob
+  done
 }
 
 sdd_require_template_asset() {

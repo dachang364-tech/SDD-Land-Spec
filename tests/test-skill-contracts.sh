@@ -73,6 +73,13 @@ assert_contains "skills/init/SKILL.md" '${CLAUDE_PROJECT_DIR}/.sdd/templates/'
 assert_contains "skills/init/SKILL.md" "sdd_list_template_packs"
 assert_contains "skills/init/SKILL.md" "sdd_default_template_pack"
 assert_contains "skills/init/SKILL.md" "sdd_copy_template_pack"
+assert_contains "skills/init/SKILL.md" '调用 `sdd_list_template_packs "$plugin_root"` 获取模板包列表'
+assert_contains "skills/init/SKILL.md" '将模板包列表展示给用户并请求选择'
+assert_contains "skills/init/SKILL.md" '如果用户未显式切换，则调用 `sdd_default_template_pack` 取得默认值'
+assert_contains "skills/init/SKILL.md" '校验所选值属于可用模板包'
+assert_contains "skills/init/SKILL.md" '只有在模板包选择完成后才调用 `sdd_copy_template_pack`'
+assert_contains "skills/init/SKILL.md" '如果 `sdd_copy_template_pack` 返回非零，停止并报告失败'
+assert_not_contains "skills/init/SKILL.md" '初始化成功（即使模板复制失败）'
 assert_contains "scripts/lib/sdd-template-assets.sh" "sdd_list_template_packs"
 assert_contains "scripts/lib/sdd-template-assets.sh" "sdd_default_template_pack"
 assert_contains "scripts/lib/sdd-template-assets.sh" "sdd_copy_template_pack"
@@ -349,6 +356,7 @@ assert_contains "CONSTITUTION.default.md" '文档类 DR 必须使用 `plan_requi
 assert_contains "CONSTITUTION.default.md" "代码类 DR 在 spec 修订完成后不得关闭"
 assert_contains "CONSTITUTION.default.md" '轻量 fix DR 通过 `/sdd:code` verification'
 assert_contains "CONSTITUTION.default.md" '/sdd:code` 可以执行状态为 `planned` 或 `coding` 的 plan，也可以执行符合条件的 lightweight fix DR'
-assert_contains "CONSTITUTION.default.md" '才能关闭为 `committed`'
+assert_contains "CONSTITUTION.default.md" '并只能在 `/sdd:code` verification 通过后关闭'
+assert_not_contains "CONSTITUTION.default.md" '才能关闭为 `committed`'
 
 printf 'PASS: skill contracts\n'

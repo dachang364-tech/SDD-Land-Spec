@@ -39,6 +39,7 @@ assert_not_contains "skills/plan/SKILL.md" 'skills/plan/references/plan.md.tmpl'
 assert_not_contains "README.md" 'default-backend'
 assert_not_contains "TESTING.md" 'default-backend'
 assert_contains "scripts/lib/sdd-template-assets.sh" 'mkdir -p "$target_root/research" "$target_root/prd" "$target_root/spec" "$target_root/plan" "$target_root/dr"'
-assert_contains "scripts/lib/sdd-template-assets.sh" 'cp -R -n "$pack_root/dr/." "$target_root/dr/" || true'
+assert_not_contains "scripts/lib/sdd-template-assets.sh" 'cp -R -n "$pack_root/dr/." "$target_root/dr/" || true'
+assert_contains "scripts/lib/sdd-template-assets.sh" '模板包缺少必需目录'
 
 printf 'PASS: template governance matrix\n'
