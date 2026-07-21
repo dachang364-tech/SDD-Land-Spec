@@ -1,0 +1,10 @@
+{
+  "eval_id": 2,
+  "eval_name": "invalid-reviewer-result-blocks-state",
+  "prompt": "如果 `doc-reviewer` 返回的机器结果不是合法 JSON，或者 schema 校验失败、`document_type` / `mode` 与输入不匹配，`/sdd:review` 必须如何处理？",
+  "assertions": [
+    "输出提到命令层在读取字段、生成用户回执或改变文档状态前必须先校验 JSON/schema。",
+    "输出提到校验失败时本次 review 视为 `blocked: true` 的执行失败。",
+    "输出提到必须保留 draft 或原有稳定状态，不能继续审批或状态推进。"
+  ]
+}

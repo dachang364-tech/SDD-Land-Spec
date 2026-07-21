@@ -1,0 +1,10 @@
+{
+  "eval_id": 1,
+  "eval_name": "structured-handoff-contract",
+  "prompt": "请说明 `/sdd:review` 启动 `doc-reviewer` 时必须如何构造结构化 handoff；重点回答唯一 JSON 载荷包含哪些关键字段、为什么不能用自由文本替代，以及 mode 是按什么粒度调用的。",
+  "assertions": [
+    "输出提到 handoff 必须是唯一 JSON 载荷，不能用自由文本替代。",
+    "输出提到关键字段至少包括 document_path、document_type、mode、template_path、standard_path、repair_policy、upstream_paths、invocation_source、max_rounds。",
+    "输出提到每次调用只评审一个 mode，并且必须启动插件 `doc-reviewer` agent。"
+  ]
+}

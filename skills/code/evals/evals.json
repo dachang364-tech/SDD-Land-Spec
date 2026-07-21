@@ -1,0 +1,38 @@
+{
+  "skill_name": "code",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "如果用户执行 `/sdd:code 001-fix-login`，也就是一个以三位数字和连字符开头、但并不是完整有效 DR ID 的输入，系统必须如何处理？",
+      "expected_output": "明确说明这是无效 DR-like 输入，必须直接报无效 DR ID，且不能回退到 plan 或 feature-name lookup。",
+      "files": [],
+      "expectations": [
+        "输出提到这是无效 DR ID，并给出完整 DR ID 格式要求。",
+        "输出提到 DR-like 但无效的输入不能回退到 plan lookup 或 feature-name lookup。",
+        "输出提到不会进入任何 execution mode。"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "如果用户执行 `/sdd:code 001-doc-fix-typo`，也就是一个 document-class DR ID，系统应该如何处理？",
+      "expected_output": "明确拒绝 document-class DR 执行 `/sdd:code`，并说明 document-class DR 不进入代码执行流程。",
+      "files": [],
+      "expectations": [
+        "输出提到 document-class DR 不执行 `/sdd:code`。",
+        "输出提到 document-class DR 不允许进入 plan execution mode 或 lightweight fix DR mode。",
+        "输出提到这是在 work item lookup 阶段直接拒绝。"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "如果 `/sdd:code` 进入 plan execution mode 后执行失败，plan 和关联 DR 的状态应该如何保持？",
+      "expected_output": "明确说明失败时 plan 保持 coding，关联 code-class DR 保持 accepted，不得提前切到 done 或 closed。",
+      "files": [],
+      "expectations": [
+        "输出提到失败时 plan remains coding。",
+        "输出提到关联 DR remains accepted。",
+        "输出提到失败时不能把 plan 切到 done，也不能把 DR 切到 closed。"
+      ]
+    }
+  ]
+}

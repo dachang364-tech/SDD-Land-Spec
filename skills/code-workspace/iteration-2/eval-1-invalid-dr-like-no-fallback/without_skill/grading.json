@@ -1,0 +1,44 @@
+{
+  "expectations": [
+    {
+      "text": "输出提到这是无效 DR ID，并给出完整 DR ID 格式要求。",
+      "passed": false,
+      "evidence": "回答未覆盖该断言。"
+    },
+    {
+      "text": "输出提到 DR-like 但无效的输入不能回退到 plan lookup 或 feature-name lookup。",
+      "passed": false,
+      "evidence": "回答未覆盖该断言。"
+    },
+    {
+      "text": "输出提到不会进入任何 execution mode。",
+      "passed": false,
+      "evidence": "回答未覆盖该断言。"
+    }
+  ],
+  "summary": {
+    "passed": 0,
+    "failed": 3,
+    "total": 3,
+    "pass_rate": 0.0
+  },
+  "execution_metrics": {
+    "eval_id": 1,
+    "run_type": "without_skill",
+    "assertions_total": 3,
+    "final_answer_words": 4,
+    "total_tokens": 172,
+    "input_tokens": 106,
+    "output_tokens": 66,
+    "total_tool_calls": 1,
+    "errors_encountered": 0,
+    "assertions_passed": 0,
+    "assertion_pass_rate": 0.0
+  },
+  "timing": {
+    "total_tokens": 172,
+    "duration_ms": 1028,
+    "total_duration_seconds": 1.028,
+    "executor_duration_seconds": 0.874
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "tool_calls": {
+    "Read": 1
+  },
+  "total_tool_calls": 1,
+  "total_steps": 1,
+  "files_created": [
+    "final.md"
+  ],
+  "errors_encountered": 0,
+  "output_chars": 205,
+  "transcript_chars": 205,
+  "total_tokens": 188,
+  "input_tokens": 113,
+  "output_tokens": 75
+}

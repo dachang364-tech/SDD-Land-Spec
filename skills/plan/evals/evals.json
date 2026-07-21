@@ -1,0 +1,27 @@
+{
+  "skill_name": "plan",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "如果 `<work-item>` 是 `001-fix-login-null`，`/sdd:plan` 应如何决定 mode 并生成输出路径？",
+      "expected_output": "说明进入 code-class DR mode，读取 `dr/<id>.md`，并输出到 `docs/versions/vX.Y.Z/plan/NNN-001-fix-login-null.md`。",
+      "files": [],
+      "expectations": [
+        "输出提到 `001-fix-login-null` 会进入 code-class DR mode。",
+        "输出提到会读取 `docs/versions/vX.Y.Z/dr/<dr-id>.md`。",
+        "输出提到输出路径为 `docs/versions/vX.Y.Z/plan/NNN-<dr-id>.md`。"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "如果 `<work-item>` 匹配文档类 DR ID，例如 `001-doc-fix-wording`，`/sdd:plan` 应如何处理？",
+      "expected_output": "明确拒绝，并说明文档类 DR 不生成 Implementation Plan，也不执行 `/sdd:code`。",
+      "files": [],
+      "expectations": [
+        "输出明确拒绝文档类 DR。",
+        "输出提到文档类 DR 不生成 Implementation Plan。",
+        "输出提到文档类 DR 不执行 `/sdd:code`。"
+      ]
+    }
+  ]
+}

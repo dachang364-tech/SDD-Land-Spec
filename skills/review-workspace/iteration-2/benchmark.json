@@ -1,0 +1,199 @@
+{
+  "metadata": {
+    "skill_name": "review",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-07-21T13:00:00Z",
+    "evals_run": [
+      1,
+      2
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 1.83,
+        "tokens": 584,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "输出提到 handoff 必须是唯一 JSON 载荷，不能用自由文本替代。",
+          "passed": true,
+          "evidence": "回答明确说明 handoff 必须是唯一 JSON 对象，且不能用自由文本替代。"
+        },
+        {
+          "text": "输出提到关键字段至少包括 document_path、document_type、mode、template_path、standard_path、repair_policy、upstream_paths、invocation_source、max_rounds。",
+          "passed": true,
+          "evidence": "回答逐项列出了关键字段集合。"
+        },
+        {
+          "text": "输出提到每次调用只评审一个 mode，并且必须启动插件 `doc-reviewer` agent。",
+          "passed": true,
+          "evidence": "回答明确说明单次调用只评审一个 mode，并要求启动插件 doc-reviewer agent。"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.0,
+        "passed": 0,
+        "failed": 3,
+        "total": 3,
+        "time_seconds": 0.92,
+        "tokens": 251,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "输出提到 handoff 必须是唯一 JSON 载荷，不能用自由文本替代。",
+          "passed": false,
+          "evidence": "回答未覆盖该断言。"
+        },
+        {
+          "text": "输出提到关键字段至少包括 document_path、document_type、mode、template_path、standard_path、repair_policy、upstream_paths、invocation_source、max_rounds。",
+          "passed": false,
+          "evidence": "回答未覆盖该断言。"
+        },
+        {
+          "text": "输出提到每次调用只评审一个 mode，并且必须启动插件 `doc-reviewer` agent。",
+          "passed": false,
+          "evidence": "回答未覆盖该断言。"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 1.41,
+        "tokens": 462,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "输出提到命令层在读取字段、生成用户回执或改变文档状态前必须先校验 JSON/schema。",
+          "passed": true,
+          "evidence": "回答明确说明在读取字段、生成用户回执或改变状态前必须先做 JSON/schema 校验。"
+        },
+        {
+          "text": "输出提到校验失败时本次 review 视为 `blocked: true` 的执行失败。",
+          "passed": true,
+          "evidence": "回答明确把校验失败定义为 blocked: true 的执行失败。"
+        },
+        {
+          "text": "输出提到必须保留 draft 或原有稳定状态，不能继续审批或状态推进。",
+          "passed": true,
+          "evidence": "回答明确要求保留 draft/稳定状态，并停止审批或状态推进。"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.0,
+        "passed": 0,
+        "failed": 3,
+        "total": 3,
+        "time_seconds": 0.71,
+        "tokens": 194,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "输出提到命令层在读取字段、生成用户回执或改变文档状态前必须先校验 JSON/schema。",
+          "passed": false,
+          "evidence": "回答未覆盖该断言。"
+        },
+        {
+          "text": "输出提到校验失败时本次 review 视为 `blocked: true` 的执行失败。",
+          "passed": false,
+          "evidence": "回答未覆盖该断言。"
+        },
+        {
+          "text": "输出提到必须保留 draft 或原有稳定状态，不能继续审批或状态推进。",
+          "passed": false,
+          "evidence": "回答未覆盖该断言。"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 1.62,
+        "stddev": 0.21,
+        "min": 1.41,
+        "max": 1.83
+      },
+      "tokens": {
+        "mean": 523,
+        "stddev": 61.0,
+        "min": 462,
+        "max": 584
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "time_seconds": {
+        "mean": 0.815,
+        "stddev": 0.105,
+        "min": 0.71,
+        "max": 0.92
+      },
+      "tokens": {
+        "mean": 222.5,
+        "stddev": 28.5,
+        "min": 194,
+        "max": 251
+      }
+    },
+    "delta": {
+      "pass_rate": "+1.00",
+      "time_seconds": "+0.8",
+      "tokens": "+300"
+    }
+  },
+  "notes": [
+    "Iteration 1 evaluated path and archived-version rules that the baseline could answer from general reasoning; iteration 2 now checks the structured-handoff and blocked-state contracts that are unique to the review skill.",
+    "runs_per_configuration remains 3 in metadata for compatibility with the existing benchmark schema, but this workspace currently materializes run-1 artifacts only, consistent with prior iterations in this repository."
+  ]
+}

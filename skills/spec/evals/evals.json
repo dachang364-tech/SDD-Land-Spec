@@ -1,0 +1,26 @@
+{
+  "skill_name": "spec",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "请说明 `/sdd:spec` 的正式输出路径、前置条件和自动 review 链路。",
+      "expected_output": "说明需要 `prd/prd.md`，输出到 `docs/versions/vX.Y.Z/spec/<spec-name>.md`，并自动执行 `quality -> feasibility`。",
+      "files": [],
+      "expectations": [
+        "输出提到需要 `docs/versions/vX.Y.Z/prd/prd.md`。",
+        "输出提到输出路径为 `docs/versions/vX.Y.Z/spec/<spec-name>.md`。",
+        "输出提到自动执行 `quality -> feasibility`。"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "当 spec 关联 accepted 的 code-class DR 时，spec approved 之后该 DR 应该如何处理？",
+      "expected_output": "说明 code-class DR 在 spec approved 后仍保持 accepted，下一步按 `plan_required` 进入 `/sdd:plan <dr-id>` 或 `/sdd:code <dr-id>`。",
+      "files": [],
+      "expectations": [
+        "输出提到 code-class DR 必须保持 accepted。",
+        "输出提到下一步取决于 `plan_required`。"
+      ]
+    }
+  ]
+}

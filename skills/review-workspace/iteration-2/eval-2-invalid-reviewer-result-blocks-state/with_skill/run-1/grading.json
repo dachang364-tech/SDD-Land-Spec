@@ -1,0 +1,36 @@
+{
+  "expectations": [
+    {
+      "text": "输出提到命令层在读取字段、生成用户回执或改变文档状态前必须先校验 JSON/schema。",
+      "passed": true,
+      "evidence": "回答明确说明在读取字段、生成用户回执或改变状态前必须先做 JSON/schema 校验。"
+    },
+    {
+      "text": "输出提到校验失败时本次 review 视为 `blocked: true` 的执行失败。",
+      "passed": true,
+      "evidence": "回答明确把校验失败定义为 blocked: true 的执行失败。"
+    },
+    {
+      "text": "输出提到必须保留 draft 或原有稳定状态，不能继续审批或状态推进。",
+      "passed": true,
+      "evidence": "回答明确要求保留 draft/稳定状态，并停止审批或状态推进。"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "total_tokens": 462,
+    "input_tokens": 319,
+    "output_tokens": 143
+  },
+  "timing": {
+    "total_tokens": 462,
+    "duration_ms": 1410,
+    "total_duration_seconds": 1.41,
+    "executor_duration_seconds": 1.18
+  }
+}

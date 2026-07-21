@@ -1,0 +1,36 @@
+{
+  "expectations": [
+    {
+      "text": "输出明确该路径属于 spec 文档。",
+      "passed": true,
+      "evidence": "final.md 明确说明该路径位于 spec 路径矩阵内，并自动识别为 spec 文档。"
+    },
+    {
+      "text": "输出明确执行顺序是 quality 再 feasibility。",
+      "passed": true,
+      "evidence": "final.md 明确写出先执行 quality，再执行 feasibility。"
+    },
+    {
+      "text": "输出说明 review 目标必须位于受支持的路径矩阵内。",
+      "passed": true,
+      "evidence": "final.md 引用了 docs/versions/vX.Y.Z/spec/*.md 这一受支持路径矩阵。"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "total_tokens": 584,
+    "input_tokens": 402,
+    "output_tokens": 182
+  },
+  "timing": {
+    "total_tokens": 584,
+    "duration_ms": 1830,
+    "total_duration_seconds": 1.83,
+    "executor_duration_seconds": 1.52
+  }
+}

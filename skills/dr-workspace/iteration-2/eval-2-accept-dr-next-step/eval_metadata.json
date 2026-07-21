@@ -1,0 +1,11 @@
+{
+  "eval_id": 2,
+  "eval_name": "accept-dr-next-step",
+  "prompt": "如果用户执行 `/sdd:dr accept 001-fix-login-null`，系统应该如何校验和给出下一步？",
+  "assertions": [
+    "输出提到只按完整 DR ID 精确查找。",
+    "输出提到目标 DR 状态必须是 drafting。",
+    "输出提到 accept 后状态变为 accepted。",
+    "输出提到下一步取决于 class、spec_change、plan_required、code_required。"
+  ]
+}

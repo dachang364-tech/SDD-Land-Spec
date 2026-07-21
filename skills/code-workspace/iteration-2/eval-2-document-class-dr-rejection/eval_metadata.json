@@ -1,0 +1,10 @@
+{
+  "eval_id": 2,
+  "eval_name": "document-class-dr-rejection",
+  "prompt": "如果用户执行 `/sdd:code 001-doc-fix-typo`，也就是一个 document-class DR ID，系统应该如何处理？",
+  "assertions": [
+    "输出提到 document-class DR 不执行 `/sdd:code`。",
+    "输出提到 document-class DR 不允许进入 plan execution mode 或 lightweight fix DR mode。",
+    "输出提到这是在 work item lookup 阶段直接拒绝。"
+  ]
+}

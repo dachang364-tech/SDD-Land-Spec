@@ -1,0 +1,52 @@
+{
+  "expectations": [
+    {
+      "text": "输出提到只按完整 DR ID 精确查找。",
+      "passed": false,
+      "evidence": "回答未覆盖该断言。"
+    },
+    {
+      "text": "输出提到目标 DR 状态必须是 drafting。",
+      "passed": false,
+      "evidence": "回答未覆盖该断言。"
+    },
+    {
+      "text": "输出提到 accept 后状态变为 accepted。",
+      "passed": true,
+      "evidence": "回答明确说明 accept 后状态变为 accepted。"
+    },
+    {
+      "text": "输出提到下一步取决于 class、spec_change、plan_required、code_required。",
+      "passed": true,
+      "evidence": "回答明确说明下一步由 class/spec_change/plan_required/code_required 共同决定。"
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 2,
+    "total": 4,
+    "pass_rate": 0.5
+  },
+  "execution_metrics": {
+    "tool_calls": {
+      "Read": 1
+    },
+    "total_tool_calls": 1,
+    "total_steps": 1,
+    "files_created": [
+      "final.md"
+    ],
+    "errors_encountered": 0,
+    "output_chars": 456,
+    "transcript_chars": 456,
+    "total_tokens": 324,
+    "input_tokens": 191,
+    "output_tokens": 133
+  },
+  "timing": {
+    "total_tokens": 324,
+    "duration_ms": 1090,
+    "total_duration_seconds": 1.09,
+    "executor_duration_seconds": 0.86
+  }
+}

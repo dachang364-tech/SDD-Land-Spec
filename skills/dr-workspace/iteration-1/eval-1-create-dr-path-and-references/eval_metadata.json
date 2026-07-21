@@ -1,0 +1,12 @@
+{
+  "eval_id": 1,
+  "eval_name": "create-dr-path-and-references",
+  "prompt": "请说明 `/sdd:dr fix login null` 创建新 DR 时的编号、slug、输出路径和正式引用边界。",
+  "assertions": [
+    "输出提到扫描 `docs/versions/vX.Y.Z/dr/*.md`。",
+    "输出提到生成三位编号 `NNN`。",
+    "输出提到 slug 使用 lowercase kebab-case。",
+    "输出提到输出路径位于 `docs/versions/vX.Y.Z/dr/NNN-<tag>-<slug>.md`。",
+    "输出提到正式文档引用只允许 dr、plan、spec。"
+  ]
+}

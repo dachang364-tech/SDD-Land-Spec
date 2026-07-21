@@ -1,0 +1,226 @@
+{
+  "metadata": {
+    "skill_name": "dr",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-07-21T12:13:34Z",
+    "evals_run": [
+      1,
+      2
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.8,
+        "passed": 4,
+        "failed": 1,
+        "total": 5,
+        "time_seconds": 1.18,
+        "tokens": 409,
+        "tool_calls": 1,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230\u626b\u63cf `docs/versions/vX.Y.Z/dr/*.md`\u3002",
+          "passed": true,
+          "evidence": "\u56de\u7b54\u660e\u786e\u8bf4\u660e\u5148\u626b\u63cf `docs/versions/vX.Y.Z/dr/*.md`\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230\u751f\u6210\u4e09\u4f4d\u7f16\u53f7 `NNN`\u3002",
+          "passed": true,
+          "evidence": "\u56de\u7b54\u660e\u786e\u8bf4\u660e\u751f\u6210\u7248\u672c\u5185\u9012\u589e\u4e09\u4f4d\u7f16\u53f7 `NNN`\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230 slug \u4f7f\u7528 lowercase kebab-case\u3002",
+          "passed": true,
+          "evidence": "\u56de\u7b54\u660e\u786e\u8bf4\u660e slug \u4f7f\u7528 lowercase kebab-case\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230\u8f93\u51fa\u8def\u5f84\u4f4d\u4e8e `docs/versions/vX.Y.Z/dr/NNN-<tag>-<slug>.md`\u3002",
+          "passed": true,
+          "evidence": "\u56de\u7b54\u660e\u786e\u7ed9\u51fa\u6807\u51c6\u8f93\u51fa\u8def\u5f84\u683c\u5f0f\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230\u6b63\u5f0f\u6587\u6863\u5f15\u7528\u53ea\u5141\u8bb8 dr\u3001plan\u3001spec\u3002",
+          "passed": false,
+          "evidence": "\u56de\u7b54\u672a\u8986\u76d6\u8be5\u65ad\u8a00\u3002"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 1.04,
+        "tokens": 456,
+        "tool_calls": 1,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230\u53ea\u6309\u5b8c\u6574 DR ID \u7cbe\u786e\u67e5\u627e\u3002",
+          "passed": true,
+          "evidence": "\u56de\u7b54\u660e\u786e\u8bf4\u660e\u53ea\u6309\u5b8c\u6574 DR ID \u7cbe\u786e\u67e5\u627e\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230\u76ee\u6807 DR \u72b6\u6001\u5fc5\u987b\u662f drafting\u3002",
+          "passed": true,
+          "evidence": "\u56de\u7b54\u660e\u786e\u8bf4\u660e accept \u524d\u63d0\u662f\u76ee\u6807 DR \u72b6\u6001\u4e3a drafting\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230 accept \u540e\u72b6\u6001\u53d8\u4e3a accepted\u3002",
+          "passed": true,
+          "evidence": "\u56de\u7b54\u660e\u786e\u8bf4\u660e accept \u540e\u72b6\u6001\u53d8\u4e3a accepted\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230\u4e0b\u4e00\u6b65\u53d6\u51b3\u4e8e class\u3001spec_change\u3001plan_required\u3001code_required\u3002",
+          "passed": true,
+          "evidence": "\u56de\u7b54\u660e\u786e\u8bf4\u660e\u4e0b\u4e00\u6b65\u7531 class/spec_change/plan_required/code_required \u5171\u540c\u51b3\u5b9a\u3002"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.4,
+        "passed": 2,
+        "failed": 3,
+        "total": 5,
+        "time_seconds": 0.82,
+        "tokens": 222,
+        "tool_calls": 1,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230\u626b\u63cf `docs/versions/vX.Y.Z/dr/*.md`\u3002",
+          "passed": false,
+          "evidence": "\u56de\u7b54\u672a\u8986\u76d6\u8be5\u65ad\u8a00\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230\u751f\u6210\u4e09\u4f4d\u7f16\u53f7 `NNN`\u3002",
+          "passed": false,
+          "evidence": "\u56de\u7b54\u672a\u8986\u76d6\u8be5\u65ad\u8a00\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230 slug \u4f7f\u7528 lowercase kebab-case\u3002",
+          "passed": true,
+          "evidence": "\u56de\u7b54\u660e\u786e\u8bf4\u660e slug \u4f7f\u7528 lowercase kebab-case\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230\u8f93\u51fa\u8def\u5f84\u4f4d\u4e8e `docs/versions/vX.Y.Z/dr/NNN-<tag>-<slug>.md`\u3002",
+          "passed": false,
+          "evidence": "\u56de\u7b54\u672a\u8986\u76d6\u8be5\u65ad\u8a00\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230\u6b63\u5f0f\u6587\u6863\u5f15\u7528\u53ea\u5141\u8bb8 dr\u3001plan\u3001spec\u3002",
+          "passed": true,
+          "evidence": "\u56de\u7b54\u660e\u786e\u8bf4\u660e\u6b63\u5f0f\u6587\u6863\u5f15\u7528\u53ea\u5141\u8bb8 dr\u3001plan\u3001spec\u3002"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5,
+        "passed": 2,
+        "failed": 2,
+        "total": 4,
+        "time_seconds": 0.74,
+        "tokens": 205,
+        "tool_calls": 1,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230\u53ea\u6309\u5b8c\u6574 DR ID \u7cbe\u786e\u67e5\u627e\u3002",
+          "passed": false,
+          "evidence": "\u56de\u7b54\u672a\u8986\u76d6\u8be5\u65ad\u8a00\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230\u76ee\u6807 DR \u72b6\u6001\u5fc5\u987b\u662f drafting\u3002",
+          "passed": false,
+          "evidence": "\u56de\u7b54\u672a\u8986\u76d6\u8be5\u65ad\u8a00\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230 accept \u540e\u72b6\u6001\u53d8\u4e3a accepted\u3002",
+          "passed": true,
+          "evidence": "\u56de\u7b54\u660e\u786e\u8bf4\u660e accept \u540e\u72b6\u6001\u53d8\u4e3a accepted\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u63d0\u5230\u4e0b\u4e00\u6b65\u53d6\u51b3\u4e8e class\u3001spec_change\u3001plan_required\u3001code_required\u3002",
+          "passed": true,
+          "evidence": "\u56de\u7b54\u660e\u786e\u8bf4\u660e\u4e0b\u4e00\u6b65\u7531 class/spec_change/plan_required/code_required \u5171\u540c\u51b3\u5b9a\u3002"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 0.9,
+        "stddev": 0.1414,
+        "min": 0.8,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 1.11,
+        "stddev": 0.099,
+        "min": 1.04,
+        "max": 1.18
+      },
+      "tokens": {
+        "mean": 432.5,
+        "stddev": 33.234,
+        "min": 409,
+        "max": 456
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.45,
+        "stddev": 0.0707,
+        "min": 0.4,
+        "max": 0.5
+      },
+      "time_seconds": {
+        "mean": 0.78,
+        "stddev": 0.0566,
+        "min": 0.74,
+        "max": 0.82
+      },
+      "tokens": {
+        "mean": 213.5,
+        "stddev": 12.0208,
+        "min": 205,
+        "max": 222
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.45",
+      "time_seconds": "+0.3",
+      "tokens": "+219"
+    }
+  },
+  "notes": []
+}

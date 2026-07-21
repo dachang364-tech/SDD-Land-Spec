@@ -1,0 +1,10 @@
+{
+  "eval_id": 1,
+  "eval_name": "auto-detect-spec",
+  "prompt": "请说明当用户对 `docs/versions/v0.3.0/spec/login.md` 执行 `/sdd:review` 时，系统应如何自动识别 `document_type` 与 mode 链路。",
+  "assertions": [
+    "输出明确该路径属于 spec 文档。",
+    "输出明确执行顺序是 quality 再 feasibility。",
+    "输出说明 review 目标必须位于受支持的路径矩阵内。"
+  ]
+}

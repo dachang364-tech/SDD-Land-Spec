@@ -1,0 +1,31 @@
+{
+  "expectations": [
+    {
+      "text": "输出明确拒绝 archived version 文档的 review 请求。",
+      "passed": true,
+      "evidence": "final.md 首句明确说明应拒绝该请求。"
+    },
+    {
+      "text": "输出说明 `/sdd:review` 不能对 archived version 的文档执行任何操作。",
+      "passed": true,
+      "evidence": "final.md 明确说明不能执行任何操作，并列出评审或修改均不执行。"
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 2,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "total_tokens": 194,
+    "input_tokens": 112,
+    "output_tokens": 82
+  },
+  "timing": {
+    "total_tokens": 194,
+    "duration_ms": 710,
+    "total_duration_seconds": 0.71,
+    "executor_duration_seconds": 0.56
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "skill_name": "dr",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "请说明 `/sdd:dr fix login null` 创建新 DR 时的编号、slug、输出路径和正式引用边界。",
+      "expected_output": "说明扫描 `dr/*.md` 分配三位编号，slug 为 lowercase kebab-case，输出到 `docs/versions/vX.Y.Z/dr/NNN-fix-...md`，正式文档引用只允许 dr/plan/spec。",
+      "files": [],
+      "expectations": [
+        "输出提到扫描 `docs/versions/vX.Y.Z/dr/*.md`。",
+        "输出提到生成三位编号 `NNN`。",
+        "输出提到 slug 使用 lowercase kebab-case。",
+        "输出提到输出路径位于 `docs/versions/vX.Y.Z/dr/NNN-<tag>-<slug>.md`。",
+        "输出提到正式文档引用只允许 dr、plan、spec。"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "如果用户执行 `/sdd:dr accept 001-fix-login-null`，系统应该如何校验和给出下一步？",
+      "expected_output": "说明必须按完整 DR ID 精确查找 drafting 状态文档，变更为 accepted，并根据 class/spec_change/plan_required/code_required 输出下一步。",
+      "files": [],
+      "expectations": [
+        "输出提到只按完整 DR ID 精确查找。",
+        "输出提到目标 DR 状态必须是 drafting。",
+        "输出提到 accept 后状态变为 accepted。",
+        "输出提到下一步取决于 class、spec_change、plan_required、code_required。"
+      ]
+    }
+  ]
+}

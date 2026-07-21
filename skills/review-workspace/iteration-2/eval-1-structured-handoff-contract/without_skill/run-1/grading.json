@@ -1,0 +1,36 @@
+{
+  "expectations": [
+    {
+      "text": "输出提到 handoff 必须是唯一 JSON 载荷，不能用自由文本替代。",
+      "passed": false,
+      "evidence": "回答未覆盖该断言。"
+    },
+    {
+      "text": "输出提到关键字段至少包括 document_path、document_type、mode、template_path、standard_path、repair_policy、upstream_paths、invocation_source、max_rounds。",
+      "passed": false,
+      "evidence": "回答未覆盖该断言。"
+    },
+    {
+      "text": "输出提到每次调用只评审一个 mode，并且必须启动插件 `doc-reviewer` agent。",
+      "passed": false,
+      "evidence": "回答未覆盖该断言。"
+    }
+  ],
+  "summary": {
+    "passed": 0,
+    "failed": 3,
+    "total": 3,
+    "pass_rate": 0.0
+  },
+  "execution_metrics": {
+    "total_tokens": 251,
+    "input_tokens": 144,
+    "output_tokens": 107
+  },
+  "timing": {
+    "total_tokens": 251,
+    "duration_ms": 920,
+    "total_duration_seconds": 0.92,
+    "executor_duration_seconds": 0.74
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "expectations": [
+    {
+      "text": "输出提到 lightweight fix DR mode。",
+      "passed": true,
+      "evidence": "回答明确命名为 lightweight fix DR mode。"
+    },
+    {
+      "text": "输出提到需要运行 verification。",
+      "passed": true,
+      "evidence": "回答要求运行 superpowers:verification-before-completion。"
+    },
+    {
+      "text": "输出提到成功后关闭 DR。",
+      "passed": true,
+      "evidence": "回答说明 verification 通过后将 DR 关闭为 closed。"
+    },
+    {
+      "text": "输出提到不会改变任何 plan 状态。",
+      "passed": true,
+      "evidence": "回答明确说明不会改变任何 plan 状态。"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "eval_id": 2,
+    "run_type": "with_skill",
+    "assertions_total": 4,
+    "assertions_passed": 4,
+    "assertion_pass_rate": 1.0,
+    "final_answer_words": 104
+  },
+  "timing": {
+    "started_at": "2026-07-21T00:00:00Z",
+    "completed_at": "2026-07-21T00:00:01Z",
+    "duration_ms": 1000
+  }
+}

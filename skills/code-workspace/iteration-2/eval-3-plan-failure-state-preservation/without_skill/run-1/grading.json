@@ -1,0 +1,44 @@
+{
+  "expectations": [
+    {
+      "text": "输出提到失败时 plan remains coding。",
+      "passed": false,
+      "evidence": "回答未覆盖该断言。"
+    },
+    {
+      "text": "输出提到关联 DR remains accepted。",
+      "passed": false,
+      "evidence": "回答未覆盖该断言。"
+    },
+    {
+      "text": "输出提到失败时不能把 plan 切到 done，也不能把 DR 切到 closed。",
+      "passed": false,
+      "evidence": "回答未覆盖该断言。"
+    }
+  ],
+  "summary": {
+    "passed": 0,
+    "failed": 3,
+    "total": 3,
+    "pass_rate": 0.0
+  },
+  "execution_metrics": {
+    "eval_id": 3,
+    "run_type": "without_skill",
+    "assertions_total": 3,
+    "final_answer_words": 3,
+    "total_tokens": 169,
+    "input_tokens": 104,
+    "output_tokens": 65,
+    "total_tool_calls": 1,
+    "errors_encountered": 0,
+    "assertions_passed": 0,
+    "assertion_pass_rate": 0.0
+  },
+  "timing": {
+    "total_tokens": 169,
+    "duration_ms": 1021,
+    "total_duration_seconds": 1.021,
+    "executor_duration_seconds": 0.868
+  }
+}

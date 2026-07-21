@@ -1,0 +1,57 @@
+{
+  "expectations": [
+    {
+      "text": "输出提到扫描 `docs/versions/vX.Y.Z/dr/*.md`。",
+      "passed": false,
+      "evidence": "回答未覆盖该断言。"
+    },
+    {
+      "text": "输出提到生成三位编号 `NNN`。",
+      "passed": false,
+      "evidence": "回答未覆盖该断言。"
+    },
+    {
+      "text": "输出提到 slug 使用 lowercase kebab-case。",
+      "passed": false,
+      "evidence": "回答未覆盖该断言。"
+    },
+    {
+      "text": "输出提到输出路径位于 `docs/versions/vX.Y.Z/dr/NNN-<tag>-<slug>.md`。",
+      "passed": false,
+      "evidence": "回答未覆盖该断言。"
+    },
+    {
+      "text": "输出提到正式文档引用只允许 dr、plan、spec。",
+      "passed": false,
+      "evidence": "回答未覆盖该断言。"
+    }
+  ],
+  "summary": {
+    "passed": 0,
+    "failed": 5,
+    "total": 5,
+    "pass_rate": 0.0
+  },
+  "execution_metrics": {
+    "tool_calls": {
+      "Read": 1
+    },
+    "total_tool_calls": 1,
+    "total_steps": 1,
+    "files_created": [
+      "final.md"
+    ],
+    "errors_encountered": 0,
+    "output_chars": 222,
+    "transcript_chars": 222,
+    "total_tokens": 210,
+    "input_tokens": 126,
+    "output_tokens": 84
+  },
+  "timing": {
+    "total_tokens": 210,
+    "duration_ms": 830,
+    "total_duration_seconds": 0.83,
+    "executor_duration_seconds": 0.64
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "eval_id": 3,
+  "eval_name": "plan-failure-state-preservation",
+  "prompt": "如果 `/sdd:code` 进入 plan execution mode 后执行失败，plan 和关联 DR 的状态应该如何保持？",
+  "assertions": [
+    "输出提到失败时 plan remains coding。",
+    "输出提到关联 DR remains accepted。",
+    "输出提到失败时不能把 plan 切到 done，也不能把 DR 切到 closed。"
+  ]
+}

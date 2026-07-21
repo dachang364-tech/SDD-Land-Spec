@@ -1,0 +1,10 @@
+{
+  "eval_id": 1,
+  "eval_name": "invalid-dr-like-no-fallback",
+  "prompt": "如果用户执行 `/sdd:code 001-fix-login`，也就是一个以三位数字和连字符开头、但并不是完整有效 DR ID 的输入，系统必须如何处理？",
+  "assertions": [
+    "输出提到这是无效 DR ID，并给出完整 DR ID 格式要求。",
+    "输出提到 DR-like 但无效的输入不能回退到 plan lookup 或 feature-name lookup。",
+    "输出提到不会进入任何 execution mode。"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "eval_id": 2,
+  "eval_name": "lightweight-fix-dr",
+  "prompt": "如果输入是一个已 accepted 的 lightweight fix DR，并且 `plan_required: no`、`code_required: yes`，`/sdd:code` 应该怎么执行？",
+  "assertions": [
+    "输出提到 lightweight fix DR mode。",
+    "输出提到需要运行 verification。",
+    "输出提到成功后关闭 DR。",
+    "输出提到不会改变任何 plan 状态。"
+  ]
+}

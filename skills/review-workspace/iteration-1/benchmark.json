@@ -1,0 +1,186 @@
+{
+  "metadata": {
+    "skill_name": "review",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-07-21T10:59:02Z",
+    "evals_run": [
+      1,
+      2
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 1.83,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "\u8f93\u51fa\u660e\u786e\u8be5\u8def\u5f84\u5c5e\u4e8e spec \u6587\u6863\u3002",
+          "passed": true,
+          "evidence": "final.md \u660e\u786e\u8bf4\u660e\u8be5\u8def\u5f84\u4f4d\u4e8e spec \u8def\u5f84\u77e9\u9635\u5185\uff0c\u5e76\u81ea\u52a8\u8bc6\u522b\u4e3a spec \u6587\u6863\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u660e\u786e\u6267\u884c\u987a\u5e8f\u662f quality \u518d feasibility\u3002",
+          "passed": true,
+          "evidence": "final.md \u660e\u786e\u5199\u51fa\u5148\u6267\u884c quality\uff0c\u518d\u6267\u884c feasibility\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u8bf4\u660e review \u76ee\u6807\u5fc5\u987b\u4f4d\u4e8e\u53d7\u652f\u6301\u7684\u8def\u5f84\u77e9\u9635\u5185\u3002",
+          "passed": true,
+          "evidence": "final.md \u5f15\u7528\u4e86 docs/versions/vX.Y.Z/spec/*.md \u8fd9\u4e00\u53d7\u652f\u6301\u8def\u5f84\u77e9\u9635\u3002"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 2,
+        "failed": 0,
+        "total": 2,
+        "time_seconds": 1.41,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "\u8f93\u51fa\u660e\u786e\u62d2\u7edd archived version \u6587\u6863\u7684 review \u8bf7\u6c42\u3002",
+          "passed": true,
+          "evidence": "final.md \u9996\u53e5\u660e\u786e\u8981\u6c42\u76f4\u63a5\u62d2\u7edd\u8be5 review \u8bf7\u6c42\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u8bf4\u660e `/sdd:review` \u4e0d\u80fd\u5bf9 archived version \u7684\u6587\u6863\u6267\u884c\u4efb\u4f55\u64cd\u4f5c\u3002",
+          "passed": true,
+          "evidence": "final.md \u7b2c\u4e8c\u6bb5\u9010\u9879\u8bf4\u660e\u4e0d\u5f97\u8bc4\u5ba1\u3001\u81ea\u52a8\u4fee\u590d\u6216\u6539\u53d8\u6587\u6863\u72b6\u6001\u3002"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 0.92,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "\u8f93\u51fa\u660e\u786e\u8be5\u8def\u5f84\u5c5e\u4e8e spec \u6587\u6863\u3002",
+          "passed": true,
+          "evidence": "final.md \u7b2c\u4e00\u6bb5\u660e\u786e\u5c06\u8def\u5f84\u8bc6\u522b\u4e3a spec \u6587\u6863\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u660e\u786e\u6267\u884c\u987a\u5e8f\u662f quality \u518d feasibility\u3002",
+          "passed": true,
+          "evidence": "final.md \u7b2c\u4e8c\u6bb5\u660e\u786e\u5199\u51fa\u5148 quality\u3001\u540e feasibility\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u8bf4\u660e review \u76ee\u6807\u5fc5\u987b\u4f4d\u4e8e\u53d7\u652f\u6301\u7684\u8def\u5f84\u77e9\u9635\u5185\u3002",
+          "passed": true,
+          "evidence": "final.md \u660e\u786e\u8bf4\u660e review \u76ee\u6807\u5fc5\u987b\u4f4d\u4e8e\u53d7\u652f\u6301\u7684\u8def\u5f84\u77e9\u9635\u5185\u3002"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 2,
+        "failed": 0,
+        "total": 2,
+        "time_seconds": 0.71,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "\u8f93\u51fa\u660e\u786e\u62d2\u7edd archived version \u6587\u6863\u7684 review \u8bf7\u6c42\u3002",
+          "passed": true,
+          "evidence": "final.md \u9996\u53e5\u660e\u786e\u8bf4\u660e\u5e94\u62d2\u7edd\u8be5\u8bf7\u6c42\u3002"
+        },
+        {
+          "text": "\u8f93\u51fa\u8bf4\u660e `/sdd:review` \u4e0d\u80fd\u5bf9 archived version \u7684\u6587\u6863\u6267\u884c\u4efb\u4f55\u64cd\u4f5c\u3002",
+          "passed": true,
+          "evidence": "final.md \u660e\u786e\u8bf4\u660e\u4e0d\u80fd\u6267\u884c\u4efb\u4f55\u64cd\u4f5c\uff0c\u5e76\u5217\u51fa\u8bc4\u5ba1\u6216\u4fee\u6539\u5747\u4e0d\u6267\u884c\u3002"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 1.62,
+        "stddev": 0.297,
+        "min": 1.41,
+        "max": 1.83
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 0.815,
+        "stddev": 0.1485,
+        "min": 0.71,
+        "max": 0.92
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.00",
+      "time_seconds": "+0.8",
+      "tokens": "+0"
+    }
+  },
+  "notes": []
+}

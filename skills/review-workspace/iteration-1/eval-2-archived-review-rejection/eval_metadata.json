@@ -1,0 +1,9 @@
+{
+  "eval_id": 2,
+  "eval_name": "archived-review-rejection",
+  "prompt": "如果用户试图对 archived version 下的 `docs/versions/v0.2.0/plan/001-archive.md` 执行 `/sdd:review`，系统应该如何处理？",
+  "assertions": [
+    "输出明确拒绝 archived version 文档的 review 请求。",
+    "输出说明 `/sdd:review` 不能对 archived version 的文档执行任何操作。"
+  ]
+}

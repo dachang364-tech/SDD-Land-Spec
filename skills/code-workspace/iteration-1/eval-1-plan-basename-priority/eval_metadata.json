@@ -1,0 +1,10 @@
+{
+  "eval_id": 1,
+  "eval_name": "plan-basename-priority",
+  "prompt": "用户执行 `/sdd:code 007-001-fix-login-null.md` 时，系统应该如何解析这个输入？",
+  "assertions": [
+    "输出提到完整 plan basename 会优先匹配同名 `.md` plan。",
+    "输出提到该 lookup 发生在 DR-like 校验之前。",
+    "输出提到会进入 plan execution mode。"
+  ]
+}

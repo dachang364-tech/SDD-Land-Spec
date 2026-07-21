@@ -1,0 +1,13 @@
+{
+  "eval_id": 3,
+  "run_type": "without_skill",
+  "assertions_total": 3,
+  "final_answer_words": 3,
+  "total_tokens": 169,
+  "input_tokens": 104,
+  "output_tokens": 65,
+  "total_tool_calls": 1,
+  "errors_encountered": 0,
+  "assertions_passed": 0,
+  "assertion_pass_rate": 0.0
+}

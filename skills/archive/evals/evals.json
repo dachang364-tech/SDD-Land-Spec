@@ -1,0 +1,29 @@
+{
+  "skill_name": "archive",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "请总结 `/sdd:archive` 的关键前置条件，尤其是 spec、plan、dr 状态要求。",
+      "expected_output": "说明唯一 active version、spec 必须 approved、plan 必须 done、dr 必须 closed。",
+      "files": [],
+      "expectations": [
+        "输出提到必须恰好存在一个 active version。",
+        "输出提到所有 spec 必须为 approved。",
+        "输出提到所有 plan 必须为 done。",
+        "输出提到所有 dr 必须为 closed。"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "请说明 `/sdd:archive` 完成后版本目录和后续使用边界会发生什么变化。",
+      "expected_output": "说明归档不移动版本目录，写入 ARCHIVE.md 和 INDEX.md，版本进入 archived 只读状态。",
+      "files": [],
+      "expectations": [
+        "输出提到归档不移动版本目录。",
+        "输出提到会生成或更新 `ARCHIVE.md`。",
+        "输出提到会更新 `docs/archive/INDEX.md`。",
+        "输出提到 archived version 进入只读。"
+      ]
+    }
+  ]
+}

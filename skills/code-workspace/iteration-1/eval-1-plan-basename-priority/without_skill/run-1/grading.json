@@ -1,0 +1,38 @@
+{
+  "expectations": [
+    {
+      "text": "输出提到完整 plan basename 会优先匹配同名 `.md` plan。",
+      "passed": true,
+      "evidence": "回答将输入视为 plan 文件名并说明查找对应 plan。"
+    },
+    {
+      "text": "输出提到该 lookup 发生在 DR-like 校验之前。",
+      "passed": false,
+      "evidence": "回答没有说明 basename lookup 与 DR-like 校验的优先次序。"
+    },
+    {
+      "text": "输出提到会进入 plan execution mode。",
+      "passed": true,
+      "evidence": "回答说明找到 plan 后执行该计划。"
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 1,
+    "total": 3,
+    "pass_rate": 0.6667
+  },
+  "execution_metrics": {
+    "eval_id": 1,
+    "run_type": "without_skill",
+    "assertions_total": 3,
+    "assertions_passed": 2,
+    "assertion_pass_rate": 0.6666666667,
+    "final_answer_words": 24
+  },
+  "timing": {
+    "started_at": "2026-07-21T00:00:00Z",
+    "completed_at": "2026-07-21T00:00:01Z",
+    "duration_ms": 1000
+  }
+}

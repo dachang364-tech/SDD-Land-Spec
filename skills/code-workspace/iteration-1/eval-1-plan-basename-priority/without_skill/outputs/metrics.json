@@ -1,0 +1,8 @@
+{
+  "eval_id": 1,
+  "run_type": "without_skill",
+  "assertions_total": 3,
+  "assertions_passed": 2,
+  "assertion_pass_rate": 0.6666666667,
+  "final_answer_words": 24
+}
