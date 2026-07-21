@@ -8,6 +8,8 @@
 
 **Tech Stack:** Claude Code plugin skills, Markdown templates, Bash helper scripts, Bash contract tests, JSON schema-backed review agent orchestration.
 
+> **实施状态说明：** 下文各 Task 的 Step 复选框保留为原始执行指引，不再作为唯一进度来源。最终完成性以仓库当前文件状态、已提交记录和本计划末尾的验证结果为准；若某个 Skill 的 eval 在迭代中替换了 prompt 集或只保留了部分详细运行产物，必须在对应 Task 说明中显式记录。
+
 ## Global Constraints
 
 - 任何 `skills/*/SKILL.md` 的新增、重写、扩展、规范化改造，都必须先经过 `/skill-creator` 约束。
@@ -1002,9 +1004,9 @@ git commit -m "refactor: remove doctor and status commands"
 - Consumes: `/skill-creator` 的评估流程、已规范化后的高风险 Skill。
 - Produces: 全部高风险 Skill 的第一轮 eval prompt 集，以及至少一批高风险 Skill（`review`、`code`、`dr`）的完整 eval loop 结果，用于满足 spec 的验收标准而不只是预留入口。
 
-- [ ] **Step 1: 为高风险 Skill 写出最小 eval prompt 集**
+- [ ] **Step 1: 为高风险 Skill 写出最小 eval prompt 集，并在必要时迭代收敛**
 
-分别创建以下 JSON：
+先创建以下最小 JSON 入口；若 iteration-1 证明 prompt 集区分度不足，允许在保持高风险合同覆盖的前提下替换为更有判别力的 prompt，并把原因记录到 workspace benchmark / notes 中。
 
 `skills/review/evals/evals.json`
 
@@ -1014,21 +1016,21 @@ git commit -m "refactor: remove doctor and status commands"
   "evals": [
     {
       "id": 1,
-      "prompt": "请 review 当前版本的 spec 文档并自动识别类型与 mode。",
-      "expected_output": "根据 doc-path 自动识别 spec，并执行 quality 后再决定 feasibility。",
+      "prompt": "请说明 `/sdd:review` 启动 `doc-reviewer` 时必须如何构造结构化 handoff；重点回答唯一 JSON 载荷包含哪些关键字段、为什么不能用自由文本替代，以及 mode 是按什么粒度调用的。",
+      "expected_output": "明确说明必须用唯一 JSON 载荷调用插件 `doc-reviewer` agent，列出关键字段，并说明每次调用只评审一个 mode。",
       "files": []
     },
     {
       "id": 2,
-      "prompt": "请对一个 archived version 下的 plan 运行 /sdd:review。",
-      "expected_output": "明确失败，说明 archived version 的文档不能执行 review。",
+      "prompt": "如果 `doc-reviewer` 返回的机器结果不是合法 JSON，或者 schema 校验失败、`document_type` / `mode` 与输入不匹配，`/sdd:review` 必须如何处理？",
+      "expected_output": "明确说明命令层必须先做 JSON 与 schema 校验；失败时视为 `blocked: true` 的执行失败，保留 draft 或原有稳定状态，不继续审批或状态推进。",
       "files": []
     }
   ]
 }
 ```
 
-按同样结构分别为 `archive`、`code`、`dr`、`spec`、`plan` 写 2 条高风险 prompt。
+按同样结构分别为 `archive`、`code`、`dr`、`spec`、`plan` 写高风险 prompt；若后续迭代替换了题目，必须在对应 workspace 的 benchmark / notes 中说明替换原因与保留的合同覆盖范围。
 
 - [ ] **Step 2: 运行 JSON 结构校验**
 
@@ -1036,7 +1038,7 @@ Run: `python -m json.tool skills/review/evals/evals.json >/dev/null && python -m
 
 Expected: no output, zero exit code.
 
-- [ ] **Step 3: 至少对一批高风险 Skill 跑完整 `/skill-creator` eval loop**
+- [ ] **Step 3: 至少对一批高风险 Skill 跑完整 `/skill-creator` eval loop，并明确产物留存边界**
 
 选择以下第一批高风险 Skill：
 
@@ -1063,9 +1065,16 @@ benchmark.md
 feedback.json（如有）
 ```
 
+若聚合 benchmark 使用了多次运行统计，但仓库只保留 `run-1/` 详细产物，必须同时满足：
+
+```text
+- benchmark.md / benchmark.json 明确说明“聚合统计来自多次运行，仓库当前仅保留 run-1 详细产物”。
+- 计划或 handoff 不得把这类产物表述成“仓库内可逐次复放的完整多轮明细”。
+```
+
 - [x] **Step 4: 在计划或后续 handoff 中记录评估完成范围与完成证据**
 
-当前实现阶段已对 `review`、`code`、`dr` 完成第一批完整 `/skill-creator` eval loop；`archive`、`spec`、`plan` 已具备 eval 入口，可作为下一批继续扩展。
+当前实现阶段已对 `review`、`code`、`dr` 完成第一批 `/skill-creator` eval loop，并保留 benchmark 汇总、feedback 与 `run-1/` 详细产物；`archive`、`spec`、`plan` 已具备 eval 入口，可作为下一批继续扩展。
 
 本轮完成证据如下：
 
@@ -1114,6 +1123,7 @@ next batch eval-entry only
 ```text
 - 若关键断言未通过，或 benchmark / 人工反馈显示结果明显不满足合同，必须至少再跑一轮迭代。
 - 若关键断言通过，且人工反馈为空或明确接受当前输出，可将该 Skill 视为本轮 eval 完成。
+- 若 benchmark 只保留 `run-1/` 详细产物，则必须在 benchmark 与计划文本中同步披露该留存边界，避免把聚合统计误写成仓库内逐轮完整明细。
 ```
 
 - [x] **Step 5: Commit**
@@ -1129,16 +1139,16 @@ git commit -m "test: run first eval loop for high-risk skills"
 
 ### Spec coverage
 
-- Skill 改造必须经过 `/skill-creator`：Task 2-10 和 Global Constraints 已覆盖。
-- 所有保留 Skill 的正文统一中文：Task 2-9 在重写 `SKILL.md` 时统一覆盖，Task 1 覆盖模板正文与标准说明。
-- 新 version-scoped 信息架构 `research / prd / spec / plan / dr`：Task 2、3、4、5、7、9 覆盖。
-- `.sdd/templates/` 纳入 `dr` 并维持统一矩阵：Task 1 覆盖。
-- `archive` 原位归档和 archived 只读：Task 7、8、9 覆盖。
-- `review` 路径自动识别与 mode 自动决定、规则下沉：Task 6 覆盖。
-- 共享 helper、Hook 门控、fixture 与验收测试同步迁移到新矩阵：Task 7 与 Task 9 覆盖。
-- `code` 仅依赖 `plan` 及其正式引用闭包：Task 8 覆盖。
-- 删除 `doctor / status`：Task 9 覆盖。
-- 高风险 Skill 至少一批完成完整 eval loop：Task 10 覆盖。
+- 当前仓库工作树已通过 `/skill-creator` 约束重写或验证 Task 2-10 涉及的 Skill 合同。
+- 当前仓库工作树已将保留 Skill 的正文统一到中文合同，Task 1 覆盖模板正文与标准说明。
+- 当前仓库工作树已落地 `research / prd / spec / plan / dr` 的 version-scoped 信息架构。
+- 当前仓库工作树已将 `.sdd/templates/` 纳入 `dr` 并维持统一矩阵。
+- 当前仓库工作树已实现 `archive` 原位归档与 archived 只读边界。
+- 当前仓库工作树已实现 `review` 路径自动识别与 mode 自动决定，并把规则下沉到模板与标准。
+- 当前仓库工作树已迁移共享 helper、Hook 门控、fixture 与验收测试到新矩阵。
+- 当前仓库工作树已将 `code` 收敛为只依赖 `plan` 及其正式引用闭包。
+- 当前仓库工作树已删除 `doctor / status` 命令入口与合同测试依赖。
+- 高风险 Skill 的第一批 eval loop 已在仓库中保留入口、汇总和必要运行证据。
 
 ### Placeholder scan
 

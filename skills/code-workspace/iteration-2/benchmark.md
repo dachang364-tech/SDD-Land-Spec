@@ -3,6 +3,7 @@
 **Model**: <model-name>
 **Date**: 2026-07-21T13:30:00Z
 **Evals**: 1, 2, 3 (3 runs each per configuration)
+**Artifact retention**: aggregated statistics come from 3 runs per configuration; this repository retains detailed `run-1/` artifacts only.
 
 ## Summary
 
