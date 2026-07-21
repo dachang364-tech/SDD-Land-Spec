@@ -87,32 +87,32 @@ sdd_active_version_dir() {
     base="$(basename "$path")"
     [[ "$base" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || continue
     if [[ ! -f "$path/state.json" ]]; then
-      printf '版本目录缺少 state.json：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+      printf '版本目录缺少 state.json：docs/versions/%s。\n' "$base" >&2
       shopt -u nullglob
       return 2
     fi
     version="$(sdd_state_field "$path/state.json" version)" || {
-      printf 'state.json 无法解析：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+      printf 'state.json 无法解析：docs/versions/%s。\n' "$base" >&2
       shopt -u nullglob
       return 2
     }
     if [[ "$version" != "$base" ]]; then
-      printf 'state.json.version 与目录名不一致：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+      printf 'state.json.version 与目录名不一致：docs/versions/%s。\n' "$base" >&2
       shopt -u nullglob
       return 2
     fi
     created_at="$(sdd_state_field "$path/state.json" created_at 2>/dev/null)" || {
-      printf 'state.json 缺少必需字段：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+      printf 'state.json 缺少必需字段：docs/versions/%s。\n' "$base" >&2
       shopt -u nullglob
       return 2
     }
     archived_at="$(sdd_state_field "$path/state.json" archived_at 2>/dev/null)" || {
-      printf 'state.json 缺少必需字段：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+      printf 'state.json 缺少必需字段：docs/versions/%s。\n' "$base" >&2
       shopt -u nullglob
       return 2
     }
     if [[ -z "$created_at" || -z "$archived_at" ]]; then
-      printf 'state.json 缺少必需字段：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+      printf 'state.json 缺少必需字段：docs/versions/%s。\n' "$base" >&2
       shopt -u nullglob
       return 2
     fi
@@ -120,7 +120,7 @@ sdd_active_version_dir() {
     case "$state" in
       active)
         if [[ "$archived_at" != "null" ]]; then
-          printf 'state.json 生命周期非法：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+          printf 'state.json 生命周期非法：docs/versions/%s。\n' "$base" >&2
           shopt -u nullglob
           return 2
         fi
@@ -128,13 +128,13 @@ sdd_active_version_dir() {
         ;;
       archived)
         if [[ "$archived_at" == "null" ]]; then
-          printf 'state.json 生命周期非法：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+          printf 'state.json 生命周期非法：docs/versions/%s。\n' "$base" >&2
           shopt -u nullglob
           return 2
         fi
         ;;
       *)
-        printf 'state.json.state 非法：docs/versions/%s，请运行 /sdd:doctor。\n' "$base" >&2
+        printf 'state.json.state 非法：docs/versions/%s。\n' "$base" >&2
         shopt -u nullglob
         return 2
         ;;
@@ -147,10 +147,28 @@ sdd_active_version_dir() {
     return 2
   fi
   if [[ "${#actives[@]}" -gt 1 ]]; then
-    printf '发现多个 active version：%s，请运行 /sdd:doctor。\n' "${actives[*]}" >&2
+    printf '发现多个 active version：%s。\n' "${actives[*]}" >&2
     return 2
   fi
   printf '%s\n' "${actives[0]}"
+}
+
+sdd_is_archived_version_dir() {
+  local version_dir="$1"
+  local state_file="$version_dir/state.json"
+  local state
+  state="$(sdd_state_field "$state_file" state)" || return 2
+  [[ "$state" == "archived" ]]
+}
+
+sdd_assert_version_writable() {
+  local version_dir="$1"
+  local rel="${version_dir#*/docs/versions/}"
+  rel="${rel#docs/versions/}"
+  if sdd_is_archived_version_dir "$version_dir"; then
+    printf '目标版本已 archived，禁止写入：docs/versions/%s\n' "$rel" >&2
+    return 2
+  fi
 }
 
 sdd_next_plan_number() {
@@ -179,11 +197,11 @@ sdd_is_dr_id() {
 }
 
 sdd_next_dr_number() {
-  local decisions_dir="$1"
+  local dr_dir="$1"
   local max=0
   local file base number
   shopt -s nullglob
-  for file in "$decisions_dir"/*.md; do
+  for file in "$dr_dir"/*.md; do
     base="$(basename "$file" .md)"
     number="${base%%-*}"
     if sdd_is_dr_id "$base" && [[ "$number" =~ ^[0-9][0-9][0-9]$ ]] && (( 10#$number > max )); then
@@ -192,7 +210,7 @@ sdd_next_dr_number() {
   done
   shopt -u nullglob
   if (( max >= 999 )); then
-    printf 'DR 编号已达到上限 999：%s\n' "$decisions_dir" >&2
+    printf 'DR 编号已达到上限 999：%s\n' "$dr_dir" >&2
     return 2
   fi
   printf '%03d\n' "$((max + 1))"
@@ -227,8 +245,10 @@ sdd_locator_valid() {
   local locator="$1"
   case "$locator" in
     -) return 0 ;;
-    project:requirements/*.md) return 0 ;;
-    v[0-9]*.[0-9]*.[0-9]*:*) return 0 ;;
+    v[0-9]*.[0-9]*.[0-9]*:spec/*.md) return 0 ;;
+    v[0-9]*.[0-9]*.[0-9]*:plan/*.md) return 0 ;;
+    v[0-9]*.[0-9]*.[0-9]*:dr/*.md) return 0 ;;
+    v[0-9]*.[0-9]*.[0-9]*:prd/prd.md) return 0 ;;
     *) return 1 ;;
   esac
 }

@@ -5,50 +5,45 @@ description: Create the product requirements document. Use for /sdd:prd.
 
 # /sdd:prd
 
-Create or update `docs/versions/vX.Y.Z/prd.md` for the unique active version.
+Create or update `docs/versions/vX.Y.Z/prd/prd.md` for the unique active version.
 
 ## Preconditions
 
 1. Read `docs/CONSTITUTION.md`; if missing, stop and ask the user to run `/sdd:init`.
-2. Require `docs/versions/` to exist; if missing, stop and ask the user to run `/sdd:init` or `/sdd:doctor`.
+2. Require `docs/versions/` to exist; if missing, stop and ask the user to run `/sdd:init`.
 3. 扫描 docs/versions/v*/state.json 发现唯一 active version。
 4. If 0 active version, stop and ask the user to run `/sdd:new vX.Y.Z`.
-5. If multiple active versions or an inconsistent state, stop and ask the user to run `/sdd:doctor`.
-6. Target file is `docs/versions/vX.Y.Z/prd.md`. If it already exists, ask whether to overwrite, update, or cancel.
+5. If multiple active versions or an inconsistent state, stop and report the project state is inconsistent.
+6. Target file is `docs/versions/vX.Y.Z/prd/prd.md`.
+7. 如果目标 version 已 archived，则直接失败。
 
 ## Dialogue
 
-1. Scan `docs/requirements/*.md`.
-2. Ask which requirement documents to reference.
-3. For each selected requirement, write one formal row in the `## 文档引用` table:
-   - `关系` usually `derives_from`.
-   - `当前范围` the affected product goal, scope, or success criteria.
-   - `目标文档` a relative Markdown link from `prd.md`, for example `[business-rules.md](../../requirements/business-rules.md)`.
-   - `目标标识` `project:requirements/<file>.md`.
-   - `说明` one sentence on how the requirement affects the PRD.
-4. Clarify product background, target users, pain points, business goals, scope, success criteria, risks, assumptions.
-5. If no requirement is selected, use the fixed empty-set row `| 未声明。 | - | - | - | - |`.
+1. 与用户讨论当前版本的业务背景、目标用户、问题陈述、范围和成功标准。
+2. 确认是否需要引用本版本下的 research 文档作为背景材料。
+3. 如果 `prd/prd.md` 已存在，先与用户讨论并确认后更新同一文件。
 
 ## Output
 
-Write `docs/versions/vX.Y.Z/prd.md` using `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/template.md`.
+Write `docs/versions/vX.Y.Z/prd/prd.md` using `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/template.md`.
 
 - 只读取 `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/template.md` 和同目录下的质量标准。
 - 生成前必须读取 `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/template.md` 和 `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/quality.standard.md`。
 - 如果 `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/` 下必要文件缺失，则直接失败并提示重新执行 `/sdd:init` 或手工修复项目模板资产。
-- `## 文档引用` 是正式机器可检查引用关系。
-- `## 上游需求资料` 是人类阅读摘要。
-- 影响 PRD 契约内容的 requirement 必须同时出现在 `## 文档引用`。
+- 一个版本只有一个正式 PRD：`docs/versions/vX.Y.Z/prd/prd.md`。
+- 如果 `prd/prd.md` 不存在，则创建。
+- 如果 `prd/prd.md` 已存在，默认不直接覆盖；必须先与用户确认，再更新同一文件。
+- `prd` 不走 `DR` 变更门。
+- 不强制 `## 文档引用` 表，由模板与标准定义结构要求。
 - 不写 `- 状态：` 行。
 
 ## Review flow
 
 - 目标文档写入完成并通过命令层 pre-review gate 后，必须按 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同自动触发 `quality` reviewer，并消费通过 schema 校验的机器结果。
 - reviewer 只消费当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/` 中的模板与标准。
-- 低风险结构、术语、引用表和一致性问题允许自动修复。
-- 需求语义不清时生成候选改写并等待用户确认。
-- JSON 无效、reviewer admission check 失败、`quality` 阻断或需要用户确认时，阻断进入下一稳定状态；用户确认并完成有效复审前，不得绕过该结果推进流程。
+- `prd` 只接入 `quality`，不接入 `feasibility`。
+- 用户确认并完成有效复审前，不得绕过该结果推进流程。
 
 ## Boundaries
 
-- 不创建 active version、不修改 state.json、不创建 spec/plan/DR、不归档版本、不读取 git log。
+- 不创建 active version、不修改 state.json、不创建 spec/plan/DR、不归档版本。

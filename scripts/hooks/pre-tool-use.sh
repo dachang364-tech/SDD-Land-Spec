@@ -33,10 +33,10 @@ target_path="${target_path#./}"
 
 plan_requires_approved_spec() {
   local version="$1"
-  local spec_glob="docs/versions/$version/specs/*.md"
+  local spec_glob="docs/versions/$version/spec/*.md"
   local spec status
   shopt -s nullglob
-  for spec in docs/versions/"$version"/specs/*.md; do
+  for spec in docs/versions/"$version"/spec/*.md; do
     [[ -f "$spec" ]] || continue
     status="$(sdd_read_status "$spec" 2>/dev/null)" || continue
     if [[ "$status" == "approved" ]]; then
@@ -50,20 +50,20 @@ plan_requires_approved_spec() {
 }
 
 case "$target_path" in
-  docs/versions/v*/prd.md)
+  docs/versions/v*/prd/prd.md)
     exit 0
     ;;
-  docs/versions/v*/specs/*.md)
+  docs/versions/v*/spec/*.md)
     version="${target_path#docs/versions/}"
     version="${version%%/*}"
-    prd="docs/versions/$version/prd.md"
+    prd="docs/versions/$version/prd/prd.md"
     if [[ ! -f "$prd" ]]; then
       printf '无法写入 %s：\n前置文档 %s 不存在。\n请先完成 /sdd:prd。\n' "$target_path" "$prd" >&2
       exit 2
     fi
     exit 0
     ;;
-  docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-fix-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-feat-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-chg-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9][0-9][0-9]-arch-*.md)
+  docs/versions/v*/plan/[0-9][0-9][0-9]-[0-9][0-9][0-9]-fix-*.md|docs/versions/v*/plan/[0-9][0-9][0-9]-[0-9][0-9][0-9]-feat-*.md|docs/versions/v*/plan/[0-9][0-9][0-9]-[0-9][0-9][0-9]-chg-*.md|docs/versions/v*/plan/[0-9][0-9][0-9]-[0-9][0-9][0-9]-arch-*.md)
     version="${target_path#docs/versions/}"
     version="${version%%/*}"
     base="$(basename "$target_path")"
@@ -71,7 +71,7 @@ case "$target_path" in
       printf '无法写入 %s：\n非法 DR ID。\n' "$target_path" >&2
       exit 2
     }
-    dr="docs/versions/$version/decisions/$dr_id.md"
+    dr="docs/versions/$version/dr/$dr_id.md"
     status="$(sdd_read_status "$dr")" || exit 2
     class="$(grep -E '^- class：' "$dr" | head -n 1 || true)"
     class="${class#- class：}"
@@ -85,17 +85,17 @@ case "$target_path" in
     fi
     exit 0
     ;;
-  docs/versions/v*/plans/[0-9][0-9][0-9]-[0-9]*-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-fix-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-feat-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-chg-*.md|docs/versions/v*/plans/[0-9][0-9][0-9]-arch-*.md)
+  docs/versions/v*/plan/[0-9][0-9][0-9]-[0-9]*-*.md|docs/versions/v*/plan/[0-9][0-9][0-9]-fix-*.md|docs/versions/v*/plan/[0-9][0-9][0-9]-feat-*.md|docs/versions/v*/plan/[0-9][0-9][0-9]-chg-*.md|docs/versions/v*/plan/[0-9][0-9][0-9]-arch-*.md)
     printf '无法写入 %s：\n非法 DR ID。\n' "$target_path" >&2
     exit 2
     ;;
-  docs/versions/v*/plans/[0-9][0-9][0-9]-*.md)
+  docs/versions/v*/plan/[0-9][0-9][0-9]-*.md)
     version="${target_path#docs/versions/}"
     version="${version%%/*}"
     plan_requires_approved_spec "$version"
     exit 0
     ;;
-  docs/versions/v*/decisions/*.md|docs/versions/v*/ARCHIVE.md|docs/versions/v*/state.json|docs/archive/INDEX.md|docs/requirements/*.md|src/*|src/**)
+  docs/versions/v*/dr/*.md|docs/versions/v*/ARCHIVE.md|docs/versions/v*/state.json|docs/archive/INDEX.md|src/*|src/**)
     exit 0
     ;;
   *)

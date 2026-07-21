@@ -5,16 +5,17 @@ description: Create an implementation plan from approved spec or accepted code-c
 
 # /sdd:plan
 
-Generate a new incremental Implementation Plan under `docs/versions/vX.Y.Z/plans/`.
+Create or revise an incremental Implementation Plan under `docs/versions/vX.Y.Z/plan/` for the unique active version.
 
 ## Preconditions
 
 1. Read `docs/CONSTITUTION.md`; if missing, stop and ask the user to run `/sdd:init`.
-2. Require `docs/versions/` to exist; if missing, stop and ask the user to run `/sdd:init` or `/sdd:doctor`.
+2. Require `docs/versions/` to exist; if missing, stop and ask the user to run `/sdd:init`.
 3. 扫描 docs/versions/v*/state.json 发现唯一 active version。
 4. If 0 active version, stop and ask the user to run `/sdd:new vX.Y.Z`.
-5. If multiple active versions or inconsistent state, stop and ask the user to run `/sdd:doctor`.
-6. Parse `<work-item>` by syntax, not by semantic guessing.
+5. If multiple active versions or inconsistent state, stop and report the project state is inconsistent.
+6. If the target version is archived, stop and refuse.
+7. Parse `<work-item>` by syntax, not by semantic guessing.
 
 ## Mode detection
 
@@ -25,23 +26,25 @@ Generate a new incremental Implementation Plan under `docs/versions/vX.Y.Z/plans
 
 ## Plan number allocation
 
-1. Inspect `docs/versions/vX.Y.Z/plans/[0-9][0-9][0-9]-*.md`.
+1. Inspect `docs/versions/vX.Y.Z/plan/[0-9][0-9][0-9]-*.md`.
 2. Extract numeric prefixes.
 3. Use the next zero-padded 3-digit number after the current maximum; if no plan exists, use `001`.
 4. Do not ask the user to choose `NNN`, and do not reuse an existing number.
 
 ## Spec mode
 
-- `<work-item>` may be a spec filename, `specs/<spec-name>.md`, or a feature name resolving uniquely to one approved spec.
+- `<work-item>` may be a spec filename, `spec/<spec-name>.md`, or a feature name resolving uniquely to one approved spec.
 - Require the target spec to be `approved`; if no approved spec, stop and ask the user to run `/sdd:spec` and approve.
-- Output path: `docs/versions/vX.Y.Z/plans/NNN-<slug>.md`.
+- Output path: `docs/versions/vX.Y.Z/plan/NNN-<slug>.md`.
+- 若同名 plan 已终态，禁止直接修改，必须转 `DR`。
+- 若同名 plan 未终态，也需用户确认后更新。
 
 ## Code-class DR mode
 
-- Read `docs/versions/vX.Y.Z/decisions/<dr-id>.md`.
+- Read `docs/versions/vX.Y.Z/dr/<dr-id>.md`.
 - Require `状态：accepted`, `class: code`, `plan_required: yes`, `code_required: yes`.
 - If `plan_required: no`, refuse and tell the user to run `/sdd:code <dr-id>`.
-- Output path: `docs/versions/vX.Y.Z/plans/NNN-<dr-id>.md`.
+- Output path: `docs/versions/vX.Y.Z/plan/NNN-<dr-id>.md`.
 
 ## Technical Planning Dialogue
 
@@ -54,6 +57,8 @@ Generate a new incremental Implementation Plan under `docs/versions/vX.Y.Z/plans
 7. Confirm architecture boundaries, data/control flow, file impact, testing strategy, risks, constraints.
 8. If concrete files, test commands, implementation steps, or acceptance mapping cannot be written, continue the dialogue; do not emit a placeholder plan.
 9. Only after user confirmation, generate the plan.
+10. 若创建新 slug plan，按正常流程创建。
+11. 若更新同名文档，先读取 plan 当前状态；若已终态，禁止直接修改，必须转 `DR`；若未终态，也需用户确认后更新。
 
 ## Plan quality rules
 
@@ -81,7 +86,7 @@ Generate a new incremental Implementation Plan under `docs/versions/vX.Y.Z/plans
 - plan 引用 code-class DR 时，关系应为 `implements`。
 - plan 引用其他 plan、历史 plan 或历史 DR 作为背景时，关系可为 `references`。
 - 引用同版本文档时，只写相对 Markdown link，不写版本 locator。
-- 引用跨版本文档时，必须同时写相对 Markdown link 和版本 locator，例如 `v0.2.0:plans/001-archive.md`。
+- 引用跨版本文档时，必须同时写相对 Markdown link 和版本 locator，例如 `v0.2.0:plan/001-archive.md`。
 - plan 不得使用 `modifies`、`replaces`、`deprecates`。
 - 如果发现需要改变功能契约，停止当前 plan 生成流程，先创建或修订 DR / spec。
 

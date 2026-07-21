@@ -1,6 +1,6 @@
 ---
 name: archive
-description: Archive the current active SDD version. Use for /sdd:archive.
+description: Archive the current active SDD version. Use for /sdd:archive and whenever you need to verify archived-version read-only behavior or the version-local archive entry contract.
 ---
 
 # /sdd:archive
@@ -10,23 +10,23 @@ description: Archive the current active SDD version. Use for /sdd:archive.
 ## Preconditions
 
 1. `docs/CONSTITUTION.md` 必须存在；缺失时停止，提示运行 `/sdd:init`。
-2. `docs/versions/` 必须存在；缺失时停止，提示运行 `/sdd:init` 或 `/sdd:doctor`。
+2. `docs/versions/` 必须存在；缺失时停止，提示运行 `/sdd:init`。
 3. 恰好存在一个 `state: active` 的版本。
 4. active version 目录名与 `state.json.version` 一致。
 5. `state.json.state` 为 `active`，`archived_at` 为 `null`。
-6. active version 的 `specs/*.md` 至少一份。
-7. 所有 `specs/*.md` 的 Markdown 头部状态必须为 `approved`。
-8. 所有 `plans/*.md` 的 Markdown 头部状态必须为 `done`；没有 plan 时通过。
-9. 所有 `decisions/*.md` 的 Markdown 头部状态必须为 `closed`；没有 DR 时通过。
+6. active version 的 `spec/*.md` 至少一份。
+7. 所有 `spec/*.md` 的 Markdown 头部状态必须为 `approved`。
+8. 所有 `plan/*.md` 的 Markdown 头部状态必须为 `done`；没有 plan 时通过。
+9. 所有 `dr/*.md` 的 Markdown 头部状态必须为 `closed`；没有 DR 时通过。
 10. DR 不得使用 `dismissed` 或 `superseded` 作为状态值。
-11. `prd.md` 缺失不阻止归档。
+11. `prd/prd.md` 缺失不阻止归档。
 12. active version 内不存在 `ARCHIVE.md`，或用户明确允许覆盖。
 13. Blocking 引用检查必须通过。
 
 ## Blocking reference checks
 
 - 本地相对 Markdown `.md` 链接目标必须存在。
-- 跨版本引用必须有版本 locator；project-level requirements 引用必须有 `project:` locator。
+- 跨版本引用必须有版本 locator；项目级需求引用只允许 `project:` locator。
 - locator 格式必须合法；Markdown link 和 locator 必须指向同一目标。
 - 关系值必须属于枚举：`references`、`derives_from`、`implements`、`modifies`、`replaces`、`deprecates`。
 - `## 文档引用` 表必须可解析。
@@ -43,15 +43,15 @@ description: Archive the current active SDD version. Use for /sdd:archive.
 1. 扫描 `docs/versions/v*/state.json`，解析唯一 active version。
 2. 执行归档前置条件检查。
 3. 加载 `scripts/lib/sdd-references.sh`。
-4. 枚举 active version 内现有的 `prd.md`、`specs/*.md`、`plans/*.md`、`decisions/*.md`；对每个来源文档调用 `sdd_refs_validate <project-root> <source.md>` 执行归档前 preflight。若 helper 输出 JSONL 诊断，必须保留 `level`、`code`、`source`、`reason` 字段；遇到 `blocking` 立即停止归档，`warning` 仅记录到验证摘要。
-5. 从 active version 的 PRD、spec、plans、DR 提取归档摘要信息。
+4. 枚举 active version 内现有的 `prd/prd.md`、`spec/*.md`、`plan/*.md`、`dr/*.md`；对每个来源文档调用 `sdd_refs_validate <project-root> <source.md>` 执行归档前 preflight。若 helper 输出 JSONL 诊断，必须保留 `level`、`code`、`source`、`reason` 字段；遇到 `blocking` 立即停止归档，`warning` 仅记录到验证摘要。
+5. 从 active version 的 PRD、spec、plan、DR 提取归档摘要信息。
 6. 调用 `sdd_refs_extract_archive <project-root> <version-dir> <cross.md> <strong.md>` 机械提取 `文档引用摘要` 输入文件；只读取 `## 文档引用` 表，不阅读全文；将 `cross.md` 内容写入「跨版本与项目级关系」，将 `strong.md` 内容写入「本版本强关系」；不根据正文链接补推关系。
 7. 在 active version 目录内生成或覆盖 `docs/versions/vX.Y.Z/ARCHIVE.md`。
 8. 检查生成后的 `ARCHIVE.md` 中本地相对 Markdown `.md` 链接。
 9. 将该版本 `state.json.state` 从 `active` 改为 `archived`，保留 `created_at`，写入 `archived_at`。
 10. 创建或更新 `docs/archive/INDEX.md`（每个 archived version 最多一行，链接 `../versions/vX.Y.Z/ARCHIVE.md`）。
 11. 检查 `docs/archive/INDEX.md` 本次新增或修改的本地相对 Markdown `.md` 链接。
-12. 输出归档结果：归档版本、`ARCHIVE.md` 路径、`INDEX.md` 路径、当前 0 active version、下一步建议 `/sdd:new vX.Y.Z`。
+12. 输出归档结果：归档版本、`ARCHIVE.md` 路径、`INDEX.md` 路径、当前 0 active version、下一步建议 `/sdd:new vX.Y.Z`.
 
 归档后的 `state.json`：
 
@@ -80,10 +80,10 @@ description: Archive the current active SDD version. Use for /sdd:archive.
 
 | 类型 | 链接 | 说明 |
 | ---- | ---- | ---- |
-| PRD | <存在时 [prd.md](./prd.md)，否则 未发现。> | 产品目标与范围 |
+| PRD | <存在时 [prd/prd.md](./prd/prd.md)，否则 未发现。> | 产品目标与范围 |
 | Spec | <至少一份 spec 链接> | 功能契约 |
-| Plans | [plans/](./plans/) | 实施记录 |
-| DRs | [decisions/](./decisions/) | 决策记录 |
+| Plans | [plan/](./plan/) | 实施记录 |
+| DRs | [dr/](./dr/) | 决策记录 |
 
 ## 3. Specs
 
@@ -143,7 +143,7 @@ Rules:
 
 - 前置条件失败、`ARCHIVE.md` 生成或链接检查失败时，停止归档，不修改 `state.json`，不更新 `INDEX.md`。
 - `state.json` 更新失败时，归档失败，不更新 `INDEX.md`。
-- `INDEX.md` 创建或更新失败时，整体归档不算成功；此时版本可能已进入 `archived`，提示用户运行 `/sdd:doctor` 或手动修复全局入口。
+- `INDEX.md` 创建或更新失败时，整体归档不算成功；此时版本可能已进入 `archived`，提示用户手动修复全局入口。
 
 ## Boundaries
 

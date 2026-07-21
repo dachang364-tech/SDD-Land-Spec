@@ -5,39 +5,49 @@ description: Create project-level SDD research notes. Use for /sdd:research <top
 
 # /sdd:research
 
-Create or update project-level research material under `docs/requirements/`. Not part of any version and not part of the version lifecycle.
+在 active version 下创建或更新 research 文档。
 
 ## Preconditions
 
-1. Read `docs/CONSTITUTION.md`; if missing, stop and ask the user to run `/sdd:init`.
-2. Ensure `docs/requirements/` exists; if `docs/CONSTITUTION.md` exists but `docs/requirements/` is missing, create only `docs/requirements/`.
-3. 不扫描 docs/versions/v*/state.json。
-4. 不要求 active version；0 active version 时仍可运行。
+1. 读取 `docs/CONSTITUTION.md`；如果缺失，停止并提示用户先运行 `/sdd:init`。
+2. 要求 `docs/versions/` 存在；如果缺失，停止并提示用户先运行 `/sdd:init`。
+3. 扫描 `docs/versions/v*/state.json`。
+4. 如果 0 active version，停止并提示用户先运行 `/sdd:new vX.Y.Z`。
+5. 如果存在多个 active version 或状态不一致，停止并报告项目状态不一致。
+6. 只读取 `${CLAUDE_PROJECT_DIR}/.sdd/templates/research/` 下的模板与标准。
+7. 生成前必须读取 `${CLAUDE_PROJECT_DIR}/.sdd/templates/research/template.md` 和 `${CLAUDE_PROJECT_DIR}/.sdd/templates/research/quality.standard.md`。
+8. 如果 `${CLAUDE_PROJECT_DIR}/.sdd/templates/research/` 下必要文件缺失，则直接失败并提示重新执行 `/sdd:init` 或手工修复项目模板资产。
+9. archived version 禁止执行。
 
 ## Dialogue
 
-1. Research topic.
-2. Why the topic matters.
-3. Sources or local files.
-4. Decision output later needed by PRD or spec.
-5. If the user names a target PRD or spec, record it as a suggested later reference but do not modify the target document.
+1. 确认 research 主题。
+2. 确认 research 类型 `<type>`、研究目的与信息来源。
+3. 确认后续可能消费该研究结论的 PRD、spec、plan 或 DR。
+4. 如果同名文档已存在，先向用户确认是否更新同一文档。
 
 ## Output path
 
 ```text
-docs/requirements/<topic-slug>-<yyyy-mm>.md
+docs/versions/vX.Y.Z/research/<type>-<YYYY-MM-DD>-<slug>.md
 ```
 
-Write using `skills/research/references/research.md.tmpl`.
+生成必须使用 `${CLAUDE_PROJECT_DIR}/.sdd/templates/research/template.md`。
 
-- research 文档不写 `- 状态：` 行，不写 version lifecycle 字段，不要求 `## 文档引用` 表。
-- 如果同名 research 文件已存在，更新同一文档或要求用户确认新 slug；不得创建 version-local 副本。
+- `<type>` 使用 kebab-case。
+- `<date>` 固定使用 `YYYY-MM-DD`。
+- research 文档没有状态机制。
+- 不要求 `## 文档引用` 表，是否包含由模板与标准定义。
+- 同名文档存在时，用户确认后可直接更新。
+- `/sdd:research` 不自动触发 review，但允许后续手动 `/sdd:review`。
+- research 的结构、章节和措辞必须以项目运行时模板为准，不降级回 Plugin 内置模板。
 
-## Relationship with PRD / spec
+## Review flow
 
-- 不自动修改 PRD 或 spec。
-- 当 PRD 或 spec 正式引用该 research 时，目标文档在 `## 文档引用` 表用相对 Markdown link、`project:requirements/<file>.md` locator 和 `derives_from` 或 `references` 关系记录。
+- 手动执行 `/sdd:review <doc-path>` 时，按 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同执行 `quality` reviewer。
+- reviewer 只消费当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/research/` 中的模板与标准。
+- `research` 只接入 `quality`，不接入 `feasibility`。
 
 ## Boundaries
 
-- 不创建 active version、不读取或修改 state.json、不创建或修改 PRD/spec/plan/DR、不关闭 DR、不生成 plan、不执行 code、不归档版本。
+- 不创建 active version、不修改 state.json、不创建或修改 PRD/spec/plan/DR、不关闭 DR、不生成 plan、不执行 code、不归档版本。

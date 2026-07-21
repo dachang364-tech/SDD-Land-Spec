@@ -33,12 +33,16 @@ fi
 assert_contains "$archive_contents" "${package_root}/agents/doc-reviewer.md"
 assert_contains "$zip_listing" "${package_root}/agents/doc-reviewer.md"
 
-assert_contains "$archive_contents" "${package_root}/assets/template-packs/default-backend/prd/template.md"
-assert_contains "$archive_contents" "${package_root}/assets/template-packs/default-backend/spec/feasibility.standard.md"
-assert_contains "$archive_contents" "${package_root}/assets/template-packs/default-backend/plan/quality.standard.md"
-assert_contains "$zip_listing" "${package_root}/assets/template-packs/default-backend/prd/template.md"
-assert_contains "$zip_listing" "${package_root}/assets/template-packs/default-backend/spec/feasibility.standard.md"
-assert_contains "$zip_listing" "${package_root}/assets/template-packs/default-backend/plan/quality.standard.md"
+assert_contains "$archive_contents" "${package_root}/assets/template-packs/backend/research/template.md"
+assert_contains "$archive_contents" "${package_root}/assets/template-packs/backend/research/quality.standard.md"
+assert_contains "$archive_contents" "${package_root}/assets/template-packs/backend/prd/template.md"
+assert_contains "$archive_contents" "${package_root}/assets/template-packs/backend/spec/feasibility.standard.md"
+assert_contains "$archive_contents" "${package_root}/assets/template-packs/backend/plan/quality.standard.md"
+assert_contains "$zip_listing" "${package_root}/assets/template-packs/backend/research/template.md"
+assert_contains "$zip_listing" "${package_root}/assets/template-packs/backend/research/quality.standard.md"
+assert_contains "$zip_listing" "${package_root}/assets/template-packs/backend/prd/template.md"
+assert_contains "$zip_listing" "${package_root}/assets/template-packs/backend/spec/feasibility.standard.md"
+assert_contains "$zip_listing" "${package_root}/assets/template-packs/backend/plan/quality.standard.md"
 
 readme_tmp="/tmp/sdd-package-local-readme.md"
 rm -rf "/tmp/${package_root}"
@@ -48,10 +52,12 @@ rmdir "/tmp/${package_root}"
 assert_contains "$readme_tmp" "# SDD Plugin"
 assert_contains "$readme_tmp" 'docs/versions/vX.Y.Z'
 assert_contains "$readme_tmp" '001-fix-login-null'
-assert_contains "$readme_tmp" 'plans/002-001-fix-login-null.md'
-assert_contains "$readme_tmp" 'docs/versions/vX.Y.Z/decisions/NNN-<tag>-<slug>.md'
+assert_contains "$readme_tmp" 'plan/002-001-fix-login-null.md'
+assert_contains "$readme_tmp" 'docs/versions/vX.Y.Z/dr/NNN-<tag>-<slug>.md'
 assert_contains "$readme_tmp" 'NNN-<tag>-<slug>.md'
 assert_not_contains "$readme_tmp" '<tag>-NNNN-<slug>'
+assert_not_contains "$readme_tmp" '/sdd:doctor'
+assert_not_contains "$readme_tmp" '/sdd:status'
 assert_contains "$readme_tmp" "## 安装"
 assert_contains "$readme_tmp" "## 使用"
 assert_contains "$readme_tmp" "/sdd:init"

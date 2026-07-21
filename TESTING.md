@@ -9,13 +9,20 @@
 ## 2. 运行自动化验证
 
 ```bash
-bash tests/test-doctor-contract.sh && bash tests/test-common-library.sh && bash tests/test-pre-tool-use.sh && bash tests/test-reference-validation.sh && bash tests/test-skill-contracts.sh && bash tests/test-mvp-acceptance.sh
+bash tests/test-template-assets.sh && \
+bash tests/test-template-runtime-contract.sh && \
+bash tests/test-common-library.sh && \
+bash tests/test-pre-tool-use.sh && \
+bash tests/test-reference-validation.sh && \
+bash tests/test-skill-contracts.sh && \
+bash tests/test-mvp-acceptance.sh
 ```
 
 期望输出：
 
 ```text
-PASS: skeleton contract
+PASS: template assets
+PASS: template runtime contract
 PASS: common library
 PASS: pre-tool-use hook
 PASS: reference validation
@@ -25,13 +32,18 @@ PASS: MVP acceptance
 
 ## 模板包与 reviewer 手工验证
 
-1. 运行 `/sdd:init`，确认会提示模板包选择，未显式切换时默认使用 `default-backend`。
-2. 确认项目生成 `.sdd/templates/prd/`、`.sdd/templates/spec/`、`.sdd/templates/plan/`。
-3. 手工删除 `.sdd/templates/spec/feasibility.standard.md` 后再次运行 `/sdd:spec`，期望命令明确失败，并提示缺少项目模板资产。
-4. 重新执行 `/sdd:init` 恢复模板资产。
-5. 生成或修改 `prd.md`、`spec.md`、`plan.md` 后，确认 reviewer 自动触发。
-6. 确认插件安装后的组件目录包含 `agents/doc-reviewer.md`。
-7. 对已有文档执行 `/sdd:review <doc-path>`，确认 reviewer 使用该 agent，而不是仅依据 review skill 文本模拟执行，并且只返回一份聚合用户回执。
+1. 运行 `/sdd:init`，确认会提示模板包选择，未显式切换时默认使用 `backend`。
+2. 确认项目生成 `.sdd/templates/research/`、`.sdd/templates/prd/`、`.sdd/templates/spec/`、`.sdd/templates/plan/`、`.sdd/templates/dr/`。
+3. 手工删除 `.sdd/templates/research/quality.standard.md` 后再次运行 `/sdd:research demo`，期望命令明确失败，并提示缺少项目模板资产。
+4. 手工删除 `.sdd/templates/spec/feasibility.standard.md` 后再次运行 `/sdd:spec`，期望命令明确失败，并提示缺少项目模板资产。
+5. 重新执行 `/sdd:init` 恢复缺失模板资产，并确认已有项目自定义模板不会被覆盖。
+6. 生成或修改 `research`、`prd.md`、`spec.md`、`plan.md` 后，确认 reviewer 自动触发。
+7. 确认 `research` 与 `prd` 只触发 `quality`；`dr` 只触发 `quality`；`spec` 与 `plan` 按顺序触发 `quality -> feasibility`。
+8. 确认插件安装后的组件目录包含 `agents/doc-reviewer.md`。
+9. 对已有文档执行 `/sdd:review <doc-path>`，确认 reviewer 使用该 agent，而不是仅依据 review skill 文本模拟执行，并且只返回一份聚合用户回执。
+10. 对 archived version 下的 `research`、`prd/prd.md`、`spec/*.md`、`plan/*.md`、`dr/*.md` 执行 `/sdd:review`，期望直接失败。
+11. 对一个可 review 文档执行 `/sdd:review <doc-path>`，确认系统按路径自动识别文档类型，而不是要求用户手工指定类型。
+12. 对 `/sdd:code <plan>` 执行前，确认目标 plan 的 `## 文档引用` 中仍保持 `implements` 闭包指向 approved spec 或 accepted code-class DR。
 
 ## 3. 检查禁止路径
 
@@ -56,14 +68,14 @@ grep -F '${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-start.sh' hooks/hooks.json
 
 ```bash
 tmp="$(mktemp -d)"
-mkdir -p "$tmp/docs/versions/v0.1.0/specs" "$tmp/docs/versions/v0.1.0/plans" "$tmp/docs/versions/v0.1.0/decisions"
+mkdir -p "$tmp/docs/versions/v0.1.0/spec" "$tmp/docs/versions/v0.1.0/plan" "$tmp/docs/versions/v0.1.0/dr" "$tmp/docs/versions/v0.1.0/prd"
 ```
 
 验证缺少 PRD 时禁止写 spec：
 
 ```bash
 cd "$tmp"
-printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/specs/spec.md"}}' | /path/to/sdd-plugin/scripts/hooks/pre-tool-use.sh
+printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/spec/spec.md"}}' | /path/to/sdd-plugin/scripts/hooks/pre-tool-use.sh
 ```
 
 期望：退出码为 `2`，并输出中文错误，提示先完成 `/sdd:prd`。
@@ -71,9 +83,9 @@ printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/specs/spec.md"}}' | /pa
 验证没有 approved spec 时禁止写普通 spec-mode plan：
 
 ```bash
-printf '# PRD\n' > docs/versions/v0.1.0/prd.md
-printf '# Functional Specification\n\n- 状态：draft\n' > docs/versions/v0.1.0/specs/spec.md
-printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/plans/001-login.md"}}' | /path/to/sdd-plugin/scripts/hooks/pre-tool-use.sh
+printf '# PRD\n' > docs/versions/v0.1.0/prd/prd.md
+printf '# Functional Specification\n\n- 状态：draft\n' > docs/versions/v0.1.0/spec/spec.md
+printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/plan/001-login.md"}}' | /path/to/sdd-plugin/scripts/hooks/pre-tool-use.sh
 ```
 
 期望：退出码为 `2`，并输出中文错误，提示先完成 `/sdd:spec` 并批准目标 Functional Specification。
@@ -81,8 +93,8 @@ printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/plans/001-login.md"}}' 
 验证存在 approved spec 后允许写普通 spec-mode plan：
 
 ```bash
-printf '# Functional Specification\n\n- 状态：approved\n' > docs/versions/v0.1.0/specs/document-references.md
-printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/plans/001-login.md"}}' | /path/to/sdd-plugin/scripts/hooks/pre-tool-use.sh
+printf '# Functional Specification\n\n- 状态：approved\n' > docs/versions/v0.1.0/spec/document-references.md
+printf '{"tool_input":{"file_path":"docs/versions/v0.1.0/plan/001-login.md"}}' | /path/to/sdd-plugin/scripts/hooks/pre-tool-use.sh
 ```
 
 期望：无输出，退出码为 `0`。
@@ -108,7 +120,6 @@ claude plugin list
 ```text
 /sdd:init
 /sdd:new v0.2.0
-/sdd:status
 /sdd:research demo
 /sdd:prd
 /sdd:spec
@@ -117,12 +128,16 @@ claude plugin list
 
 重点确认：
 
-- `/sdd:init` 创建 `docs/CONSTITUTION.md`、`docs/requirements/`、`docs/versions/`、`docs/archive/`。
+- `/sdd:init` 创建 `docs/CONSTITUTION.md`、`docs/versions/`、`docs/archive/`。
+- `/sdd:init` 创建 `.sdd/templates/research/`、`.sdd/templates/prd/`、`.sdd/templates/spec/`、`.sdd/templates/plan/`、`.sdd/templates/dr/`。
 - `/sdd:init` 不自动安装依赖插件。
 - `/sdd:init` 会提示用户手动安装 `superpowers` 与 `spec-kit`。
-- `/sdd:new v0.2.0` 创建 `docs/versions/v0.2.0/state.json`、`docs/versions/v0.2.0/specs/`、`plans/`、`decisions/`。
-- `/sdd:status` 能展示当前版本状态和下一步建议。
+- `/sdd:new v0.2.0` 创建 `docs/versions/v0.2.0/state.json`、`research/`、`prd/`、`spec/`、`plan/`、`dr/`。
+- `research` 缺少 `quality.standard.md` 时会明确失败。
 - feature plan 在 `spec.md` 未 `approved` 时会被拒绝。
+- archived version 下的文档不能执行 `/sdd:review`。
+- `/sdd:review <doc-path>` 会按路径自动识别 `research / prd / dr / spec / plan` 类型。
+- `/sdd:code <plan>` 依赖 plan 的 `## 文档引用` 闭包仍然完整。
 
 ## 7. 验收通过后
 

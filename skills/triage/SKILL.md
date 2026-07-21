@@ -1,6 +1,6 @@
 ---
 name: triage
-description: Triage user questions after implementation, review, or testing. Use for /sdd:triage and /sdd:triage --deep.
+description: Triage user questions after implementation, review, or testing. Use for /sdd:triage and /sdd:triage --deep whenever you need to route a question to DR, spec, plan, code, or explanation only without making changes.
 ---
 
 # /sdd:triage
@@ -14,10 +14,10 @@ Reference-aware read-only triage before choosing whether to create a DR, revise 
 ## Preconditions
 
 1. Read `docs/CONSTITUTION.md`; if missing, stop and ask the user to run `/sdd:init`.
-2. Require `docs/versions/` to exist; if missing, stop and ask the user to run `/sdd:init` or `/sdd:doctor`.
+2. Require `docs/versions/` to exist; if missing, stop and ask the user to run `/sdd:init`.
 3. 扫描 docs/versions/v*/state.json 发现唯一 active version。
 4. If 0 active version, stop and ask the user to run `/sdd:new vX.Y.Z`.
-5. If multiple active versions or inconsistent state, stop and ask the user to run `/sdd:doctor`.
+5. If multiple active versions or inconsistent state, stop and report the project state is inconsistent.
 6. Only when exactly one legal `state: active` version exists, read documents inside the version.
 
 ## Hard rules
@@ -37,9 +37,9 @@ Reference-aware read-only triage before choosing whether to create a DR, revise 
 ## Token control
 
 - 不得一次性读取整个 active version 目录。
-- 不得默认读取所有 `specs/*.md`。
-- 不得默认读取所有 `plans/*.md`。
-- 不得默认读取所有 `decisions/*.md`。
+- 不得默认读取所有 `spec/*.md`。
+- 不得默认读取所有 `plan/*.md`。
+- 不得默认读取所有 `dr/*.md`。
 - 不得默认读取所有 archived versions。
 - 不得默认读取代码。
 - 必须先建立候选范围，再按候选文件读取。
@@ -47,15 +47,14 @@ Reference-aware read-only triage before choosing whether to create a DR, revise 
 ## Reference-aware read order
 
 1. Understand the question; ask for a locator if needed.
-2. Read minimal active-version structure (prd existence, `specs/*.md`, `plans/*.md`, `decisions/*.md` filenames).
+2. Read minimal active-version structure (prd existence, `spec/*.md`, `plan/*.md`, `dr/*.md` filenames).
 3. If the user points to a spec, read the relevant section and that file's `## 文档引用` table.
 4. If the user points to a plan, read its status, relevant tasks, and `## 文档引用` table.
 5. If the user points to a DR, read its process fields, status, `## 文档引用` table, and needed body sections.
 6. Follow `## 文档引用` only to directly relevant target documents.
-7. Use `project:requirements/<file>.md` locator for project-level requirements.
-8. For cross-version references, read only the specific referenced version document.
-9. Read code only when comparing implementation against spec/plan/DR.
-10. If evidence is insufficient, output a low-confidence triage and state the missing locator or context.
+7. For cross-version references, read only the specific referenced version document.
+8. Read code only when comparing implementation against spec/plan/DR.
+9. If evidence is insufficient, output a low-confidence triage and state the missing locator or context.
 
 ## Depth
 

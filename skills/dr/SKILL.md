@@ -5,7 +5,7 @@ description: Create, accept, or dismiss SDD decision records. Use for /sdd:dr <t
 
 # /sdd:dr
 
-Manage Decision Records under `docs/versions/vX.Y.Z/decisions/`.
+Manage Decision Records under `docs/versions/vX.Y.Z/dr/`.
 
 ## Tags
 
@@ -32,10 +32,11 @@ fix | feat | chg | arch | spec | doc | typo
 ## Preconditions
 
 1. Read `docs/CONSTITUTION.md`; if missing, stop and ask the user to run `/sdd:init`.
-2. Require `docs/versions/` to exist; if missing, stop and ask the user to run `/sdd:init` or `/sdd:doctor`.
+2. Require `docs/versions/` to exist; if missing, stop and ask the user to run `/sdd:init`.
 3. 扫描 docs/versions/v*/state.json 发现唯一 active version。
 4. If 0 active version, stop and ask the user to run `/sdd:new vX.Y.Z`.
-5. If multiple active versions or inconsistent state, stop and ask the user to run `/sdd:doctor`.
+5. If multiple active versions or inconsistent state, stop and report the project state is inconsistent.
+6. If the target version is archived, stop and refuse.
 
 ## Dispatch
 
@@ -50,10 +51,10 @@ Input: `/sdd:dr <tag> <title>`
 
 Steps:
 
-1. Scan `docs/versions/vX.Y.Z/decisions/*.md`.
+1. Scan `docs/versions/vX.Y.Z/dr/*.md`.
 2. Generate version-local increasing DR number `NNN`; if none, use `001`. Fail DR creation when the next DR number would exceed `999`.
 3. Slugify title into a non-empty lowercase kebab-case slug using only ASCII lowercase letters, digits, and hyphens.
-4. Write `docs/versions/vX.Y.Z/decisions/NNN-<tag>-<slug>.md` from `skills/dr/references/dr.md.tmpl`.
+4. Write `docs/versions/vX.Y.Z/dr/NNN-<tag>-<slug>.md` from `skills/dr/references/dr.md.tmpl`.
 5. `DR ID` 指去掉 `.md` 后的完整 DR basename。
 6. 标题标识格式固定为 `DR-NNN-<tag>`，slug 不进入标题标识。
 7. 不兼容 `<tag>-NNNN-<slug>` 旧格式，不提供 alias、双写或模糊读取。
@@ -61,10 +62,13 @@ Steps:
 9. Initial status is `drafting`.
 10. If the user chooses lightweight fix, set `plan_required: no` but keep `class: code` and `code_required: yes`.
 11. Write the `## 文档引用` table; if no formal reference, use the fixed empty-set row `| 未声明。 | - | - | - | - |`.
+   - DR 的正式文档引用只允许 `dr / plan / spec`。
+   - 不允许 `prd / research`。
    - 引用 project-level requirements：同时写相对 Markdown link 和 `project:requirements/<file>.md` locator。
    - 引用跨版本文档：同时写相对 Markdown link 和版本 locator。
    - `## 文档引用` 是 DR 的正式关系来源；`## 影响资产` 只做摘要，不作为正式关系来源。
-12. Output next step:
+12. 目标文档写入完成并通过命令层 pre-review gate 后，必须按 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同自动触发 `quality` reviewer；机器结果必须先通过 schema 校验。
+13. Output next step:
    - code-class DR: run `/sdd:dr accept <id>`; after accept, next step depends on `plan_required` and may be `/sdd:plan <id>` or `/sdd:code <id>`. If `spec_change` is `yes` or `maybe`, first evaluate whether `/sdd:spec` is needed.
    - document-class DR: run `/sdd:dr accept <id>`, then `/sdd:spec` or the corresponding document Skill.
 
@@ -74,9 +78,9 @@ Example: `/sdd:dr accept 001-fix-login-null`
 
 Input: `/sdd:dr accept <id>`
 
-Precondition: `<id>` 必须是有效完整 `DR ID`：`001..999-<fix|feat|chg|arch|spec|doc|typo>-<lowercase-kebab-slug>`，并且对应 active version 的 `decisions/<id>.md` 精确存在且状态为 drafting。
+Precondition: `<id>` 必须是有效完整 `DR ID`：`001..999-<fix|feat|chg|arch|spec|doc|typo>-<lowercase-kebab-slug>`，并且对应 active version 的 `dr/<id>.md` 精确存在且状态为 drafting。
 
-Lookup and failure rules: 只按完整 `DR ID` 精确查找 `docs/versions/vX.Y.Z/decisions/<id>.md`，不使用 alias、部分编号、tag/slug 模糊匹配或自动补全。无效 DR ID、缺失 DR 或旧格式 `<tag>-NNNN-<slug>` 均必须显式失败，不得修改任何文件。
+Lookup and failure rules: 只按完整 `DR ID` 精确查找 `docs/versions/vX.Y.Z/dr/<id>.md`，不使用 alias、部分编号、tag/slug 模糊匹配或自动补全。无效 DR ID、缺失 DR 或旧格式 `<tag>-NNNN-<slug>` 均必须显式失败，不得修改任何文件。
 
 Steps:
 
@@ -96,9 +100,9 @@ Steps:
 
 Input: `/sdd:dr dismiss <id> <reason>`
 
-Precondition: `<id>` 必须是有效完整 `DR ID`：`001..999-<fix|feat|chg|arch|spec|doc|typo>-<lowercase-kebab-slug>`，并且对应 active version 的 `decisions/<id>.md` 精确存在且状态为 drafting。
+Precondition: `<id>` 必须是有效完整 `DR ID`：`001..999-<fix|feat|chg|arch|spec|doc|typo>-<lowercase-kebab-slug>`，并且对应 active version 的 `dr/<id>.md` 精确存在且状态为 drafting。
 
-Lookup and failure rules: 只按完整 `DR ID` 精确查找 `docs/versions/vX.Y.Z/decisions/<id>.md`，不使用 alias、部分编号、tag/slug 模糊匹配或自动补全。无效 DR ID、缺失 DR 或旧格式 `<tag>-NNNN-<slug>` 均必须显式失败，不得修改任何文件。
+Lookup and failure rules: 只按完整 `DR ID` 精确查找 `docs/versions/vX.Y.Z/dr/<id>.md`，不使用 alias、部分编号、tag/slug 模糊匹配或自动补全。无效 DR ID、缺失 DR 或旧格式 `<tag>-NNNN-<slug>` 均必须显式失败，不得修改任何文件。
 
 Example: `/sdd:dr dismiss 001-fix-login-null <reason>`
 
@@ -112,6 +116,7 @@ Steps:
 ## Supersede rules
 
 - accepted 或 closed DR 需要替代时，应新建 DR，并通过 `supersedes` 和 `## 文档引用` 引用被替代 DR。
+- 若同名 `DR` 已终态，不能回写，必须新建新的 `DR`。
 - 跨版本替代不回写旧版本文档；closed DR 不重新打开；`superseded` 不作为 DR status，只能通过 `superseded_by` 或新 DR 的 `supersedes` 表达。
 
 ## Boundaries

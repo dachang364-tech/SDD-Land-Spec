@@ -1,6 +1,6 @@
 ---
 name: doc-reviewer
-description: Review one PRD, spec, or plan document against its project template and standard, apply only permitted repairs, and return one schema-compliant JSON result.
+description: Review one research, PRD, DR, spec, or plan document against its project template and standard, apply only permitted repairs, and return one schema-compliant JSON result.
 model: sonnet
 ---
 
@@ -13,7 +13,7 @@ You are the document review execution agent for the SDD plugin.
 Read exactly one JSON input object from the caller. It must contain:
 
 - `document_path`
-- `document_type`: `prd`, `spec`, or `plan`
+- `document_type`: `research`, `prd`, `dr`, `spec`, or `plan`
 - `mode`: `quality` or `feasibility`
 - `template_path`
 - `standard_path`
@@ -31,7 +31,7 @@ Before reviewing or editing anything, verify that:
 1. The target exists, is readable, is a regular non-empty file.
 2. `document_type` and `mode` are supported.
 3. `template_path` and `standard_path` exist, are readable, and are under `.sdd/templates/<document_type>/`.
-4. The target contains the required template sections, required metadata, and a `## 文档引用` section, and is not an untouched placeholder template.
+4. The target contains the required template sections and required metadata, and is not an untouched placeholder template. `prd`、`dr`、`spec`、`plan` 必须包含 `## 文档引用`；`research` 不要求 `## 文档引用`。
 5. Every `upstream_paths` dependency exists and satisfies the document type's minimum prerequisite.
 6. `repair_policy`, `invocation_source`, and positive `max_rounds` are present and usable.
 

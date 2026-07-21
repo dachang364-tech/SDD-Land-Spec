@@ -10,13 +10,17 @@ assert_file_exists "hooks/hooks.json"
 assert_file_exists "scripts/hooks/pre-tool-use.sh"
 assert_file_exists "scripts/hooks/session-start.sh"
 
-for skill in init new research prd spec plan code dr status doctor archive; do
+for skill in init new research prd spec plan code dr archive; do
   assert_file_exists "skills/$skill/SKILL.md"
 done
 
-assert_file_exists "assets/template-packs/default-backend/prd/template.md"
-assert_file_exists "assets/template-packs/default-backend/spec/feasibility.standard.md"
-assert_file_exists "assets/template-packs/default-backend/plan/quality.standard.md"
+assert_file_exists "assets/template-packs/backend/research/template.md"
+assert_file_exists "assets/template-packs/backend/research/quality.standard.md"
+assert_file_exists "assets/template-packs/backend/prd/template.md"
+assert_file_exists "assets/template-packs/backend/spec/feasibility.standard.md"
+assert_file_exists "assets/template-packs/backend/plan/quality.standard.md"
+assert_file_exists "assets/template-packs/backend/dr/template.md"
+assert_file_exists "assets/template-packs/backend/dr/quality.standard.md"
 
 # No forbidden centralized state implementation.
 # Scan implementation and generated contract files only, so documentation that
@@ -42,5 +46,8 @@ bash tests/test-skill-contracts.sh >/tmp/sdd-skills.out
 assert_contains "/tmp/sdd-skills.out" "PASS: skill contracts"
 
 bash tests/test-dr-filename-contract.sh
+
+assert_file_not_exists "skills/doctor/SKILL.md"
+assert_file_not_exists "skills/status/SKILL.md"
 
 printf 'PASS: MVP acceptance\n'

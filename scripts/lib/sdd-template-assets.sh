@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 sdd_default_template_pack() {
-  printf 'default-backend\n'
+  printf 'backend\n'
 }
 
 sdd_template_pack_root() {
@@ -45,12 +45,13 @@ sdd_copy_template_pack() {
   local target_root
   target_root="$(sdd_project_templates_root "$project_root")"
   mkdir -p "$project_root/.sdd"
-  mkdir -p "$target_root/prd" "$target_root/spec" "$target_root/plan"
+  mkdir -p "$target_root/research" "$target_root/prd" "$target_root/spec" "$target_root/plan" "$target_root/dr"
 
-  # Recovery fills missing packaged assets but never overwrites project-local edits.
+  cp -R -n "$pack_root/research/." "$target_root/research/" || true
   cp -R -n "$pack_root/prd/." "$target_root/prd/" || true
   cp -R -n "$pack_root/spec/." "$target_root/spec/" || true
   cp -R -n "$pack_root/plan/." "$target_root/plan/" || true
+  cp -R -n "$pack_root/dr/." "$target_root/dr/" || true
 }
 
 sdd_require_template_asset() {

@@ -1,6 +1,6 @@
 ---
 name: review
-description: Review and improve PRD, spec, or plan documents. Use for /sdd:review and for post-write review orchestration in /sdd:prd, /sdd:spec, /sdd:plan.
+description: Review and improve research, PRD, DR, spec, or plan documents. Use for /sdd:review and for post-write review orchestration in /sdd:research, /sdd:prd, /sdd:dr, /sdd:spec, /sdd:plan.
 ---
 
 # /sdd:review
@@ -11,17 +11,33 @@ Review a target document using the project runtime template assets in `${CLAUDE_
 
 1. Read `docs/CONSTITUTION.md`; if missing, stop and ask the user to run `/sdd:init`.
 2. Require `${CLAUDE_PROJECT_DIR}/.sdd/templates/` to exist; if missing, stop and ask the user to run `/sdd:init`.
-3. Require the target document to exist and pass the minimum pre-review structure gate.
-4. 如果必要模板或标准文件缺失，直接失败，不降级到 Plugin 内置资产。
+3. 只接受以下路径矩阵内的文档作为 review 目标：
+   - `docs/versions/vX.Y.Z/research/*.md`
+   - `docs/versions/vX.Y.Z/prd/prd.md`
+   - `docs/versions/vX.Y.Z/dr/*.md`
+   - `docs/versions/vX.Y.Z/spec/*.md`
+   - `docs/versions/vX.Y.Z/plan/*.md`
+4. 如果目标路径不在矩阵内，直接失败，并提示“不是受支持的 SDD 文档路径”。
+5. 如果目标文档属于 archived version，直接失败；`/sdd:review` 不能对 archived version 的文档执行任何操作。
+6. Require the target document to exist and pass the minimum pre-review structure gate.
+7. 如果必要模板或标准文件缺失，直接失败，不降级到 Plugin 内置资产。
 
 ## Invocation and structured handoff
+
+`/sdd:review` 同时承担用户手动复审入口与其他 Skill 的内部 review 编排单元。
+
+对外主入口采用：
+
+- 用户提供 `doc-path`
+- 系统自动识别 `document_type`
+- 系统自动决定 mode 或 mode 链路
 
 命令层或手动 `/sdd:review` 必须启动插件提供的 `doc-reviewer` agent。每次调用只评审一个 `mode`，并将以下 JSON 对象作为 agent 唯一的输入载荷。不得以自由文本替代或省略字段：
 
 ```json
 {
   "document_path": "<project-relative path>",
-  "document_type": "prd|spec|plan",
+  "document_type": "research|prd|dr|spec|plan",
   "mode": "quality|feasibility",
   "template_path": "${CLAUDE_PROJECT_DIR}/.sdd/templates/<type>/template.md",
   "standard_path": "${CLAUDE_PROJECT_DIR}/.sdd/templates/<type>/<mode>.standard.md",
@@ -36,14 +52,14 @@ Review a target document using the project runtime template assets in `${CLAUDE_
 
 subagent 必须只返回一个 JSON 对象，且该对象必须通过 `references/reviewer-result.schema.json` 校验；禁止在机器输出前后附加 Markdown、解释或多个 JSON 对象。命令层在读取任何字段、生成用户回执或改变文档状态前必须校验该 JSON：解析失败、schema 校验失败、`document_type` / `mode` 与输入不匹配时，将本次 review 视为 `blocked: true` 的执行失败，保留 `draft` 或原有稳定状态，不得继续审批或状态推进。
 
-`user_receipt` 是最终聚合回执字段。单 mode 调用也必须填入其已执行的 mode；`spec` 和 `plan` 的命令层在全部已执行 mode 的有效结果基础上聚合为唯一回执。
+`user_receipt` 是最终聚合回执字段。单 mode 调用也必须填入其已执行的 mode；`research`、`prd` 与 `dr` 只有 `quality`，`spec` 和 `plan` 的命令层在全部已执行 mode 的有效结果基础上聚合为唯一回执。
 
 ## Structured input
 
 上述 JSON 载荷至少包括：
 
 - 文档路径：`document_path`
-- 文档类型：`document_type`，第一阶段仅支持 `prd`、`spec`、`plan`
+- 文档类型：`document_type`，支持 `research`、`prd`、`dr`、`spec`、`plan`
 - 当前 mode：`mode`，支持 `quality` 或 `feasibility`
 - 模板路径：`template_path`
 - 标准路径：`standard_path`
@@ -52,7 +68,7 @@ subagent 必须只返回一个 JSON 对象，且该对象必须通过 `reference
 - 调用来源：`invocation_source`（自动触发 / 手动复审）
 - 最大循环轮次：`max_rounds`
 
-`template_path` 和 `standard_path` 必须来自当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/`，由 `/sdd:prd`、`/sdd:spec`、`/sdd:plan` 传入运行时模板资产。
+`template_path` 和 `standard_path` 必须来自当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/`，由 `/sdd:research`、`/sdd:prd`、`/sdd:spec`、`/sdd:plan` 传入运行时模板资产。
 
 ## Modes
 
@@ -63,9 +79,11 @@ reviewer 对外保持单入口，对内支持：
 
 默认触发矩阵：
 
+- `research -> quality`
 - `prd -> quality`
-- `spec -> quality + feasibility`
-- `plan -> quality + feasibility`
+- `dr -> quality`
+- `spec -> quality -> feasibility`
+- `plan -> quality -> feasibility`
 
 ## Review admission check
 
@@ -73,7 +91,7 @@ reviewer 对外保持单入口，对内支持：
 
 1. `document_path` 存在、是可读的常规文件且非空。
 2. `document_type` 和 `mode` 属于支持枚举，且 `template_path`、`standard_path` 都位于当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/<document_type>/` 下、存在且可读。
-3. 文档包含该类型模板定义的核心章节、必要元信息和 `## 文档引用` 表；文档不得只是未替换的模板占位稿。
+3. 文档包含该类型模板定义的核心章节和必要元信息；`prd`、`dr`、`spec`、`plan` 必须具备 `## 文档引用` 表，`research` 不要求 `## 文档引用` 表；文档不得只是未替换的模板占位稿。
 4. `upstream_paths` 中声明的依赖存在且满足调用该文档类型的最小前置条件。
 5. `repair_policy`、`invocation_source` 和正整数 `max_rounds` 均存在且可用。
 
@@ -98,8 +116,8 @@ review -> update -> review -> output
 
 ## Repair Policy
 
-- `PRD / Spec` 的低风险问题允许自动修复。
-- `PRD / Spec` 的语义歧义生成候选改写，不直接落正文，等待用户确认。
+- `research`、`PRD`、`Spec` 的低风险问题允许自动修复。
+- `research`、`PRD`、`Spec` 的语义歧义生成候选改写，不直接落正文，等待用户确认。
 - `Plan` 可自动修复任务拆分、执行顺序、测试缺口、验收映射和重复问题。
 - 架构路线切换或其他高风险语义变更只输出建议，不直接改写。
 - 自动修复不得删除用户意图；存在不确定性时必须设置 `requires_user_confirmation`。

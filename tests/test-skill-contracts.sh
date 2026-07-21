@@ -9,18 +9,19 @@ assert_not_matches() {
   ! grep -Eq -- "$pattern" "$path" || fail "expected $path not to match regex: $pattern"
 }
 
-for skill in init new research prd spec plan code dr triage status doctor archive; do
+for skill in init new research prd spec plan code dr triage archive; do
   assert_file_exists "skills/$skill/SKILL.md"
 done
 
 assert_file_exists "skills/review/SKILL.md"
 assert_file_exists "skills/review/references/reviewer-result.schema.json"
 assert_file_exists "agents/doc-reviewer.md"
-assert_contains "skills/review/SKILL.md" "description: Review and improve PRD, spec, or plan documents"
-assert_contains "skills/review/SKILL.md" '`quality`'
-assert_contains "skills/review/SKILL.md" '`feasibility`'
-assert_contains "skills/review/SKILL.md" 'review -> update -> review'
-assert_contains "skills/review/SKILL.md" '单次 subagent 调用内部'
+assert_contains "skills/review/SKILL.md" "description: Review and improve research, PRD, DR, spec, or plan documents"
+assert_contains "skills/review/SKILL.md" 'review -> update -> review -> output'
+assert_contains "skills/review/SKILL.md" '单次 subagent 调用内部完成有限轮次串行闭环'
+assert_contains "skills/review/SKILL.md" 'dr -> quality'
+assert_contains "skills/review/SKILL.md" '`research`、`prd` 与 `dr` 只有 `quality`'
+assert_contains "skills/review/SKILL.md" '`research` 不要求 `## 文档引用` 表'
 assert_contains "skills/review/SKILL.md" '机器输出'
 assert_contains "skills/review/SKILL.md" '用户输出'
 assert_contains "skills/review/references/reviewer-result.schema.json" '"document_type"'
@@ -33,9 +34,11 @@ assert_contains "skills/review/SKILL.md" '必须只返回一个 JSON 对象'
 assert_contains "skills/review/SKILL.md" 'schema 校验失败'
 assert_contains "skills/review/SKILL.md" 'Review admission check'
 assert_contains "skills/review/SKILL.md" '不进入 review loop、不写入目标文档'
-assert_contains "skills/review/SKILL.md" 'agents/doc-reviewer.md'
-
-assert_contains "skills/init/SKILL.md" 'Plugin `${CLAUDE_PLUGIN_ROOT}/assets/template-packs/`'
+assert_contains "skills/review/SKILL.md" '系统自动识别 `document_type`'
+assert_contains "skills/review/SKILL.md" '系统自动决定 mode 或 mode 链路'
+assert_contains "skills/review/SKILL.md" 'docs/versions/vX.Y.Z/dr/*.md'
+assert_contains "skills/review/SKILL.md" '不是受支持的 SDD 文档路径'
+assert_contains "skills/review/SKILL.md" '不能对 archived version 的文档执行任何操作'
 assert_contains "skills/init/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/`'
 assert_contains "skills/prd/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/template.md`'
 assert_contains "skills/spec/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/spec/template.md`'
@@ -43,7 +46,7 @@ assert_contains "skills/plan/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/pl
 assert_contains "skills/review/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/`'
 
 assert_contains "skills/init/SKILL.md" "description: Initialize SDD project structure"
-assert_contains "skills/init/SKILL.md" "docs/CONSTITUTION.md 已存在"
+assert_contains "skills/init/SKILL.md" '`docs/CONSTITUTION.md` 已存在'
 assert_contains "skills/init/SKILL.md" "继续初始化"
 assert_contains "skills/init/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/` 资产'
 assert_contains "skills/init/SKILL.md" '重新执行 `/sdd:init`'
@@ -52,7 +55,7 @@ assert_contains "skills/init/SKILL.md" '如果 `${CLAUDE_PROJECT_DIR}/docs/CONST
 assert_not_contains "skills/init/SKILL.md" '2. Copy `CONSTITUTION.default.md` to `docs/CONSTITUTION.md`.'
 assert_not_contains "skills/init/SKILL.md" "stop and say"
 assert_contains "skills/init/SKILL.md" "docs/versions/"
-assert_contains "skills/init/SKILL.md" "不创建任何版本目录或版本级 state.json"
+assert_contains "skills/init/SKILL.md" '不创建任何版本目录或版本级 `state.json`'
 assert_contains "skills/init/SKILL.md" "允许处于 0 active version 状态"
 assert_contains "skills/init/SKILL.md" "只提示用户安装依赖插件"
 assert_contains "skills/init/SKILL.md" '不执行 `scripts/install-deps.sh`'
@@ -61,7 +64,9 @@ assert_contains "skills/init/SKILL.md" '`spec-kit`'
 assert_not_contains "skills/init/SKILL.md" 'Run `scripts/install-deps.sh`.'
 assert_not_contains "skills/init/SKILL.md" "If dependency installation fails"
 assert_contains "skills/init/SKILL.md" "展示可选模板包列表"
-assert_contains "skills/init/SKILL.md" '将所选模板包中的 `PRD / Spec / Plan` 模板与标准完整展开到 `${CLAUDE_PROJECT_DIR}/.sdd/templates/`'
+assert_contains "skills/init/SKILL.md" '将所选模板包中的 `research / PRD / Spec / Plan / dr` 模板与标准完整展开到 `${CLAUDE_PROJECT_DIR}/.sdd/templates/`'
+assert_contains "skills/init/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/dr/`'
+assert_contains "skills/init/SKILL.md" '若用户选择未实现模板包，直接失败并说明当前不可用'
 assert_contains "skills/init/SKILL.md" '如果用户未显式切换，则使用默认模板包'
 assert_contains "skills/init/SKILL.md" '不要求把“用户选择了哪个模板包”写入项目元数据文件'
 assert_contains "skills/init/SKILL.md" '${CLAUDE_PROJECT_DIR}/.sdd/templates/'
@@ -82,33 +87,34 @@ assert_not_contains "scripts/hooks/session-start.sh" "scripts/install-deps.sh"
 assert_contains "skills/new/SKILL.md" "description: Create the unique active SDD version directory"
 assert_contains "skills/new/SKILL.md" "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
 assert_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/state.json"
-assert_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/specs/"
+assert_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/research/"
+assert_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/prd/"
+assert_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/spec/"
+assert_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/plan/"
+assert_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/dr/"
 assert_contains "skills/new/SKILL.md" '"state": "active"'
 assert_contains "skills/new/SKILL.md" "扫描 docs/versions/v*/state.json"
+assert_not_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/specs/"
+assert_not_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/plans/"
+assert_not_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/decisions/"
 
 assert_contains "skills/research/SKILL.md" "description: Create project-level SDD research notes"
-assert_file_exists "skills/research/references/research.md.tmpl"
+assert_file_not_exists "skills/research/references/research.md.tmpl"
+assert_contains "skills/research/SKILL.md" 'docs/versions/vX.Y.Z/research/<type>-<YYYY-MM-DD>-<slug>.md'
+assert_contains "skills/research/SKILL.md" 'research 文档没有状态机制'
+assert_contains "skills/research/SKILL.md" '同名文档存在时，用户确认后可直接更新'
+assert_not_contains "skills/research/SKILL.md" 'docs/requirements/'
 
 assert_contains "skills/prd/SKILL.md" "description: Create the product requirements document"
 assert_file_not_exists "skills/prd/references/prd.md.tmpl"
 assert_not_contains "skills/prd/SKILL.md" 'skills/prd/references/prd.md.tmpl'
-
-assert_contains "skills/prd/SKILL.md" "docs/versions/vX.Y.Z/prd.md"
-assert_contains "skills/prd/SKILL.md" "扫描 docs/versions/v*/state.json"
-assert_contains "skills/prd/SKILL.md" "project:requirements/<file>.md"
-assert_contains "skills/prd/SKILL.md" "## 文档引用"
-assert_contains "skills/prd/SKILL.md" '不写 `- 状态：'
+assert_contains "skills/prd/SKILL.md" 'docs/versions/vX.Y.Z/prd/prd.md'
+assert_contains "skills/prd/SKILL.md" '如果 `prd/prd.md` 已存在，默认不直接覆盖；必须先与用户确认，再更新同一文件。'
+assert_contains "skills/prd/SKILL.md" '`prd` 不走 `DR` 变更门。'
 assert_contains "skills/prd/SKILL.md" '只读取 `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/template.md`'
 assert_contains "skills/prd/SKILL.md" '如果 `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/` 下必要文件缺失，则直接失败'
 assert_contains "skills/prd/SKILL.md" '/sdd:review` 的 `doc-reviewer` agent JSON 调用合同'
 assert_contains "skills/prd/SKILL.md" '用户确认并完成有效复审前，不得绕过该结果推进流程'
-assert_not_contains "skills/prd/SKILL.md" 'skills/prd/references/prd.md.tmpl'
-
-assert_contains "skills/research/SKILL.md" "docs/requirements/<topic-slug>-<yyyy-mm>.md"
-assert_contains "skills/research/SKILL.md" "不要求 active version"
-assert_contains "skills/research/SKILL.md" "不读取或修改 state.json"
-assert_contains "skills/research/references/research.md.tmpl" "# Research：<topic>"
-assert_contains "skills/research/references/research.md.tmpl" "## 7. 可引用结论"
 
 assert_no_legacy_docs_v_paths() {
   local path="$1"
@@ -118,7 +124,6 @@ assert_no_legacy_docs_v_paths() {
 }
 
 for template in \
-  "skills/plan/references/plan.md.tmpl" \
   "skills/dr/references/dr.md.tmpl"; do
   assert_not_contains "$template" "path/to/"
 done
@@ -126,11 +131,11 @@ done
 assert_contains "skills/spec/SKILL.md" "description: Create or revise the functional specification"
 assert_file_not_exists "skills/spec/references/spec.md.tmpl"
 assert_not_contains "skills/spec/SKILL.md" 'skills/spec/references/spec.md.tmpl'
-assert_contains "skills/spec/SKILL.md" "docs/versions/vX.Y.Z/specs/<spec-name>.md"
+assert_contains "skills/spec/SKILL.md" "docs/versions/vX.Y.Z/spec/<spec-name>.md"
 assert_contains "skills/spec/SKILL.md" "扫描 docs/versions/v*/state.json"
 assert_contains "skills/spec/SKILL.md" "## 文档引用"
-assert_contains "skills/spec/SKILL.md" "[prd.md](../prd.md)"
-assert_contains "skills/spec/SKILL.md" "v0.2.0:specs/archive.md"
+assert_contains "skills/spec/SKILL.md" "[prd.md](../prd/prd.md)"
+assert_contains "skills/spec/SKILL.md" "v0.2.0:spec/archive.md"
 assert_contains "skills/spec/SKILL.md" '用户确认审批后，将状态切换为 `approved`；reviewer 的候选改写或确认项必须先由用户明确确认、写回并重新复审，普通审批不得绕过。'
 assert_contains "skills/spec/SKILL.md" "closed_reason: document-updated"
 assert_contains "skills/spec/SKILL.md" 'code-class DR 必须保持 `accepted`'
@@ -145,9 +150,10 @@ assert_contains "skills/spec/SKILL.md" '普通审批不得绕过'
 assert_not_contains "skills/spec/SKILL.md" '用户确认后，将状态切换为 `approved`'
 
 assert_contains "skills/plan/SKILL.md" "description: Create an implementation plan from approved spec or accepted code-class DR"
-assert_contains "skills/plan/SKILL.md" "docs/versions/vX.Y.Z/plans/NNN-<slug>.md"
-assert_contains "skills/plan/SKILL.md" "docs/versions/vX.Y.Z/plans/NNN-<dr-id>.md"
-assert_contains "skills/plan/SKILL.md" "If \`<work-item>\` matches \`^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(fix|feat|chg|arch)-[a-z0-9]+(-[a-z0-9]+)*$\`, use code-class DR mode."
+assert_contains "skills/plan/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/template.md`'
+assert_contains "skills/plan/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/quality.standard.md`'
+assert_contains "skills/plan/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/feasibility.standard.md`'
+assert_not_contains "skills/plan/SKILL.md" 'skills/plan/references/plan.md.tmpl'
 assert_contains "skills/plan/SKILL.md" "If \`<work-item>\` matches \`^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(spec|doc|typo)-[a-z0-9]+(-[a-z0-9]+)*$\`, refuse"
 assert_contains "skills/plan/SKILL.md" "If \`<work-item>\` is DR-like (starts with three digits and a hyphen) but is not a valid full DR ID"
 assert_contains "skills/plan/SKILL.md" "Do not fall through to spec mode."
@@ -156,14 +162,9 @@ assert_contains "skills/plan/SKILL.md" "## 文档引用"
 assert_contains "skills/plan/SKILL.md" 'plan 引用 spec 时，关系应为 `implements`'
 assert_contains "skills/plan/SKILL.md" '不得使用 `modifies`、`replaces`、`deprecates`'
 assert_contains "skills/plan/SKILL.md" "Self-Review"
-assert_file_exists "skills/plan/references/plan.md.tmpl"
-assert_contains "skills/plan/references/plan.md.tmpl" "## 文档引用"
-assert_contains "skills/plan/references/plan.md.tmpl" "| 关系 | 当前范围 | 目标文档 | 目标标识 | 说明 |"
-assert_contains "skills/plan/references/plan.md.tmpl" "| 未声明。 | - | - | - | - |"
+assert_file_not_exists "skills/plan/references/plan.md.tmpl"
 assert_contains "skills/plan/SKILL.md" "引用同版本文档时，只写相对 Markdown link，不写版本 locator。"
-assert_contains "skills/plan/SKILL.md" '引用跨版本文档时，必须同时写相对 Markdown link 和版本 locator，例如 `v0.2.0:plans/001-archive.md`。'
-assert_contains "skills/plan/references/plan.md.tmpl" "## 6. Implementation Tasks"
-assert_contains "skills/plan/references/plan.md.tmpl" "## 7. Self-Review"
+assert_contains "skills/plan/SKILL.md" '引用跨版本文档时，必须同时写相对 Markdown link 和版本 locator，例如 `v0.2.0:plan/001-archive.md`。'
 assert_contains "skills/plan/SKILL.md" '只读取 `${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/` 下的模板与标准'
 assert_contains "skills/plan/SKILL.md" '生成必须使用 `${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/template.md`'
 assert_contains "skills/plan/SKILL.md" '读取 `${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/quality.standard.md`'
@@ -178,7 +179,7 @@ assert_contains "skills/plan/SKILL.md" '确认项写回后必须重新复审'
 assert_not_contains "skills/plan/SKILL.md" 'skills/plan/references/plan.md.tmpl'
 
 assert_contains "skills/code/SKILL.md" "description: Execute an SDD implementation plan or eligible lightweight fix DR"
-assert_contains "skills/code/SKILL.md" "docs/versions/vX.Y.Z/plans/NNN-*.md"
+assert_contains "skills/code/SKILL.md" "docs/versions/vX.Y.Z/plan/NNN-*.md"
 assert_contains "skills/code/SKILL.md" "扫描 docs/versions/v*/state.json"
 assert_contains "skills/code/SKILL.md" '基于 `## 文档引用` 验证 plan'
 assert_contains "skills/code/SKILL.md" '高质量模式：`superpowers:subagent-driven-development`'
@@ -226,7 +227,7 @@ assert_contains "skills/dr/SKILL.md" "doc | document | maybe | no | no"
 assert_contains "skills/dr/SKILL.md" "typo | document | no | no | no"
 assert_contains "skills/dr/SKILL.md" "spec_change: no\`、\`plan_required: no\`：运行 \`/sdd:code <id>\`"
 assert_contains "skills/dr/SKILL.md" "class: document\`：运行 \`/sdd:spec\` 或对应文档 Skill，不进入 \`/sdd:plan\`"
-assert_contains "skills/dr/SKILL.md" "docs/versions/vX.Y.Z/decisions/NNN-<tag>-<slug>.md"
+assert_contains "skills/dr/SKILL.md" "docs/versions/vX.Y.Z/dr/NNN-<tag>-<slug>.md"
 assert_contains "skills/dr/SKILL.md" "Generate version-local increasing DR number \`NNN\`; if none, use \`001\`."
 assert_contains "skills/dr/SKILL.md" "Fail DR creation when the next DR number would exceed \`999\`."
 assert_contains "skills/dr/SKILL.md" "Slugify title into a non-empty lowercase kebab-case slug using only ASCII lowercase letters, digits, and hyphens."
@@ -261,27 +262,15 @@ assert_contains "skills/dr/references/dr.md.tmpl" "## 6. 验证方式"
 assert_contains "skills/dr/references/dr.md.tmpl" "| 资产 | 章节 / ID |"
 
 assert_contains "skills/triage/SKILL.md" "description: Triage user questions after implementation, review, or testing"
-assert_contains "skills/triage/SKILL.md" "不创建 DR"
-assert_contains "skills/triage/SKILL.md" "不修改 spec"
-assert_contains "skills/triage/SKILL.md" "不修改 plan"
-assert_contains "skills/triage/SKILL.md" "不修改 code"
-assert_contains "skills/triage/SKILL.md" "不改变 plan 状态"
-assert_contains "skills/triage/SKILL.md" "不替用户选择后续路径"
-assert_contains "skills/triage/SKILL.md" "必须等待用户确认后"
-assert_contains "skills/triage/SKILL.md" "不得一次性读取整个 active version 目录"
-assert_contains "skills/triage/SKILL.md" '不得默认读取所有 `plans/*.md`'
-assert_contains "skills/triage/SKILL.md" '不得默认读取所有 `decisions/*.md`'
-assert_contains "skills/triage/SKILL.md" "不得默认读取代码"
-assert_contains "skills/triage/SKILL.md" "/sdd:triage --deep"
-assert_contains "skills/triage/SKILL.md" "code implementation issue"
-assert_contains "skills/triage/SKILL.md" "spec 和 plan 基本正确，但当前代码实现偏离预期"
-assert_contains "skills/triage/SKILL.md" "plan issue"
-assert_contains "skills/triage/SKILL.md" "spec issue"
-assert_contains "skills/triage/SKILL.md" "new requirement / change request"
+assert_contains "skills/triage/SKILL.md" "does not execute the chosen path"
+assert_contains "skills/triage/SKILL.md" "扫描 docs/versions/v*/state.json"
+assert_contains "skills/triage/SKILL.md" "prd existence"
+assert_contains "skills/triage/SKILL.md" "spec/*.md"
+assert_contains "skills/triage/SKILL.md" "plan/*.md"
+assert_contains "skills/triage/SKILL.md" "dr/*.md"
+assert_contains "skills/triage/SKILL.md" "reference issue"
 assert_contains "skills/triage/SKILL.md" "unclear, needs user choice"
-assert_contains "skills/triage/SKILL.md" "置信度：low | medium | high"
-assert_contains "skills/triage/SKILL.md" "已读取依据"
-assert_contains "skills/triage/SKILL.md" "请确认你要走哪条路径。"
+assert_contains "skills/triage/SKILL.md" "/sdd:triage --deep"
 assert_contains "skills/triage/SKILL.md" "explain only，不创建 DR"
 assert_contains "skills/triage/SKILL.md" "/sdd:dr fix <title>"
 assert_contains "skills/triage/SKILL.md" "/sdd:plan <id>"
@@ -296,90 +285,40 @@ assert_contains "README.md" "用户自行安装"
 assert_contains "README.md" "可选辅助脚本"
 assert_contains "README.md" '`/sdd:init` 不会自动安装依赖插件'
 assert_contains "README.md" 'scripts/install-deps.sh'
-assert_contains "README.md" 'docs/versions/vX.Y.Z/decisions/NNN-<tag>-<slug>.md'
-assert_contains "README.md" '`/sdd:dr accept 001-fix-login-null`'
-assert_contains "README.md" '`plans/002-001-fix-login-null.md`'
-assert_not_contains "README.md" 'docs/versions/vX.Y.Z/decisions/<tag>-NNNN-<slug>.md'
-assert_not_contains "README.md" '[feat-0001-example](../decisions/feat-0001-example.md)'
+assert_contains "README.md" '生成版本内调研资料：`docs/versions/vX.Y.Z/research/*.md`'
+assert_contains "README.md" '生成无状态 PRD：`docs/versions/vX.Y.Z/prd/prd.md`'
+assert_contains "README.md" '生成 Functional Specification：`docs/versions/vX.Y.Z/spec/*.md`'
+assert_contains "README.md" '生成 Implementation Plan：`docs/versions/vX.Y.Z/plan/NNN-*.md`'
+assert_contains "README.md" 'docs/versions/vX.Y.Z/dr/NNN-<tag>-<slug>.md'
+assert_contains "README.md" '`plan/002-001-fix-login-null.md`'
+assert_not_contains "README.md" '/sdd:status'
+assert_not_contains "README.md" '/sdd:doctor'
+assert_not_contains "README.md" 'docs/versions/vX.Y.Z/decisions/NNN-<tag>-<slug>.md'
+assert_not_contains "README.md" 'docs/versions/vX.Y.Z/prd.md'
+assert_not_contains "README.md" 'docs/versions/vX.Y.Z/specs/spec.md'
+assert_not_contains "README.md" 'docs/versions/vX.Y.Z/plans/NNN-*.md'
 
-assert_contains "skills/status/SKILL.md" "description: Show current SDD version status and next-step guidance"
-assert_contains "skills/status/SKILL.md" "扫描 docs/versions/v*/state.json"
-assert_contains "skills/status/SKILL.md" "Active version：未发现"
-assert_contains "skills/status/SKILL.md" "/sdd:new vX.Y.Z"
-assert_contains "skills/status/SKILL.md" "发现多个 active version"
-
-assert_contains "skills/doctor/SKILL.md" "description: Diagnose SDD plugin installation and project consistency"
-assert_contains "skills/doctor/SKILL.md" 'At execution start, read `docs/CONSTITUTION.md`.'
-assert_contains "skills/doctor/SKILL.md" "skills/triage/SKILL.md"
-assert_contains "skills/doctor/SKILL.md" "skills/research/SKILL.md"
-assert_contains "skills/doctor/SKILL.md" "scripts/lib/sdd-common.sh"
-assert_contains "skills/doctor/SKILL.md" "scripts/lib/sdd-references.sh"
-assert_contains "skills/doctor/SKILL.md" "scripts/lib/sdd-template-assets.sh"
-assert_contains "skills/doctor/SKILL.md" "skills/review/SKILL.md"
-assert_contains "skills/doctor/SKILL.md" "skills/review/references/reviewer-result.schema.json"
-assert_contains "skills/doctor/SKILL.md" "agents/doc-reviewer.md"
-assert_contains "skills/doctor/SKILL.md" "assets/template-packs/default-backend/spec/feasibility.standard.md"
-assert_contains "skills/doctor/SKILL.md" "scripts/hooks/pre-tool-use.sh"
-assert_contains "skills/doctor/SKILL.md" "strip the leading \`plan number\` and hyphen"
-assert_contains "skills/doctor/SKILL.md" "the remaining plan basename must equal the full \`DR ID\`"
-assert_contains "skills/doctor/SKILL.md" "A DR-like plan basename with an invalid DR ID, a missing exact \`decisions/<dr-id>.md\`, or legacy \`<tag>-NNNN-<slug>\` form is an \`ERROR\`"
-assert_not_contains "skills/doctor/SKILL.md" "plan filename minus \`NNN-\` equals DR slug"
-assert_contains "skills/doctor/SKILL.md" "docs/versions/"
-assert_contains "skills/doctor/SKILL.md" "state.json.version 必须等于版本目录名"
-assert_contains "skills/doctor/SKILL.md" "旧草案结构"
-assert_contains "skills/doctor/SKILL.md" "docs/vX.Y.Z/"
-assert_contains "skills/doctor/SKILL.md" "## 文档引用"
-assert_contains "skills/doctor/SKILL.md" "docs/archive/INDEX.md"
-assert_contains "skills/doctor/SKILL.md" "sdd_refs_validate <project-root> <source.md>"
-assert_contains "skills/doctor/SKILL.md" "blocking"
-assert_contains "skills/doctor/SKILL.md" "warning"
-assert_contains "skills/doctor/SKILL.md" '.sdd/templates/'
-assert_contains "skills/doctor/SKILL.md" 'prd/template.md'
-assert_contains "skills/doctor/SKILL.md" 'prd/quality.standard.md'
-assert_contains "skills/doctor/SKILL.md" 'spec/template.md'
-assert_contains "skills/doctor/SKILL.md" 'spec/quality.standard.md'
-assert_contains "skills/doctor/SKILL.md" 'spec/feasibility.standard.md'
-assert_contains "skills/doctor/SKILL.md" 'plan/template.md'
-assert_contains "skills/doctor/SKILL.md" 'plan/quality.standard.md'
-assert_contains "skills/doctor/SKILL.md" 'plan/feasibility.standard.md'
-assert_contains "skills/doctor/SKILL.md" '缺少项目模板资产'
-assert_contains "skills/doctor/SKILL.md" '缺少 doc-reviewer agent'
-assert_contains "skills/doctor/SKILL.md" '/sdd:review'
+assert_file_not_exists "skills/status/SKILL.md"
+assert_file_not_exists "skills/doctor/SKILL.md"
 
 assert_contains "skills/archive/SKILL.md" "description: Archive the current active SDD version"
-assert_contains "skills/archive/SKILL.md" "不移动版本目录"
-assert_contains "skills/archive/SKILL.md" "docs/versions/vX.Y.Z/ARCHIVE.md"
-assert_contains "skills/archive/SKILL.md" "docs/archive/INDEX.md"
-assert_contains "skills/archive/SKILL.md" '所有 `specs/*.md` 的 Markdown 头部状态必须为 `approved`'
-assert_contains "skills/archive/SKILL.md" '所有 `plans/*.md` 的 Markdown 头部状态必须为 `done`'
-assert_contains "skills/archive/SKILL.md" '所有 `decisions/*.md` 的 Markdown 头部状态必须为 `closed`'
-assert_contains "skills/archive/SKILL.md" '"state": "archived"'
-assert_contains "skills/archive/SKILL.md" "## 6. 文档引用摘要"
-assert_contains "skills/archive/SKILL.md" 'prd.md` 缺失不阻止归档'
-assert_contains "skills/archive/SKILL.md" '只读取 `## 文档引用` 表，不阅读全文'
-assert_contains "skills/archive/SKILL.md" "scripts/lib/sdd-references.sh"
-assert_contains "skills/archive/SKILL.md" "sdd_refs_validate <project-root> <source.md>"
-assert_contains "skills/archive/SKILL.md" "sdd_refs_extract_archive <project-root> <version-dir> <cross.md> <strong.md>"
-assert_contains "skills/archive/SKILL.md" "blocking"
-assert_contains "skills/archive/SKILL.md" "warning"
-assert_contains "skills/archive/SKILL.md" "level"
-assert_contains "skills/archive/SKILL.md" "code"
-assert_contains "skills/archive/SKILL.md" "source"
-assert_contains "skills/archive/SKILL.md" "reason"
-assert_contains "skills/archive/SKILL.md" "../versions/vX.Y.Z/ARCHIVE.md"
+assert_contains "skills/archive/SKILL.md" "description: Archive the current active SDD version"
+assert_contains "skills/archive/SKILL.md" 'active version 的 `spec/*.md` 至少一份。'
+assert_contains "skills/archive/SKILL.md" '所有 `spec/*.md` 的 Markdown 头部状态必须为 `approved`'
+assert_contains "skills/archive/SKILL.md" '所有 `plan/*.md` 的 Markdown 头部状态必须为 `done`'
+assert_contains "skills/archive/SKILL.md" '所有 `dr/*.md` 的 Markdown 头部状态必须为 `closed`'
+assert_contains "skills/archive/SKILL.md" '`prd/prd.md` 缺失不阻止归档'
+assert_contains "skills/archive/SKILL.md" '枚举 active version 内现有的 `prd/prd.md`、`spec/*.md`、`plan/*.md`、`dr/*.md`'
 
 assert_contains "README.md" "class / spec_change / plan_required / code_required"
 assert_contains "README.md" "spec-changing code-class DR"
 assert_contains "README.md" 'fix DR 通常使用 `spec_change: no`'
 assert_contains "README.md" '创建唯一活跃版本目录 `docs/versions/vX.Y.Z/`'
-assert_contains "README.md" '生成无状态 PRD：`docs/versions/vX.Y.Z/prd.md`'
-assert_contains "README.md" '生成 Functional Specification：`docs/versions/vX.Y.Z/specs/spec.md`'
-assert_contains "README.md" '生成 Implementation Plan：`docs/versions/vX.Y.Z/plans/NNN-*.md`'
+assert_contains "README.md" '生成无状态 PRD：`docs/versions/vX.Y.Z/prd/prd.md`'
+assert_contains "README.md" '生成 Functional Specification：`docs/versions/vX.Y.Z/spec/*.md`'
+assert_contains "README.md" '生成 Implementation Plan：`docs/versions/vX.Y.Z/plan/NNN-*.md`'
 assert_contains "README.md" 'docs/versions/vX.Y.Z/state.json'
-assert_contains "README.md" 'docs/versions/v0.2.0/specs/'
-assert_contains "README.md" 'docs/versions/vX.Y.Z/specs/spec.md'
-assert_contains "README.md" 'docs/versions/vX.Y.Z/plans/NNN-<slug>.md'
-assert_contains "README.md" 'specs/*.md` 中至少一个目标 Functional Specification 状态为 `approved`'
+assert_contains "README.md" 'docs/versions/v0.2.0/research/'
 assert_contains "README.md" 'docs/versions/vX.Y.Z/ARCHIVE.md'
 assert_contains "README.md" 'docs/archive/INDEX.md'
 assert_contains "README.md" '.sdd/templates/'
@@ -393,25 +332,18 @@ assert_not_contains "README.md" 'docs/vX.Y.Z/plans/NNN-feature-*.md'
 assert_not_contains "README.md" 'docs/versions/vX.Y.Z/plans/NNN-feature-*.md'
 assert_not_contains "README.md" 'sdd-plugin-mvp-workflow'
 assert_no_legacy_docs_v_paths "README.md"
-assert_contains "TESTING.md" 'mkdir -p "$tmp/docs/versions/v0.1.0/specs" "$tmp/docs/versions/v0.1.0/plans" "$tmp/docs/versions/v0.1.0/decisions"'
-assert_contains "TESTING.md" 'docs/versions/v0.1.0/specs/spec.md'
-assert_contains "TESTING.md" 'docs/versions/v0.1.0/prd.md'
-assert_contains "TESTING.md" 'docs/versions/v0.1.0/plans/001-login.md'
-assert_contains "TESTING.md" 'docs/versions/v0.2.0/state.json'
-assert_contains "TESTING.md" 'docs/versions/v0.2.0/specs/'
-assert_contains "TESTING.md" '`/sdd:init` 创建 `docs/CONSTITUTION.md`、`docs/requirements/`、`docs/versions/`、`docs/archive/`。'
-assert_contains "TESTING.md" '`/sdd:init` 不自动安装依赖插件'
-assert_contains "TESTING.md" '`/sdd:init` 会提示用户手动安装 `superpowers` 与 `spec-kit`'
-assert_contains "TESTING.md" '模板包选择'
-assert_contains "TESTING.md" '.sdd/templates/'
-assert_contains "TESTING.md" 'agents/doc-reviewer.md'
-assert_contains "TESTING.md" 'reviewer'
-assert_not_contains "TESTING.md" 'mkdir -p "$tmp/docs/v0.1.0/specs" "$tmp/docs/v0.1.0/plans" "$tmp/docs/v0.1.0/decisions"'
-assert_not_contains "TESTING.md" 'docs/v0.1.0/specs/spec.md'
-assert_not_contains "TESTING.md" 'docs/v0.1.0/plans/001-feature-login.md'
-assert_not_contains "TESTING.md" 'docs/versions/v0.1.0/plans/001-feature-login.md'
-assert_not_contains "TESTING.md" 'sdd-plugin-mvp-workflow'
-assert_no_legacy_docs_v_paths "TESTING.md"
+assert_contains "TESTING.md" 'mkdir -p "$tmp/docs/versions/v0.1.0/spec" "$tmp/docs/versions/v0.1.0/plan" "$tmp/docs/versions/v0.1.0/dr" "$tmp/docs/versions/v0.1.0/prd"'
+assert_contains "TESTING.md" 'docs/versions/v0.1.0/spec/spec.md'
+assert_contains "TESTING.md" 'docs/versions/v0.1.0/prd/prd.md'
+assert_contains "TESTING.md" 'docs/versions/v0.1.0/plan/001-login.md'
+assert_contains "TESTING.md" 'research / prd / dr / spec / plan'
+assert_contains "TESTING.md" 'archived version 下的文档不能执行 `/sdd:review`'
+assert_contains "TESTING.md" '`/sdd:review <doc-path>` 会按路径自动识别 `research / prd / dr / spec / plan` 类型'
+assert_contains "TESTING.md" '`/sdd:code <plan>` 依赖 plan 的 `## 文档引用` 闭包仍然完整'
+assert_not_contains "TESTING.md" '/sdd:status'
+assert_not_contains "TESTING.md" '/sdd:doctor'
+assert_not_contains "TESTING.md" 'docs/versions/v0.1.0/specs/spec.md'
+assert_not_contains "TESTING.md" 'docs/versions/v0.1.0/plans/001-login.md'
 assert_contains "CONSTITUTION.default.md" '代码类 DR 默认使用 `plan_required: yes`'
 assert_contains "CONSTITUTION.default.md" '文档类 DR 必须使用 `plan_required: no` 和 `code_required: no`'
 assert_contains "CONSTITUTION.default.md" "代码类 DR 在 spec 修订完成后不得关闭"

@@ -9,7 +9,7 @@ assert_file_exists "agents/doc-reviewer.md"
 assert_contains "agents/doc-reviewer.md" 'name: doc-reviewer'
 assert_contains "agents/doc-reviewer.md" 'description:'
 assert_contains "agents/doc-reviewer.md" 'document_path'
-assert_contains "agents/doc-reviewer.md" 'document_type'
+assert_contains "agents/doc-reviewer.md" 'research'
 assert_contains "agents/doc-reviewer.md" 'standard_path'
 assert_contains "agents/doc-reviewer.md" 'reviewer-result.schema.json'
 assert_contains "agents/doc-reviewer.md" '"blocked": true'
@@ -40,7 +40,7 @@ from pathlib import Path
 
 schema = json.loads(Path("skills/review/references/reviewer-result.schema.json").read_text())
 properties = schema["properties"]
-assert properties["document_type"]["enum"] == ["prd", "spec", "plan"]
+assert properties["document_type"]["enum"] == ["research", "prd", "dr", "spec", "plan"]
 assert properties["mode"]["enum"] == ["quality", "feasibility"]
 assert schema["additionalProperties"] is False
 receipt = properties["user_receipt"]
@@ -57,7 +57,7 @@ assert receipt["required"] == [
 assert receipt["properties"]["executed_modes"]["minItems"] == 1
 
 valid = {
-    "document_type": "spec",
+    "document_type": "dr",
     "mode": "quality",
     "passed": True,
     "blocked": False,
@@ -71,7 +71,7 @@ valid = {
     "reached_max_iterations": False,
     "stopped_for_no_improvement": False,
     "user_receipt": {
-        "document_type": "spec",
+        "document_type": "dr",
         "executed_modes": ["quality"],
         "iterations": 1,
         "auto_repairs_summary": [],
