@@ -52,10 +52,10 @@ description: 创建或更新功能规格文档。用户执行 `/sdd:spec` 时使
 ## Review
 
 - 写入前显式判断目标文件：目标文件不存在：视为 create；存在：视为 update。
-- create：写入后必须显式触发 `/sdd:review <doc-path>` 或等价共享 runner 流程；该流程调用 `scripts/lib/sdd-review-runner.sh` 这个共享 review runner，并沿用 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同。拿不到有效结果不能继续后续流程；新建文档拿不到有效 review 结果时保持 `draft`。
+- create：文档生成仍由当前 Skill 负责；成功写入后由 `PostToolUse Hook` 触发 `scripts/lib/sdd-review-runner.sh` 这个共享 review runner。`spec` 的 runner mode 为 `quality -> feasibility`；新建文档拿不到有效 review 结果时保持 `draft`；若被阻断、需要用户确认或项目模板资产缺失，也保持 `draft`，不得绕过 gate 推进流程。
 - update：修改已有文档时，不自动执行 review。回执统一为“文档已更新；如需复审，请执行 `/sdd:review <doc-path>`”。
-- `PostToolUse Hook` 仅保留运行时兼容合同，不是本 Skill 的 review 主触发职责。
-- `spec` 自动按顺序触发 `quality -> feasibility`；每个 mode 的机器结果均须先通过 schema 校验。
+- 当前 Skill 不直接调用 `doc-reviewer`，也不直接顺序触发 `quality -> feasibility`；自动 review 的触发责任下沉到 `PostToolUse Hook`，手工复审入口保留为 `/sdd:review`。
+- `spec` 的共享 runner 自动按顺序触发 `quality -> feasibility`；每个 mode 的机器结果均须先通过 schema 校验。
 - `quality` JSON 无效、admission check 失败、`blocked: true` 或 `requires_user_confirmation: true` 时，停止，不执行 `feasibility`，聚合已执行结果为一份回执，并保留 `draft`。
 - 只有 `quality` 的有效结果未阻断且无需确认时才执行 `feasibility`。`feasibility` 默认弱阻断：未阻断的风险只进入聚合回执；若它返回 `blocked: true`、需要确认或无效 JSON，则保留 `draft`。
 - 仅在所有应执行 reviewer 结果有效、未阻断且无需用户确认后，才请求用户审批或提出修改意见。
@@ -64,7 +64,7 @@ description: 创建或更新功能规格文档。用户执行 `/sdd:spec` 时使
 ## DR 状态处理
 
 - 关联 document-class DR 且本次修订完成该 DR：用户确认 spec 后可关闭该 DR，设置 `closed_reason: document-updated` 并写入 `closed_at`；document-class DR 不输出 `/sdd:plan` 或 `/sdd:code`。
-- 关联 code-class DR：spec 变为 `approved`` 后，该 code-class DR 必须保持 `accepted`，不得因 spec 修订完成而关闭。
+- 关联 code-class DR：spec 变为 `approved` 后，该 code-class DR 必须保持 `accepted`，不得因 spec 修订完成而关闭。
 - code-class DR 下一步按 `plan_required` 输出：`plan_required: yes` → `/sdd:plan <dr-id>`；`plan_required: no` → `/sdd:code <dr-id>`。
 
 ## 边界
