@@ -159,9 +159,9 @@ assert_contains "skills/plan/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/pl
 assert_contains "skills/plan/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/quality.standard.md`'
 assert_contains "skills/plan/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/feasibility.standard.md`'
 assert_not_contains "skills/plan/SKILL.md" 'skills/plan/references/plan.md.tmpl'
-assert_contains "skills/plan/SKILL.md" "If \`<work-item>\` matches \`^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(spec|doc|typo)-[a-z0-9]+(-[a-z0-9]+)*$\`, refuse"
-assert_contains "skills/plan/SKILL.md" "If \`<work-item>\` is DR-like (starts with three digits and a hyphen) but is not a valid full DR ID"
-assert_contains "skills/plan/SKILL.md" "Do not fall through to spec mode."
+assert_contains "skills/plan/SKILL.md" '如果 `<work-item>` 匹配 `^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(spec|doc|typo)-[a-z0-9]+(-[a-z0-9]+)*$`，直接拒绝：`文档类 DR 不生成 Implementation Plan，不执行 /sdd:code。`'
+assert_contains "skills/plan/SKILL.md" '如果 `<work-item>` 看起来像 DR（以三位数字和连字符开头）'
+assert_contains "skills/plan/SKILL.md" '不得落回 spec mode。'
 assert_contains "skills/plan/SKILL.md" "扫描 docs/versions/v*/state.json"
 assert_contains "skills/plan/SKILL.md" "## 文档引用"
 assert_contains "skills/plan/SKILL.md" 'plan 引用 spec 时，关系应为 `implements`'
@@ -223,7 +223,7 @@ assert_contains "skills/dr/SKILL.md" "code_required"
 assert_contains "skills/dr/SKILL.md" "fix | code | no | yes | yes"
 assert_contains "skills/dr/SKILL.md" "简单实现 bug 可以由用户选择轻量 fix 流程"
 assert_contains "skills/dr/SKILL.md" "plan_required: no\`：运行 \`/sdd:code <id>\`"
-assert_contains "skills/dr/SKILL.md" "after accept, next step depends on \`plan_required\` and may be \`/sdd:plan <id>\` or \`/sdd:code <id>\`"
+assert_contains "skills/dr/SKILL.md" "之后根据 \`plan_required\` 进入 \`/sdd:plan <id>\` 或 \`/sdd:code <id>\`"
 assert_contains "skills/dr/SKILL.md" "feat | code | yes | yes | yes"
 assert_contains "skills/dr/SKILL.md" "chg | code | yes | yes | yes"
 assert_contains "skills/dr/SKILL.md" "arch | code | maybe | yes | yes"
@@ -233,9 +233,9 @@ assert_contains "skills/dr/SKILL.md" "typo | document | no | no | no"
 assert_contains "skills/dr/SKILL.md" "spec_change: no\`、\`plan_required: no\`：运行 \`/sdd:code <id>\`"
 assert_contains "skills/dr/SKILL.md" "class: document\`：运行 \`/sdd:spec\` 或对应文档 Skill，不进入 \`/sdd:plan\`"
 assert_contains "skills/dr/SKILL.md" "docs/versions/vX.Y.Z/dr/NNN-<tag>-<slug>.md"
-assert_contains "skills/dr/SKILL.md" "Generate version-local increasing DR number \`NNN\`; if none, use \`001\`."
-assert_contains "skills/dr/SKILL.md" "Fail DR creation when the next DR number would exceed \`999\`."
-assert_contains "skills/dr/SKILL.md" "Slugify title into a non-empty lowercase kebab-case slug using only ASCII lowercase letters, digits, and hyphens."
+assert_contains "skills/dr/SKILL.md" "生成版本内递增 DR 编号 \`NNN\`；如果还没有 DR，则使用 \`001\`。"
+assert_contains "skills/dr/SKILL.md" "若下一个编号会超过 \`999\`，则直接失败。"
+assert_contains "skills/dr/SKILL.md" "将标题 slugify 为非空 lowercase kebab-case"
 assert_contains "skills/dr/SKILL.md" "\`DR ID\` 指去掉 \`.md\` 后的完整 DR basename"
 assert_contains "skills/dr/SKILL.md" "标题标识格式固定为 \`DR-NNN-<tag>\`"
 assert_contains "skills/dr/SKILL.md" "\`/sdd:dr accept 001-fix-login-null\`"
@@ -365,7 +365,7 @@ assert_contains "skills/review/SKILL.md" '手工入口'
 assert_contains "skills/review/SKILL.md" 'requires_user_confirmation'
 assert_not_contains "skills/review/SKILL.md" '当前 Skill 直接顺序触发 quality -> feasibility'
 
-for skill in research prd dr spec plan; do
+for skill in research prd spec plan; do
   assert_contains "skills/$skill/SKILL.md" '目标文件不存在：视为 create；存在：视为 update'
   assert_contains "skills/$skill/SKILL.md" '写入后必须显式触发 `/sdd:review <doc-path>` 或等价共享 runner 流程'
   assert_contains "skills/$skill/SKILL.md" '拿不到有效结果不能继续'
@@ -378,6 +378,18 @@ for skill in research prd dr spec plan; do
   assert_not_contains "skills/$skill/SKILL.md" '成功写入后由运行时 Hook 触发 review'
   assert_not_contains "skills/$skill/SKILL.md" '修改已有文档时也默认立即进入自动 review'
 done
+
+assert_contains "skills/dr/SKILL.md" 'create mode 只创建新 DR 文件，因此本次写入结果恒为 create，不存在 update 分支'
+assert_contains "skills/dr/SKILL.md" '写入后必须显式触发 `/sdd:review <doc-path>` 或等价共享 runner 流程'
+assert_contains "skills/dr/SKILL.md" '拿不到有效结果不能继续'
+assert_contains "skills/dr/SKILL.md" '这属于 update：修改已有 DR 时，不自动执行 review'
+assert_contains "skills/dr/SKILL.md" '文档已更新；如需复审，请执行 `/sdd:review <doc-path>`'
+assert_contains "skills/dr/SKILL.md" 'PostToolUse Hook'
+assert_contains "skills/dr/SKILL.md" '共享 review runner'
+assert_contains "skills/dr/SKILL.md" '/sdd:review'
+assert_contains "skills/dr/SKILL.md" 'doc-reviewer'
+assert_not_contains "skills/dr/SKILL.md" '目标文件不存在：视为 create；存在：视为 update'
+assert_not_contains "skills/dr/SKILL.md" '修改已有文档时也默认立即进入自动 review'
 
 assert_contains "skills/spec/SKILL.md" '新建文档拿不到有效 review 结果时保持 `draft`'
 assert_contains "skills/plan/SKILL.md" '新建文档拿不到有效 review 结果时保持 `draft`'
