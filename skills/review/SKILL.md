@@ -1,18 +1,18 @@
 ---
 name: review
-description: Review and improve research, PRD, DR, spec, or plan documents. Use for /sdd:review as the manual review entry and user receipt layer for managed SDD documents.
+description: 作为受管 SDD 文档的手工 review 入口，调用共享 review runner 并向用户交付 review 回执。用户请求复审 research、PRD、DR、spec 或 plan 文档时使用。
 ---
 
 # /sdd:review
 
-`/sdd:review` 是受管 SDD 文档的手工 review 入口与用户回执层。
+`/sdd:review` 是手工入口与用户回执层。/sdd:review 是手工入口。当前 Skill 只负责手工触发 review、展示结果并承接用户回执。
 
 ## 职责
 
 - 接收 `/sdd:review <doc-path>`，将请求交给共享 review runner。
 - 展示 runner 返回的结构化 review 结果，并承接需要用户确认的回执。
-- 自动 review 由 `PostToolUse Hook` 在文档写入后触发；当前 Skill 不承担自动触发、路由或修复实现。
-- review 的类型识别、校验、执行策略与 `doc-reviewer` 调用由共享 review runner 负责。
+- `PostToolUse Hook` 是运行时集成相关机制；当前 Skill 不定义或承担自动 review 的触发职责。
+- review 的执行由共享 review runner 与 `doc-reviewer` 承接；当前入口不展开其内部实现。
 
 ## 入口约束
 
