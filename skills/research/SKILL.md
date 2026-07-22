@@ -1,6 +1,6 @@
 ---
 name: research
-description: Create project-level SDD research notes. Use for /sdd:research <topic>.
+description: 创建或更新项目级 SDD research 文档。用户执行 `/sdd:research <topic>` 时使用。
 ---
 
 # /sdd:research
@@ -42,8 +42,10 @@ docs/versions/vX.Y.Z/research/<type>-<YYYY-MM-DD>-<slug>.md
 
 ## Review
 
-- 成功写入后由运行时 Hook 触发 review；当前流程会通过 `PostToolUse Hook` 自动完成 review，并统一使用 `scripts/lib/sdd-review-runner.sh` 这个共享 review runner。
-- 如需再次人工复审或查看回执，请调用 `/sdd:review <doc-path>`。
+- 写入前显式判断目标文件：目标文件不存在：视为 create；存在：视为 update。
+- create：写入后必须显式触发 `/sdd:review <doc-path>` 或等价共享 runner 流程；该流程调用 `scripts/lib/sdd-review-runner.sh` 这个共享 review runner，并沿用 `/sdd:review` 的 `doc-reviewer` 合同。拿不到有效结果不能继续后续流程。
+- update：修改已有文档时，不自动执行 review。回执统一为“文档已更新；如需复审，请执行 `/sdd:review <doc-path>`”。
+- `PostToolUse Hook` 仅保留运行时兼容合同，不是本 Skill 的 review 主触发职责。
 - `research` 只接入 `quality`，不接入 `feasibility`。
 - reviewer 只消费当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/research/` 中的模板与标准。
 - research 的结构、章节和措辞必须以项目运行时模板为准，不降级回 Plugin 内置模板。

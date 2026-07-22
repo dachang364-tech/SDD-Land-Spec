@@ -366,14 +366,20 @@ assert_contains "skills/review/SKILL.md" 'requires_user_confirmation'
 assert_not_contains "skills/review/SKILL.md" '当前 Skill 直接顺序触发 quality -> feasibility'
 
 for skill in research prd dr spec plan; do
+  assert_contains "skills/$skill/SKILL.md" '目标文件不存在：视为 create；存在：视为 update'
+  assert_contains "skills/$skill/SKILL.md" '写入后必须显式触发 `/sdd:review <doc-path>` 或等价共享 runner 流程'
+  assert_contains "skills/$skill/SKILL.md" '拿不到有效结果不能继续'
+  assert_contains "skills/$skill/SKILL.md" '修改已有文档时，不自动执行 review'
+  assert_contains "skills/$skill/SKILL.md" '文档已更新；如需复审，请执行 `/sdd:review <doc-path>`'
   assert_contains "skills/$skill/SKILL.md" 'PostToolUse Hook'
   assert_contains "skills/$skill/SKILL.md" '共享 review runner'
+  assert_contains "skills/$skill/SKILL.md" '/sdd:review'
+  assert_contains "skills/$skill/SKILL.md" 'doc-reviewer'
+  assert_not_contains "skills/$skill/SKILL.md" '成功写入后由运行时 Hook 触发 review'
+  assert_not_contains "skills/$skill/SKILL.md" '修改已有文档时也默认立即进入自动 review'
 done
 
-assert_contains "skills/research/SKILL.md" '成功写入后由运行时 Hook 触发 review'
-assert_contains "skills/prd/SKILL.md" '成功写入后由运行时 Hook 触发 review'
-assert_contains "skills/dr/SKILL.md" '成功写入后由运行时 Hook 触发 review'
-assert_contains "skills/spec/SKILL.md" '成功写入后由运行时 Hook 触发 review'
-assert_contains "skills/plan/SKILL.md" '成功写入后由运行时 Hook 触发 review'
+assert_contains "skills/spec/SKILL.md" '新建文档拿不到有效 review 结果时保持 `draft`'
+assert_contains "skills/plan/SKILL.md" '新建文档拿不到有效 review 结果时保持 `draft`'
 
 printf 'PASS: skill contracts\n'

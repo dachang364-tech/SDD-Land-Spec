@@ -57,8 +57,11 @@ assert_contains "skills/review/SKILL.md" '手工入口'
 assert_contains "skills/review/SKILL.md" '共享 review runner'
 assert_contains "skills/review/SKILL.md" 'PostToolUse Hook'
 assert_contains "skills/review/SKILL.md" '/sdd:review'
-assert_contains "skills/prd/SKILL.md" 'PostToolUse Hook'
-assert_contains "skills/spec/SKILL.md" 'PostToolUse Hook'
+for skill in research prd dr spec plan; do
+  assert_contains "skills/$skill/SKILL.md" 'PostToolUse Hook'
+  assert_contains "skills/$skill/SKILL.md" '共享 review runner'
+  assert_contains "skills/$skill/SKILL.md" '/sdd:review'
+done
 assert_contains "scripts/hooks/post-tool-use.sh" '文档已写入，但自动 review 未完成'
 assert_contains "scripts/lib/sdd-review-runner.sh" '"executed_modes"'
 assert_contains "scripts/lib/sdd-review-runner.sh" '"requires_user_confirmation"'

@@ -1,6 +1,6 @@
 ---
 name: prd
-description: Create the product requirements document. Use for /sdd:prd.
+description: 创建或更新产品需求文档。用户执行 `/sdd:prd` 时使用。
 ---
 
 # /sdd:prd
@@ -39,8 +39,10 @@ Write `docs/versions/vX.Y.Z/prd/prd.md` using `${CLAUDE_PROJECT_DIR}/.sdd/templa
 
 ## Review
 
-- 成功写入后由运行时 Hook 触发 review；当前流程会通过 `PostToolUse Hook` 自动完成 review，并统一使用 `scripts/lib/sdd-review-runner.sh` 这个共享 review runner。
-- 如需再次人工复审或查看回执，请调用 `/sdd:review <doc-path>`；其内部继续沿用 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同。
+- 写入前显式判断目标文件：目标文件不存在：视为 create；存在：视为 update。
+- create：写入后必须显式触发 `/sdd:review <doc-path>` 或等价共享 runner 流程；该流程调用 `scripts/lib/sdd-review-runner.sh` 这个共享 review runner，并沿用 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同。拿不到有效结果不能继续后续流程。
+- update：修改已有文档时，不自动执行 review。回执统一为“文档已更新；如需复审，请执行 `/sdd:review <doc-path>`”。
+- `PostToolUse Hook` 仅保留运行时兼容合同，不是本 Skill 的 review 主触发职责。
 - runner 对 `prd` 只执行 `quality`，不接入 `feasibility`。
 - reviewer 只消费当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/` 中的模板与标准。
 - 用户确认并完成有效复审前，不得绕过该结果推进流程；如果项目模板资产缺失，则直接失败，不降级到 Plugin 内置资产。
