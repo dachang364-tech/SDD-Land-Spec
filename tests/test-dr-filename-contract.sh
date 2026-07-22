@@ -19,11 +19,11 @@ fi
 assert_contains "/tmp/sdd-doc-plan-id.err" "不是 code-class DR plan"
 
 assert_contains "skills/dr/SKILL.md" '`/sdd:dr accept 001-fix-login-null`'
-assert_contains "skills/plan/SKILL.md" '如果 `<work-item>` 匹配 `^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(fix|feat|chg|arch)-[a-z0-9]+(-[a-z0-9]+)*$`，使用 code-class DR mode'
+assert_contains "skills/plan/SKILL.md" '如果 `<work-item>` 匹配 `^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(fix|feat|chg|arch)-[a-z0-9]+(-[a-z0-9]+)*$`，使用 code-class DR 模式'
 assert_contains "skills/plan/SKILL.md" '如果 `<work-item>` 匹配 `^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(spec|doc|typo)-[a-z0-9]+(-[a-z0-9]+)*$`，直接拒绝'
 assert_contains "skills/plan/SKILL.md" '如果 `<work-item>` 看起来像 DR（以三位数字和连字符开头），但不是合法完整 DR ID'
-assert_contains "skills/plan/SKILL.md" '不得落回 spec mode。'
-assert_contains "skills/plan/SKILL.md" '不得落回 spec mode。'
+assert_contains "skills/plan/SKILL.md" '不得落回 spec 模式。'
+assert_contains "skills/plan/SKILL.md" '不得落回 spec 模式。'
 assert_contains "skills/code/SKILL.md" 'If input is a complete plan basename, match the same `.md` basename and use plan execution mode. This lookup occurs before DR-like validation'
 assert_contains "skills/code/SKILL.md" 'If input matches a document-class DR id `^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(spec|doc|typo)-[a-z0-9]+(-[a-z0-9]+)*$`, refuse'
 assert_contains "skills/code/SKILL.md" 'If input is DR-like (starts with three digits and a hyphen) but is not a valid full DR ID, fail explicitly'

@@ -45,25 +45,28 @@ assert_contains "/tmp/sdd-common.out" "PASS: common library"
 bash tests/test-skill-contracts.sh >/tmp/sdd-skills.out
 assert_contains "/tmp/sdd-skills.out" "PASS: skill contracts"
 
-bash tests/test-dr-filename-contract.sh
+# DR filename 合同独立验证，并由 MVP 验收保留覆盖。
+bash tests/test-dr-filename-contract.sh >/tmp/sdd-dr-filename.out
+assert_contains "/tmp/sdd-dr-filename.out" "PASS: DR filename contract"
 
 assert_file_not_exists "skills/doctor/SKILL.md"
 assert_file_not_exists "skills/status/SKILL.md"
 
-assert_file_exists "scripts/hooks/post-tool-use.sh"
-assert_file_exists "scripts/lib/sdd-review-runner.sh"
-assert_contains "hooks/hooks.json" '"PostToolUse"'
-assert_contains "skills/review/SKILL.md" '手工入口'
-assert_contains "skills/review/SKILL.md" '共享 review runner'
-assert_contains "skills/review/SKILL.md" 'PostToolUse Hook'
+assert_not_contains "hooks/hooks.json" '"PostToolUse"'
+assert_file_not_exists "scripts/hooks/post-tool-use.sh"
+assert_file_not_exists "scripts/lib/sdd-review-runner.sh"
 assert_contains "skills/review/SKILL.md" '/sdd:review'
-for skill in research prd dr spec plan; do
-  assert_contains "skills/$skill/SKILL.md" 'PostToolUse Hook'
-  assert_contains "skills/$skill/SKILL.md" '共享 review runner'
-  assert_contains "skills/$skill/SKILL.md" '/sdd:review'
-done
-assert_contains "scripts/hooks/post-tool-use.sh" '文档已写入，但自动 review 未完成'
-assert_contains "scripts/lib/sdd-review-runner.sh" '"executed_modes"'
-assert_contains "scripts/lib/sdd-review-runner.sh" '"requires_user_confirmation"'
+assert_contains "skills/review/SKILL.md" 'doc-reviewer'
+assert_contains "skills/spec/SKILL.md" 'create：成功写入后必须显式调用 `/sdd:review <doc-path>`'
+assert_contains "skills/plan/SKILL.md" 'create：成功写入后必须显式调用 `/sdd:review <doc-path>`'
+assert_contains "skills/review/SKILL.md" '当前 Skill 直接调用 `doc-reviewer` subagent'
+assert_contains "skills/review/SKILL.md" '当 reviewer 返回 `requires_user_confirmation` 时，由当前 Skill 承接用户确认'
+assert_contains "README.md" '`/sdd:review <doc-path>` 是统一 review 入口'
+assert_contains "README.md" '新建 `research / prd / dr / spec / plan` 文档后，所属 Skill 会显式进入 `/sdd:review <doc-path>`'
+assert_contains "README.md" '修改已有文档时，不自动 review；如需复审，请手工执行 `/sdd:review <doc-path>`。'
+assert_contains "README.md" '系统不再依赖 `PostToolUse Hook` 或 shell runner 触发 review。'
+assert_contains "TESTING.md" '生成新 `research`、`prd`、`dr`、`spec`、`plan` 文档后，确认所属 Skill 显式进入 `/sdd:review <doc-path>`'
+assert_contains "TESTING.md" '确认 `research`、`prd`、`dr` create 只触发 `quality`；`spec` 与 `plan` create 按顺序触发 `quality -> feasibility`。'
+assert_contains "TESTING.md" '更新已有文档时，确认不会自动 review，只输出手工复审提示。'
 
 printf 'PASS: MVP acceptance\n'

@@ -68,10 +68,9 @@ fix | feat | chg | arch | spec | doc | typo
    - 引用跨版本文档：同时写相对 Markdown link 和版本 locator。
    - `## 文档引用` 是 DR 的正式关系来源；`## 影响资产` 只做摘要，不作为正式关系来源。
 12. create mode 只创建新 DR 文件，因此本次写入结果恒为 create，不存在 update 分支。
-13. create：文档生成仍由当前 Skill 负责；成功写入后由 `PostToolUse Hook` 触发 `scripts/lib/sdd-review-runner.sh` 这个共享 review runner。`dr` 的 runner mode 为 `quality`；review 结果若阻断、需要用户确认、无有效结果或项目模板资产缺失，则不得绕过 gate 推进后续流程。
-14. 当前 Skill 不直接调用 `doc-reviewer`；自动 review 的触发责任下沉到 `PostToolUse Hook`，手工复审入口保留为 `/sdd:review`。
-15. `dr` 的 runner mode 为 `quality`；机器结果必须先通过 schema 校验。
-16. 输出下一步：
+13. create：成功写入后必须显式调用 `/sdd:review <doc-path>`；`dr` 的 review mode 为 `quality`。拿不到有效 review 结果、结果阻断、需要用户确认或项目模板资产缺失时，当前流程不得宣称完成或绕过 gate 推进后续流程。
+14. 当前 Skill 不承担隐式 review 触发；review 编排、schema 校验和回执由显式 `/sdd:review <doc-path>` 负责。
+15. 输出下一步：
    - code-class DR：运行 `/sdd:dr accept <id>`；之后根据 `plan_required` 进入 `/sdd:plan <id>` 或 `/sdd:code <id>`。如果 `spec_change` 是 `yes` 或 `maybe`，先判断是否需要 `/sdd:spec`。
    - document-class DR：运行 `/sdd:dr accept <id>`，然后进入 `/sdd:spec` 或对应文档 Skill。
 

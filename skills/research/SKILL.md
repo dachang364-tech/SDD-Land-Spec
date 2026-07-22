@@ -43,9 +43,9 @@ docs/versions/vX.Y.Z/research/<type>-<YYYY-MM-DD>-<slug>.md
 ## Review
 
 - 写入前显式判断目标文件：目标文件不存在：视为 create；存在：视为 update。
-- create：文档生成仍由当前 Skill 负责；成功写入后由 `PostToolUse Hook` 触发 `scripts/lib/sdd-review-runner.sh` 这个共享 review runner。`research` 的 runner mode 为 `quality`；review 结果若阻断、需要用户确认、无有效结果或项目模板资产缺失，则不得绕过 gate 推进后续流程。
+- create：成功写入后必须显式调用 `/sdd:review <doc-path>`；`research` 的 review mode 为 `quality`。拿不到有效 review 结果、结果阻断、需要用户确认或项目模板资产缺失时，当前流程不得宣称完成或绕过 gate 推进后续流程。
 - update：修改已有文档时，不自动执行 review。回执统一为“文档已更新；如需复审，请执行 `/sdd:review <doc-path>`”。
-- 当前 Skill 不直接调用 `doc-reviewer`；自动 review 的触发责任下沉到 `PostToolUse Hook`，手工复审入口保留为 `/sdd:review`。
+- 当前 Skill 不承担隐式 review 触发；review 编排由显式 `/sdd:review <doc-path>` 负责。
 - reviewer 只消费当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/research/` 中的模板与标准。
 - research 的结构、章节和措辞必须以项目运行时模板为准，不降级回 Plugin 内置模板。
 

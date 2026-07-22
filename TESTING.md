@@ -37,13 +37,14 @@ PASS: MVP acceptance
 3. 手工删除 `.sdd/templates/research/quality.standard.md` 后再次运行 `/sdd:research demo`，期望命令明确失败，并提示缺少项目模板资产。
 4. 手工删除 `.sdd/templates/spec/feasibility.standard.md` 后再次运行 `/sdd:spec`，期望命令明确失败，并提示缺少项目模板资产。
 5. 重新执行 `/sdd:init` 恢复缺失模板资产，并确认已有项目自定义模板不会被覆盖。
-6. 生成或修改 `research`、`prd.md`、`spec.md`、`plan.md` 后，确认 reviewer 自动触发。
-7. 确认 `research` 与 `prd` 只触发 `quality`；`dr` 只触发 `quality`；`spec` 与 `plan` 按顺序触发 `quality -> feasibility`。
-8. 确认插件安装后的组件目录包含 `agents/doc-reviewer.md`。
-9. 对已有文档执行 `/sdd:review <doc-path>`，确认 reviewer 使用该 agent，而不是仅依据 review skill 文本模拟执行，并且只返回一份聚合用户回执。
-10. 对 archived version 下的 `research`、`prd/prd.md`、`spec/*.md`、`plan/*.md`、`dr/*.md` 执行 `/sdd:review`，期望直接失败。
-11. 对一个可 review 文档执行 `/sdd:review <doc-path>`，确认系统按路径自动识别文档类型，而不是要求用户手工指定类型。
-12. 对 `/sdd:code <plan>` 执行前，确认目标 plan 的 `## 文档引用` 中仍保持 `implements` 闭包指向 approved spec 或 accepted code-class DR。
+6. 生成新 `research`、`prd`、`dr`、`spec`、`plan` 文档后，确认所属 Skill 显式进入 `/sdd:review <doc-path>`。
+7. 确认 `research`、`prd`、`dr` create 只触发 `quality`；`spec` 与 `plan` create 按顺序触发 `quality -> feasibility`。
+8. 更新已有文档时，确认不会自动 review，只输出手工复审提示。
+9. 确认插件安装后的组件目录包含 `agents/doc-reviewer.md`。
+10. 对可 review 文档执行 `/sdd:review <doc-path>`，确认 reviewer 使用该 agent，而不是仅依据 review skill 文本模拟执行，并且只返回一份聚合用户回执。
+11. 对 archived version 下的 `research`、`prd/prd.md`、`spec/*.md`、`plan/*.md`、`dr/*.md` 执行 `/sdd:review`，期望直接失败。
+12. 对一个可 review 文档执行 `/sdd:review <doc-path>`，确认系统按路径自动识别文档类型，而不是要求用户手工指定类型。
+13. 对 `/sdd:code <plan>` 执行前，确认目标 plan 的 `## 文档引用` 中仍保持 `implements` 闭包指向 approved spec 或 accepted code-class DR。
 
 ## 3. 检查禁止路径
 

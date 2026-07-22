@@ -84,6 +84,12 @@ for asset in template.md quality.standard.md; do
   printf '# restored\n' > "$tmp_project/.sdd/templates/dr/$asset"
 done
 
-assert_file_exists "scripts/lib/sdd-review-runner.sh"
+assert_not_contains "hooks/hooks.json" '"PostToolUse"'
+assert_file_not_exists "scripts/hooks/post-tool-use.sh"
+assert_file_not_exists "scripts/lib/sdd-review-runner.sh"
+assert_contains "skills/review/SKILL.md" '/sdd:review'
+assert_contains "skills/review/SKILL.md" 'doc-reviewer'
+assert_contains "skills/spec/SKILL.md" 'create：成功写入后必须显式调用 `/sdd:review <doc-path>`'
+assert_contains "skills/plan/SKILL.md" 'create：成功写入后必须显式调用 `/sdd:review <doc-path>`'
 
 printf 'PASS: template runtime contract\n'

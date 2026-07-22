@@ -1,28 +1,29 @@
 ---
 name: review
-description: 作为受管 SDD 文档的手工 review 入口，调用共享 review runner 并向用户交付 review 回执。用户请求复审 research、PRD、DR、spec 或 plan 文档时使用。
+description: 作为受管 SDD 文档的唯一 review 编排入口，负责识别文档类型、编排 `doc-reviewer`、校验结果并向用户交付结构化 review 回执。用户请求复审 research、PRD、DR、spec 或 plan 文档时使用。
 ---
 
 # /sdd:review
 
-`/sdd:review` 是手工入口与用户回执层。/sdd:review 是手工入口。当前 Skill 只负责手工触发 review、展示结果并承接用户回执。
-
-## 职责
-
-- 接收 `/sdd:review <doc-path>`，将请求交给共享 review runner。
-- 展示 runner 返回的结构化 review 结果，并承接需要用户确认的回执。
-- `PostToolUse Hook` 是运行时集成相关机制；当前 Skill 不定义或承担自动 review 的触发职责。
-- review 的执行由共享 review runner 与 `doc-reviewer` 承接；当前入口不展开其内部实现。
+/sdd:review 是唯一 review 编排入口。它负责从受管文档路径确定 review 所需上下文、调用 `doc-reviewer` subagent、校验结果并交付用户回执。
 
 ## 入口约束
 
-1. 仅接受受支持的活动版本文档路径；不支持时提示“不是受支持的 SDD 文档路径”。
+1. 接收 `/sdd:review <doc-path>`，校验 `<doc-path>` 是活动版本中受支持的 SDD 文档路径；不支持时提示“不是受支持的 SDD 文档路径”。
 2. archived version 的文档不得执行 `/sdd:review`。
 3. 项目必须已初始化，且 `${CLAUDE_PROJECT_DIR}/.sdd/templates/` 可用；缺失时提示运行 `/sdd:init`，不得使用 Plugin 内置资产替代。
-4. 不新增命令名，也不改变项目模板、agent 或 runner 的既有运行时合同。
+4. 由当前 Skill 负责识别 `document_type` 与 mode 链路。支持 `research`、`prd`、`dr`、`spec`、`plan`；路径无法唯一识别时停止并说明原因。
 
-## 委托与回执
+## 编排
 
-手工入口调用 `scripts/lib/sdd-review-runner.sh` 这个共享 review runner。runner 使用项目级资产并委托 `agents/doc-reviewer.md` 定义的 `doc-reviewer`；入口不复制 runner 的内部输入、路由或执行细节。
+1. 根据已识别的 `document_type` 使用项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/<document_type>/` 下的模板和标准，并收集 `doc-reviewer` 所需的 `upstream_paths`。
+2. 确定 mode 链路：`research / prd / dr -> quality`；`spec / plan -> quality -> feasibility`。
+3. 当前 Skill 直接调用 `doc-reviewer` subagent。对每个 mode 提供 agent 输入合同要求的 `document_path`、`document_type`、`mode`、`template_path`、`standard_path`、`repair_policy`、`upstream_paths`、`invocation_source` 和正整数 `max_rounds`。
+4. 对每个 mode 的结构化结果执行 schema 校验，使用 `skills/review/references/reviewer-result.schema.json`；结果不是恰好一个符合 schema 的 JSON 对象时，停止后续 mode，并向用户报告无效 reviewer 结果。
+5. 依次执行 mode。任一结果 `blocked: true`、`requires_user_confirmation: true` 或 `passed: false` 时，停止后续 mode；只有前一 mode `passed: true`、`blocked: false` 且不需要确认时才继续下一个 mode。
 
-将 runner 的结果作为用户回执：说明已评审文档、结果状态、自动修复摘要、剩余问题及是否需要用户确认。结果包含 `requires_user_confirmation=true` 时，先获取用户确认；写回后由 runner 重新复审。
+## 用户回执与确认
+
+聚合已校验的结果并输出一份用户回执，至少包含 `document_path`、`document_type`、`executed_modes`、`blocked`、`requires_user_confirmation`、`remaining_items`。同时概述 `auto_repairs`、`blocking_items`、`remaining_issues`、`candidate_rewrites` 和各 mode 的结论。
+
+当 reviewer 返回 `requires_user_confirmation` 时，由当前 Skill 承接用户确认：展示 `candidate_rewrites` 与待确认项，不将候选改写当作已接受修改。用户确认后写回目标文档；写回后重新执行 `/sdd:review <doc-path>`。用户拒绝或暂不确认时，保留未解决项并在回执中说明 review 未完成。
