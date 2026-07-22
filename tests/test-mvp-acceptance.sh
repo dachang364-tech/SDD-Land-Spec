@@ -50,4 +50,15 @@ bash tests/test-dr-filename-contract.sh
 assert_file_not_exists "skills/doctor/SKILL.md"
 assert_file_not_exists "skills/status/SKILL.md"
 
+assert_file_exists "scripts/hooks/post-tool-use.sh"
+assert_file_exists "scripts/lib/sdd-review-runner.sh"
+assert_contains "hooks/hooks.json" '"PostToolUse"'
+assert_contains "skills/review/SKILL.md" '手工入口'
+assert_contains "skills/review/SKILL.md" '共享 review runner'
+assert_contains "skills/prd/SKILL.md" 'PostToolUse Hook'
+assert_contains "skills/spec/SKILL.md" 'PostToolUse Hook'
+assert_contains "scripts/hooks/post-tool-use.sh" '文档已写入，但自动 review 未完成'
+assert_contains "scripts/lib/sdd-review-runner.sh" '"executed_modes"'
+assert_contains "scripts/lib/sdd-review-runner.sh" '"requires_user_confirmation"'
+
 printf 'PASS: MVP acceptance\n'

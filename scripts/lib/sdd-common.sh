@@ -259,3 +259,43 @@ sdd_slug() {
     | tr '[:upper:]' '[:lower:]' \
     | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//; s/-+/-/g'
 }
+
+sdd_is_managed_review_document() {
+  local path="$1"
+  case "$path" in
+    docs/versions/v[0-9]*.[0-9]*.[0-9]*/research/*.md) return 0 ;;
+    docs/versions/v[0-9]*.[0-9]*.[0-9]*/prd/prd.md) return 0 ;;
+    docs/versions/v[0-9]*.[0-9]*.[0-9]*/spec/*.md) return 0 ;;
+    docs/versions/v[0-9]*.[0-9]*.[0-9]*/plan/*.md) return 0 ;;
+    docs/versions/v[0-9]*.[0-9]*.[0-9]*/dr/*.md) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+sdd_review_document_type() {
+  local path="$1"
+  if ! sdd_is_managed_review_document "$path"; then
+    printf '不是受支持的 SDD 文档路径：%s\n' "$path" >&2
+    return 2
+  fi
+
+  case "$path" in
+    docs/versions/v[0-9]*.[0-9]*.[0-9]*/research/*.md) printf 'research\n' ;;
+    docs/versions/v[0-9]*.[0-9]*.[0-9]*/prd/prd.md) printf 'prd\n' ;;
+    docs/versions/v[0-9]*.[0-9]*.[0-9]*/spec/*.md) printf 'spec\n' ;;
+    docs/versions/v[0-9]*.[0-9]*.[0-9]*/plan/*.md) printf 'plan\n' ;;
+    docs/versions/v[0-9]*.[0-9]*.[0-9]*/dr/*.md) printf 'dr\n' ;;
+  esac
+}
+
+sdd_review_mode_chain() {
+  local document_type="$1"
+  case "$document_type" in
+    research|prd|dr) printf 'quality\n' ;;
+    spec|plan) printf 'quality feasibility\n' ;;
+    *)
+      printf '未知 review 文档类型：%s\n' "$document_type" >&2
+      return 2
+      ;;
+  esac
+}

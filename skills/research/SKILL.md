@@ -39,14 +39,12 @@ docs/versions/vX.Y.Z/research/<type>-<YYYY-MM-DD>-<slug>.md
 - research 文档没有状态机制。
 - 不要求 `## 文档引用` 表，是否包含由模板与标准定义。
 - 同名文档存在时，用户确认后可直接更新。
-- `/sdd:research` 不自动触发 review，但允许后续手动 `/sdd:review`。
-- research 的结构、章节和措辞必须以项目运行时模板为准，不降级回 Plugin 内置模板。
-
-## Review flow
-
-- 手动执行 `/sdd:review <doc-path>` 时，按 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同执行 `quality` reviewer。
-- reviewer 只消费当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/research/` 中的模板与标准。
+- 成功写入后由运行时 Hook 触发 review；自动入口是 `PostToolUse Hook`，并统一调用 `scripts/lib/sdd-review-runner.sh` 这个共享 review runner。
+- `/sdd:research` 仍保留后续手动 `/sdd:review` 能力，但不自行承担自动触发。
+- 手动执行 `/sdd:review <doc-path>` 时，仍通过同一个共享 review runner 返回结果。
 - `research` 只接入 `quality`，不接入 `feasibility`。
+- reviewer 只消费当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/research/` 中的模板与标准。
+- research 的结构、章节和措辞必须以项目运行时模板为准，不降级回 Plugin 内置模板。
 
 ## Boundaries
 

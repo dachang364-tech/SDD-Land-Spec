@@ -135,4 +135,14 @@ DOC
 scripts/lib/sdd-references.sh extract-archive "$root" "$root/docs/versions/v0.1.0" "$tmp/mixed-cross" "$tmp/mixed-strong"
 assert_contains "$tmp/mixed-cross" '| 未能机械提取；请查看原始文档。 | - | - | - | - |'
 assert_contains "$tmp/mixed-strong" '| 未能机械提取；请查看原始文档。 | - | - | - |'
+
+assert_file_exists "scripts/lib/sdd-review-runner.sh"
+assert_contains "hooks/hooks.json" 'scripts/hooks/post-tool-use.sh'
+assert_contains "skills/review/SKILL.md" 'scripts/lib/sdd-review-runner.sh'
+assert_contains "skills/research/SKILL.md" 'scripts/lib/sdd-review-runner.sh'
+assert_contains "skills/prd/SKILL.md" 'scripts/lib/sdd-review-runner.sh'
+assert_contains "skills/dr/SKILL.md" 'scripts/lib/sdd-review-runner.sh'
+assert_contains "skills/spec/SKILL.md" 'scripts/lib/sdd-review-runner.sh'
+assert_contains "skills/plan/SKILL.md" 'scripts/lib/sdd-review-runner.sh'
+
 printf 'PASS: reference validation\n'

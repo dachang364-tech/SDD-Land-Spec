@@ -84,4 +84,6 @@ for asset in template.md quality.standard.md; do
   printf '# restored\n' > "$tmp_project/.sdd/templates/dr/$asset"
 done
 
+assert_file_exists "scripts/lib/sdd-review-runner.sh"
+
 printf 'PASS: template runtime contract\n'

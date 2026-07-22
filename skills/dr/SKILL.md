@@ -67,8 +67,10 @@ Steps:
    - 引用 project-level requirements：同时写相对 Markdown link 和 `project:requirements/<file>.md` locator。
    - 引用跨版本文档：同时写相对 Markdown link 和版本 locator。
    - `## 文档引用` 是 DR 的正式关系来源；`## 影响资产` 只做摘要，不作为正式关系来源。
-12. 目标文档写入完成并通过命令层 pre-review gate 后，必须按 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同自动触发 `quality` reviewer；机器结果必须先通过 schema 校验。
-13. Output next step:
+12. 目标文档成功写入后由运行时 Hook 触发 review；自动入口是 `PostToolUse Hook`，并统一调用 `scripts/lib/sdd-review-runner.sh` 这个共享 review runner。
+13. `/sdd:review` 仍保留手工入口；其内部继续沿用 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同。
+14. `dr` 的 runner mode 只有 `quality`；机器结果必须先通过 schema 校验。
+15. Output next step:
    - code-class DR: run `/sdd:dr accept <id>`; after accept, next step depends on `plan_required` and may be `/sdd:plan <id>` or `/sdd:code <id>`. If `spec_change` is `yes` or `maybe`, first evaluate whether `/sdd:spec` is needed.
    - document-class DR: run `/sdd:dr accept <id>`, then `/sdd:spec` or the corresponding document Skill.
 

@@ -359,4 +359,23 @@ assert_contains "CONSTITUTION.default.md" '/sdd:code` 可以执行状态为 `pla
 assert_contains "CONSTITUTION.default.md" '并只能在 `/sdd:code` verification 通过后关闭'
 assert_not_contains "CONSTITUTION.default.md" '才能关闭为 `committed`'
 
+assert_contains "hooks/hooks.json" '"PostToolUse"'
+assert_contains "hooks/hooks.json" '"matcher": "Write|Edit"'
+assert_contains "hooks/hooks.json" 'scripts/hooks/post-tool-use.sh'
+assert_contains "skills/review/SKILL.md" '共享 review runner'
+assert_contains "skills/review/SKILL.md" '手工入口'
+assert_contains "skills/review/SKILL.md" 'requires_user_confirmation'
+assert_not_contains "skills/review/SKILL.md" '当前 Skill 直接顺序触发 quality -> feasibility'
+
+for skill in research prd dr spec plan; do
+  assert_contains "skills/$skill/SKILL.md" 'PostToolUse Hook'
+  assert_contains "skills/$skill/SKILL.md" '共享 review runner'
+done
+
+assert_contains "skills/research/SKILL.md" '成功写入后由运行时 Hook 触发 review'
+assert_contains "skills/prd/SKILL.md" '成功写入后由运行时 Hook 触发 review'
+assert_contains "skills/dr/SKILL.md" '成功写入后由运行时 Hook 触发 review'
+assert_contains "skills/spec/SKILL.md" '成功写入后由运行时 Hook 触发 review'
+assert_contains "skills/plan/SKILL.md" '成功写入后由运行时 Hook 触发 review'
+
 printf 'PASS: skill contracts\n'

@@ -39,10 +39,11 @@ Write `docs/versions/vX.Y.Z/prd/prd.md` using `${CLAUDE_PROJECT_DIR}/.sdd/templa
 
 ## Review flow
 
-- 目标文档写入完成并通过命令层 pre-review gate 后，必须按 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同自动触发 `quality` reviewer，并消费通过 schema 校验的机器结果。
+- 目标文档成功写入后由运行时 Hook 触发 review；自动入口是 `PostToolUse Hook`，并统一调用 `scripts/lib/sdd-review-runner.sh` 这个共享 review runner。
+- `/sdd:review` 仍保留手工入口；其内部继续沿用 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同。
+- runner 对 `prd` 只执行 `quality`，不接入 `feasibility`。
 - reviewer 只消费当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/` 中的模板与标准。
-- `prd` 只接入 `quality`，不接入 `feasibility`。
-- 用户确认并完成有效复审前，不得绕过该结果推进流程。
+- 用户确认并完成有效复审前，不得绕过该结果推进流程；如果项目模板资产缺失，则直接失败，不降级到 Plugin 内置资产。
 
 ## Boundaries
 

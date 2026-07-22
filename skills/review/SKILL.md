@@ -1,11 +1,13 @@
 ---
 name: review
-description: Review and improve research, PRD, DR, spec, or plan documents. Use for /sdd:review and for post-write review orchestration in /sdd:research, /sdd:prd, /sdd:dr, /sdd:spec, /sdd:plan.
+description: Review and improve research, PRD, DR, spec, or plan documents. Use for /sdd:review as the manual review entry and user receipt layer for managed SDD documents.
 ---
 
 # /sdd:review
 
 Review a target document using the project runtime template assets in `${CLAUDE_PROJECT_DIR}/.sdd/templates/`.
+
+`/sdd:review` 是手工入口与用户回执层，内部统一调用 `scripts/lib/sdd-review-runner.sh` 这个共享 review runner；自动 review 不由当前 Skill 兜底触发，而是由 `PostToolUse Hook` 在 `Write|Edit` 成功后触发。
 
 ## Preconditions
 
@@ -24,7 +26,7 @@ Review a target document using the project runtime template assets in `${CLAUDE_
 
 ## Invocation and structured handoff
 
-`/sdd:review` 同时承担用户手动复审入口与其他 Skill 的内部 review 编排单元。
+`/sdd:review` 保留为手工入口，不再承担其他 Skill 的自动触发职责；自动 review 由 `PostToolUse Hook` 触发 `scripts/lib/sdd-review-runner.sh`，当前 Skill 只负责手工触发 review、展示结果并承接用户回执。
 
 对外主入口采用：
 
@@ -32,7 +34,7 @@ Review a target document using the project runtime template assets in `${CLAUDE_
 - 系统自动识别 `document_type`
 - 系统自动决定 mode 或 mode 链路
 
-命令层或手动 `/sdd:review` 必须启动插件提供的 `doc-reviewer` agent。每次调用只评审一个 `mode`，并将以下 JSON 对象作为 agent 唯一的输入载荷。不得以自由文本替代或省略字段：
+手工 `/sdd:review` 必须先调用 `scripts/lib/sdd-review-runner.sh`；runner 负责 `document_type` 识别、mode 路由与 `doc-reviewer` 调用。每次调用只评审一个 `mode`，并将以下 JSON 对象作为 agent 唯一的输入载荷。不得以自由文本替代或省略字段：
 
 ```json
 {
@@ -52,7 +54,7 @@ Review a target document using the project runtime template assets in `${CLAUDE_
 
 subagent 必须只返回一个 JSON 对象，且该对象必须通过 `references/reviewer-result.schema.json` 校验；禁止在机器输出前后附加 Markdown、解释或多个 JSON 对象。命令层在读取任何字段、生成用户回执或改变文档状态前必须校验该 JSON：解析失败、schema 校验失败、`document_type` / `mode` 与输入不匹配时，将本次 review 视为 `blocked: true` 的执行失败，保留 `draft` 或原有稳定状态，不得继续审批或状态推进。
 
-`user_receipt` 是最终聚合回执字段。单 mode 调用也必须填入其已执行的 mode；`research`、`prd` 与 `dr` 只有 `quality`，`spec` 和 `plan` 的命令层在全部已执行 mode 的有效结果基础上聚合为唯一回执。
+`user_receipt` 是最终聚合回执字段。单 mode 调用也必须填入其已执行的 mode；`research`、`prd` 与 `dr` 只有 `quality`，`spec` 和 `plan` 的命令层在全部已执行 mode 的有效结果基础上聚合为唯一回执。若 runner 返回 `requires_user_confirmation=true`，由 `/sdd:review` 承接用户确认并决定是否回写文档后重新复审。
 
 ## Structured input
 

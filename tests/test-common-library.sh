@@ -219,4 +219,31 @@ assert_contains "/tmp/sdd-next-dr-overflow.err" "DR 编号已达到上限 999"
 assert_not_contains "scripts/lib/sdd-common.sh" '/sdd:doctor'
 assert_not_contains "scripts/lib/sdd-common.sh" 'project:requirements/'
 
+sdd_is_managed_review_document "docs/versions/v1.2.3/prd/prd.md" || fail "expected prd to be managed"
+sdd_is_managed_review_document "docs/versions/v1.2.3/research/market-2026-07-22.md" || fail "expected research to be managed"
+sdd_is_managed_review_document "docs/versions/v1.2.3/spec/login.md" || fail "expected spec to be managed"
+sdd_is_managed_review_document "docs/versions/v1.2.3/plan/001-login.md" || fail "expected plan to be managed"
+sdd_is_managed_review_document "docs/versions/v1.2.3/dr/001-fix-login-null.md" || fail "expected dr to be managed"
+
+if sdd_is_managed_review_document "docs/random.md"; then
+  fail "expected docs/random.md to be unmanaged"
+fi
+
+[[ "$(sdd_review_document_type "docs/versions/v1.2.3/prd/prd.md")" == "prd" ]] || fail "expected prd type"
+[[ "$(sdd_review_document_type "docs/versions/v1.2.3/research/market-2026-07-22.md")" == "research" ]] || fail "expected research type"
+[[ "$(sdd_review_document_type "docs/versions/v1.2.3/spec/login.md")" == "spec" ]] || fail "expected spec type"
+[[ "$(sdd_review_document_type "docs/versions/v1.2.3/plan/001-login.md")" == "plan" ]] || fail "expected plan type"
+[[ "$(sdd_review_document_type "docs/versions/v1.2.3/dr/001-fix-login-null.md")" == "dr" ]] || fail "expected dr type"
+
+[[ "$(sdd_review_mode_chain "research")" == "quality" ]] || fail "expected research mode chain"
+[[ "$(sdd_review_mode_chain "prd")" == "quality" ]] || fail "expected prd mode chain"
+[[ "$(sdd_review_mode_chain "dr")" == "quality" ]] || fail "expected dr mode chain"
+[[ "$(sdd_review_mode_chain "spec")" == "quality feasibility" ]] || fail "expected spec mode chain"
+[[ "$(sdd_review_mode_chain "plan")" == "quality feasibility" ]] || fail "expected plan mode chain"
+
+if sdd_review_document_type "docs/random.md" >/tmp/sdd-review-doc-type.out 2>/tmp/sdd-review-doc-type.err; then
+  fail "expected unmanaged path to fail"
+fi
+assert_contains "/tmp/sdd-review-doc-type.err" "不是受支持的 SDD 文档路径"
+
 printf 'PASS: common library\n'
