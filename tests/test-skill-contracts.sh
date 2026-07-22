@@ -17,13 +17,16 @@ assert_file_exists "skills/review/SKILL.md"
 assert_file_exists "skills/review/references/reviewer-result.schema.json"
 assert_file_exists "agents/doc-reviewer.md"
 assert_contains "skills/review/SKILL.md" "description: Review and improve research, PRD, DR, spec, or plan documents"
-assert_contains "skills/review/SKILL.md" 'review -> update -> review -> output'
-assert_contains "skills/review/SKILL.md" '单次 subagent 调用内部完成有限轮次串行闭环'
-assert_contains "skills/review/SKILL.md" 'dr -> quality'
-assert_contains "skills/review/SKILL.md" '`research`、`prd` 与 `dr` 只有 `quality`'
-assert_contains "skills/review/SKILL.md" '`research` 不要求 `## 文档引用` 表'
-assert_contains "skills/review/SKILL.md" '机器输出'
-assert_contains "skills/review/SKILL.md" '用户输出'
+assert_contains "skills/review/SKILL.md" '当前 Skill 只负责手工触发 review、展示结果并承接用户回执'
+assert_not_contains "skills/review/SKILL.md" '自动 review 由 `PostToolUse Hook` 在 `Write|Edit` 成功后触发'
+assert_not_contains "skills/review/SKILL.md" 'reviewer 在单次 subagent 调用内部完成有限轮次串行闭环'
+assert_not_contains "skills/review/SKILL.md" '## Review admission check'
+assert_not_contains "skills/review/SKILL.md" '## Review loop'
+assert_not_contains "skills/review/SKILL.md" '## Repair Policy'
+assert_contains "skills/review/SKILL.md" '共享 review runner'
+assert_contains "skills/review/SKILL.md" '手工入口'
+assert_contains "skills/review/SKILL.md" '运行时委托'
+assert_contains "skills/review/SKILL.md" '输出合同'
 assert_contains "skills/review/references/reviewer-result.schema.json" '"document_type"'
 assert_contains "skills/review/references/reviewer-result.schema.json" '"requires_user_confirmation"'
 assert_contains "skills/review/references/reviewer-result.schema.json" '"candidate_rewrites"'

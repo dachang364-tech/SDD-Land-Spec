@@ -17,6 +17,9 @@ assert_file_exists "assets/template-packs/backend/dr/template.md"
 assert_file_exists "assets/template-packs/backend/dr/quality.standard.md"
 
 assert_contains "skills/review/SKILL.md" 'dr -> quality'
+assert_contains "skills/review/SKILL.md" '共享 review runner'
+assert_contains "skills/review/SKILL.md" 'PostToolUse Hook'
+assert_contains "skills/review/SKILL.md" '/sdd:review'
 assert_contains "skills/review/SKILL.md" '`research`、`prd` 与 `dr` 只有 `quality`'
 assert_contains "skills/review/SKILL.md" '`research` 不要求 `## 文档引用` 表'
 assert_contains "skills/init/SKILL.md" '将所选模板包中的 `research / PRD / Spec / Plan / dr` 模板与标准完整展开到 `${CLAUDE_PROJECT_DIR}/.sdd/templates/`'
