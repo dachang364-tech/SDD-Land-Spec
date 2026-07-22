@@ -1,187 +1,49 @@
-# Task 2 Report: Materialize template packs during `/sdd:init` and package them
+# Task 2 实现报告
 
-## What I implemented
+## 结果
 
-- Updated `skills/init/SKILL.md` to require listing selectable template packs, defaulting to `default-backend` when the user does not switch, and fully materializing PRD / Spec / Plan templates and standards into `.sdd/templates/`.
-- Updated the `/sdd:init` output contract to report `.sdd/templates/` and retained the no-version-state, no-document-generation, and dependency-prompt constraints.
-- Updated `scripts/package-local.sh` to copy `assets/` into local packages.
-- Updated the packaged README skeleton with the project runtime template asset behavior and `.sdd/templates/{prd,spec,plan}` structure.
-- Updated the repository README quick-start expectations with the initialized template directories and default pack behavior.
-- Added contract assertions for the init skill, template-pack source assets, and both tar and zip package artifacts.
+已将 `research / prd / dr / spec / plan` 五个文档 Skill 的 review 合同收敛为与实际命令模型一致的 create / update 双态：
 
-## What I tested and results
+- `research / prd / spec / plan`：写入前显式判断 create / update；create 必须显式触发 `/sdd:review <doc-path>` 或等价共享 runner 流程，update 不自动 review。
+- `dr`：create mode 只创建新 DR，因此该分支明确只走 create；`accept / dismiss` 属于对既有 DR 的 update，统一改为“不自动执行 review，如需复审请手工执行 `/sdd:review <doc-path>`”。
 
-All required focused tests pass:
+同时，五个 Skill 的用户可见正文继续做了最小中文化收口，保留 `PostToolUse Hook`、`共享 review runner`、`/sdd:review`、`doc-reviewer` 等关键字符串，但不再把 Hook 写成主触发职责。
+
+## 变更
+
+- 继续最小改写 `skills/research/SKILL.md`、`skills/prd/SKILL.md`、`skills/spec/SKILL.md`、`skills/plan/SKILL.md`、`skills/dr/SKILL.md`：
+  - 将残留的英文标题与关键步骤说明改为中文。
+  - 保留必要英文术语与正则、路径、命令名。
+- 纠正 `skills/dr/SKILL.md` 的 review 合同：
+  - 删除 create mode 中不可达的“目标文件不存在：视为 create；存在：视为 update”表述。
+  - 明确 create mode 恒为 create。
+  - 明确 `accept / dismiss` 是 update，且 update 不自动 review。
+- 更新 `tests/test-skill-contracts.sh`：
+  - 对 `dr` 单独断言 create-only 与 update-on-accept-dismiss 语义。
+  - 将 `plan` 与 `dr` 的部分断言同步改为中文文本，避免继续要求旧英文文案。
+- 更新 `tests/test-dr-filename-contract.sh`：
+  - 将 `plan` 模式识别相关断言改为中文文本，和 Skill 当前合同保持一致。
+
+## 验证
+
+通过：
 
 ```text
-PASS: skill contracts
-PASS: local package script
-PASS: DR filename contract
-PASS: MVP acceptance
-```
-
-The package test also verified the three required template assets in both tar.gz and zip listings.
-
-## TDD Evidence
-
-### RED
-
-Commands:
-
-```bash
+bash tests/test-template-governance-matrix.sh
 bash tests/test-skill-contracts.sh
-bash tests/test-package-local.sh
-bash tests/test-mvp-acceptance.sh
-```
-
-Relevant output:
-
-```text
-FAIL: expected skills/init/SKILL.md to contain: 展示可选模板包列表
-FAIL: expected /tmp/sdd-package-local-contents.out to contain: sdd-local/assets/template-packs/default-backend/prd/template.md
-FAIL: expected skills/init/SKILL.md to contain: 展示可选模板包列表
-```
-
-### GREEN
-
-Commands:
-
-```bash
-bash tests/test-skill-contracts.sh
-bash tests/test-package-local.sh
-bash tests/test-mvp-acceptance.sh
-```
-
-Relevant output:
-
-```text
-PASS: skill contracts
-PASS: local package script
-PASS: DR filename contract
-PASS: MVP acceptance
-```
-
-## Files changed
-
-Committed task files:
-
-- `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/skills/init/SKILL.md`
-- `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/scripts/package-local.sh`
-- `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/README.md`
-- `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/tests/test-skill-contracts.sh`
-- `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/tests/test-package-local.sh`
-- `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/tests/test-mvp-acceptance.sh`
-
-This report:
-
-- `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/.superpowers/sdd/task-2-report.md`
-
-## Self-review findings
-
-- Confirmed the package copy loop includes `assets`, while retaining conditional copying for optional paths.
-- Confirmed both archive formats contain the required default-backend PRD, Spec, and Plan assets.
-- Confirmed the init skill no longer contains the forbidden English centralized-state assertion text and explicitly reports `.sdd/templates/`.
-- Ran `git diff --check`; no whitespace errors were reported.
-- Existing unrelated modified and untracked files were not changed or staged.
-
-## Concerns
-
-None for Task 2. Runtime routing of `/sdd:prd`, `/sdd:spec`, `/sdd:plan`, and independent reviewer behavior are intentionally deferred to Task 3 and later per the task brief.
-
-## Review Fix: Explicit template-pack interface consumption
-
-Addressed the Important review finding that `/sdd:init` described template-pack behavior only in natural language without specifying the required interfaces or selection flow.
-
-Updated `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/skills/init/SKILL.md` so the runtime steps now explicitly require:
-
-```text
-sdd_list_template_packs <plugin_root>
-sdd_default_template_pack
-sdd_copy_template_pack <plugin_root> <project_root> <pack_name>
-```
-
-The contract now defines that `sdd_list_template_packs` resolves and displays the available packs under Plugin `assets/template-packs/`, `sdd_default_template_pack` supplies the default identifier when the user does not select another pack, and `sdd_copy_template_pack` materializes the selected pack into `.sdd/templates/`.
-
-Added assertions to `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/tests/test-skill-contracts.sh` for all three interfaces in the init skill contract and their definitions in `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/scripts/lib/sdd-template-assets.sh`.
-
-### Review-fix verification
-
-Commands run:
-
-```bash
-bash tests/test-skill-contracts.sh
-bash tests/test-package-local.sh
+bash tests/test-dr-filename-contract.sh
 bash tests/test-mvp-acceptance.sh
 git diff --check
 ```
 
-Output summary:
+以上检查均通过。
 
-```text
-PASS: skill contracts
-PASS: package-local
-PASS: DR filename contract
-PASS: MVP acceptance
-```
+## 自检
 
-`git diff --check` produced no output and exited successfully.
-
-## Review Fix: Preserve an existing Constitution on rerun
-
-Fixed the remaining Important review finding: when restoring template assets, `/sdd:init` must not imply overwriting the user's existing Constitution.
-
-Updated `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/skills/init/SKILL.md` Step 2 to state explicitly that `CONSTITUTION.default.md` is copied only when `docs/CONSTITUTION.md` is missing; when the file exists, its contents are preserved and not overwritten. Added matching positive and negative contract assertions in `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/tests/test-skill-contracts.sh` to prevent conflict between recovery semantics and Constitution handling.
-
-### Constitution recovery fix verification
-
-Commands run:
-
-```bash
-bash tests/test-skill-contracts.sh
-bash tests/test-package-local.sh
-bash tests/test-mvp-acceptance.sh
-git diff --check
-```
-
-Output summary:
-
-```text
-PASS: skill contracts
-PASS: local package script
-PASS: DR filename contract
-PASS: MVP acceptance
-```
-
-`git diff --check` produced no output and exited successfully.
-
-
-Updated `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/skills/init/SKILL.md` so an existing `docs/CONSTITUTION.md` is preserved and no longer terminates `/sdd:init`. The contract now explicitly requires continuing initialization, ensuring or restoring missing `.sdd/templates/` assets, and re-running the template-pack materialization flow when `.sdd/templates/` is missing or incomplete.
-
-Added contract coverage in `/Users/apple/Desktop/vibecoding-project/SDD-Land-Spec/tests/test-skill-contracts.sh` that verifies:
-
-- Existing `docs/CONSTITUTION.md` leads to continued initialization.
-- Re-running `/sdd:init` is the documented recovery path.
-- Missing or incomplete `.sdd/templates/` assets are restored.
-- The old stop-only behavior is absent.
-
-### Recovery-fix verification
-
-Commands run:
-
-```bash
-bash tests/test-skill-contracts.sh
-bash tests/test-package-local.sh
-bash tests/test-mvp-acceptance.sh
-git diff --check
-```
-
-Output summary:
-
-```text
-PASS: skill contracts
-PASS: local package script
-PASS: DR filename contract
-PASS: MVP acceptance
-```
-
-`git diff --check` produced no output and exited successfully.
+- 未新增命令名。
+- 未修改 plugin metadata。
+- 未修改模板资产。
+- 保留了 `PostToolUse Hook`、`共享 review runner`、`/sdd:review`、`doc-reviewer` 关键字符串。
+- `dr` 的 create/update 语义现在与 `create / accept / dismiss` 命令模型一致。
+- 五个文档 Skill 的用户可见正文已进一步中文化，满足项目语言约束。
+- 变更范围保持在 Task 2 允许的 Skill 与测试文件内。

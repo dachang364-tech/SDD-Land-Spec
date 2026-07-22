@@ -16,30 +16,28 @@ done
 assert_file_exists "skills/review/SKILL.md"
 assert_file_exists "skills/review/references/reviewer-result.schema.json"
 assert_file_exists "agents/doc-reviewer.md"
-assert_contains "skills/review/SKILL.md" "description: Review and improve research, PRD, DR, spec, or plan documents"
-assert_contains "skills/review/SKILL.md" 'review -> update -> review -> output'
-assert_contains "skills/review/SKILL.md" '单次 subagent 调用内部完成有限轮次串行闭环'
-assert_contains "skills/review/SKILL.md" 'dr -> quality'
-assert_contains "skills/review/SKILL.md" '`research`、`prd` 与 `dr` 只有 `quality`'
-assert_contains "skills/review/SKILL.md" '`research` 不要求 `## 文档引用` 表'
-assert_contains "skills/review/SKILL.md" '机器输出'
-assert_contains "skills/review/SKILL.md" '用户输出'
-assert_contains "skills/review/references/reviewer-result.schema.json" '"document_type"'
-assert_contains "skills/review/references/reviewer-result.schema.json" '"requires_user_confirmation"'
-assert_contains "skills/review/references/reviewer-result.schema.json" '"candidate_rewrites"'
+assert_contains "skills/review/SKILL.md" 'description: 作为受管 SDD 文档的手工 review 入口'
+assert_contains "skills/review/SKILL.md" '/sdd:review 是手工入口'
+assert_contains "skills/review/SKILL.md" '当前 Skill 只负责手工触发 review、展示结果并承接用户回执'
+assert_not_contains "skills/review/SKILL.md" '自动 review 由 `PostToolUse Hook`'
+assert_not_contains "skills/review/SKILL.md" 'reviewer 在单次 subagent 调用内部完成有限轮次串行闭环'
+assert_not_contains "skills/review/SKILL.md" '## Review admission check'
+assert_not_contains "skills/review/SKILL.md" '## Review loop'
+assert_not_contains "skills/review/SKILL.md" '## Repair Policy'
+assert_not_contains "skills/review/SKILL.md" '有限 review loop'
+assert_contains "skills/review/SKILL.md" '共享 review runner'
+assert_contains "skills/review/SKILL.md" '手工入口'
+assert_contains "skills/review/SKILL.md" '委托与回执'
+assert_contains "skills/review/SKILL.md" 'PostToolUse Hook'
+assert_contains "skills/review/SKILL.md" '/sdd:review'
 assert_contains "skills/review/SKILL.md" 'doc-reviewer'
-assert_not_contains "skills/review/SKILL.md" 'doc Reviewer-Subagent'
-assert_contains "skills/review/SKILL.md" '唯一的输入载荷'
-assert_contains "skills/review/SKILL.md" '必须只返回一个 JSON 对象'
-assert_contains "skills/review/SKILL.md" 'schema 校验失败'
-assert_contains "skills/review/SKILL.md" 'Review admission check'
-assert_contains "skills/review/SKILL.md" '不进入 review loop、不写入目标文档'
-assert_contains "skills/review/SKILL.md" '系统自动识别 `document_type`'
-assert_contains "skills/review/SKILL.md" '系统自动决定 mode 或 mode 链路'
-assert_contains "skills/review/SKILL.md" 'docs/versions/vX.Y.Z/dr/*.md'
-assert_contains "skills/review/SKILL.md" '不是受支持的 SDD 文档路径'
-assert_contains "skills/review/SKILL.md" '不能对 archived version 的文档执行任何操作'
-assert_contains "skills/init/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/`'
+assert_not_contains "skills/review/SKILL.md" '唯一的输入载荷'
+assert_not_contains "skills/review/SKILL.md" '必须只返回一个 JSON 对象'
+assert_not_contains "skills/review/SKILL.md" 'Review admission check'
+assert_not_contains "skills/review/SKILL.md" '不进入 review loop、不写入目标文档'
+assert_not_contains "skills/review/SKILL.md" '系统自动识别 `document_type`'
+assert_not_contains "skills/review/SKILL.md" '系统自动决定 mode 或 mode 链路'
+assert_contains "skills/review/references/reviewer-result.schema.json" '"document_type"'
 assert_contains "skills/prd/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/template.md`'
 assert_contains "skills/spec/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/spec/template.md`'
 assert_contains "skills/plan/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/template.md`'
@@ -105,14 +103,14 @@ assert_not_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/specs/"
 assert_not_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/plans/"
 assert_not_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/decisions/"
 
-assert_contains "skills/research/SKILL.md" "description: Create project-level SDD research notes"
+assert_contains "skills/research/SKILL.md" 'description: 创建或更新项目级 SDD research 文档。用户执行 `/sdd:research <topic>` 时使用。'
 assert_file_not_exists "skills/research/references/research.md.tmpl"
 assert_contains "skills/research/SKILL.md" 'docs/versions/vX.Y.Z/research/<type>-<YYYY-MM-DD>-<slug>.md'
 assert_contains "skills/research/SKILL.md" 'research 文档没有状态机制'
 assert_contains "skills/research/SKILL.md" '同名文档存在时，用户确认后可直接更新'
 assert_not_contains "skills/research/SKILL.md" 'docs/requirements/'
 
-assert_contains "skills/prd/SKILL.md" "description: Create the product requirements document"
+assert_contains "skills/prd/SKILL.md" 'description: 创建或更新产品需求文档。用户执行 `/sdd:prd` 时使用。'
 assert_file_not_exists "skills/prd/references/prd.md.tmpl"
 assert_not_contains "skills/prd/SKILL.md" 'skills/prd/references/prd.md.tmpl'
 assert_contains "skills/prd/SKILL.md" 'docs/versions/vX.Y.Z/prd/prd.md'
@@ -120,7 +118,6 @@ assert_contains "skills/prd/SKILL.md" '如果 `prd/prd.md` 已存在，默认不
 assert_contains "skills/prd/SKILL.md" '`prd` 不走 `DR` 变更门。'
 assert_contains "skills/prd/SKILL.md" '只读取 `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/template.md`'
 assert_contains "skills/prd/SKILL.md" '如果 `${CLAUDE_PROJECT_DIR}/.sdd/templates/prd/` 下必要文件缺失，则直接失败'
-assert_contains "skills/prd/SKILL.md" '/sdd:review` 的 `doc-reviewer` agent JSON 调用合同'
 assert_contains "skills/prd/SKILL.md" '用户确认并完成有效复审前，不得绕过该结果推进流程'
 
 assert_no_legacy_docs_v_paths() {
@@ -135,7 +132,7 @@ for template in \
   assert_not_contains "$template" "path/to/"
 done
 
-assert_contains "skills/spec/SKILL.md" "description: Create or revise the functional specification"
+assert_contains "skills/spec/SKILL.md" 'description: 创建或更新功能规格文档。用户执行 `/sdd:spec` 时使用。'
 assert_file_not_exists "skills/spec/references/spec.md.tmpl"
 assert_not_contains "skills/spec/SKILL.md" 'skills/spec/references/spec.md.tmpl'
 assert_contains "skills/spec/SKILL.md" "docs/versions/vX.Y.Z/spec/<spec-name>.md"
@@ -151,19 +148,18 @@ assert_contains "skills/spec/SKILL.md" '只读取 `${CLAUDE_PROJECT_DIR}/.sdd/te
 assert_contains "skills/spec/SKILL.md" '自动按顺序触发 `quality -> feasibility`'
 assert_contains "skills/spec/SKILL.md" '如果项目模板资产缺失，则直接失败，不降级到 Plugin 内置资产'
 assert_contains "skills/spec/SKILL.md" 'reviewer 只消费当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/spec/` 中的模板与标准，与生成阶段使用同一套项目级有效资产'
-assert_contains "skills/spec/SKILL.md" '/sdd:review` 的 `doc-reviewer` agent JSON 调用合同'
 assert_contains "skills/spec/SKILL.md" '停止，不执行 `feasibility`'
 assert_contains "skills/spec/SKILL.md" '普通审批不得绕过'
 assert_not_contains "skills/spec/SKILL.md" '用户确认后，将状态切换为 `approved`'
 
-assert_contains "skills/plan/SKILL.md" "description: Create an implementation plan from approved spec or accepted code-class DR"
+assert_contains "skills/plan/SKILL.md" 'description: 基于已批准 spec 或已接受 code-class DR 创建或更新实现计划。用户执行 `/sdd:plan <work-item>` 时使用。'
 assert_contains "skills/plan/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/template.md`'
 assert_contains "skills/plan/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/quality.standard.md`'
 assert_contains "skills/plan/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/feasibility.standard.md`'
 assert_not_contains "skills/plan/SKILL.md" 'skills/plan/references/plan.md.tmpl'
-assert_contains "skills/plan/SKILL.md" "If \`<work-item>\` matches \`^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(spec|doc|typo)-[a-z0-9]+(-[a-z0-9]+)*$\`, refuse"
-assert_contains "skills/plan/SKILL.md" "If \`<work-item>\` is DR-like (starts with three digits and a hyphen) but is not a valid full DR ID"
-assert_contains "skills/plan/SKILL.md" "Do not fall through to spec mode."
+assert_contains "skills/plan/SKILL.md" '如果 `<work-item>` 匹配 `^(00[1-9]|0[1-9][0-9]|[1-9][0-9][0-9])-(spec|doc|typo)-[a-z0-9]+(-[a-z0-9]+)*$`，直接拒绝：`文档类 DR 不生成实现计划，不执行 /sdd:code。`'
+assert_contains "skills/plan/SKILL.md" '如果 `<work-item>` 看起来像 DR（以三位数字和连字符开头）'
+assert_contains "skills/plan/SKILL.md" '不得落回 spec 模式。'
 assert_contains "skills/plan/SKILL.md" "扫描 docs/versions/v*/state.json"
 assert_contains "skills/plan/SKILL.md" "## 文档引用"
 assert_contains "skills/plan/SKILL.md" 'plan 引用 spec 时，关系应为 `implements`'
@@ -180,7 +176,6 @@ assert_contains "skills/plan/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/pl
 assert_contains "skills/plan/SKILL.md" '自动按顺序触发 `quality -> feasibility`'
 assert_contains "skills/plan/SKILL.md" '如果项目模板资产缺失，则直接失败，不降级到 Plugin 内置资产'
 assert_contains "skills/plan/SKILL.md" 'reviewer 只消费当前项目 `${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/` 中的模板与标准，与生成阶段使用同一套项目级有效资产'
-assert_contains "skills/plan/SKILL.md" '/sdd:review` 的 `doc-reviewer` agent JSON 调用合同'
 assert_contains "skills/plan/SKILL.md" '停止，不执行 `feasibility`'
 assert_contains "skills/plan/SKILL.md" '确认项写回后必须重新复审'
 assert_not_contains "skills/plan/SKILL.md" 'skills/plan/references/plan.md.tmpl'
@@ -215,7 +210,7 @@ assert_contains "skills/triage/SKILL.md" "扫描 docs/versions/v*/state.json"
 assert_contains "skills/triage/SKILL.md" "reference issue"
 assert_contains "skills/triage/SKILL.md" "关联 DRs"
 
-assert_contains "skills/dr/SKILL.md" "description: Create, accept, or dismiss SDD decision records"
+assert_contains "skills/dr/SKILL.md" 'description: 创建、接受或驳回 SDD Decision Record。用户执行 `/sdd:dr <tag> <title>`、`/sdd:dr accept <id>` 或 `/sdd:dr dismiss <id> <reason>` 时使用。'
 assert_contains "skills/dr/SKILL.md" "fix | feat | chg | arch | spec | doc | typo"
 assert_contains "skills/dr/SKILL.md" "drafting → accepted"
 assert_contains "skills/dr/SKILL.md" "class"
@@ -225,7 +220,7 @@ assert_contains "skills/dr/SKILL.md" "code_required"
 assert_contains "skills/dr/SKILL.md" "fix | code | no | yes | yes"
 assert_contains "skills/dr/SKILL.md" "简单实现 bug 可以由用户选择轻量 fix 流程"
 assert_contains "skills/dr/SKILL.md" "plan_required: no\`：运行 \`/sdd:code <id>\`"
-assert_contains "skills/dr/SKILL.md" "after accept, next step depends on \`plan_required\` and may be \`/sdd:plan <id>\` or \`/sdd:code <id>\`"
+assert_contains "skills/dr/SKILL.md" "之后根据 \`plan_required\` 进入 \`/sdd:plan <id>\` 或 \`/sdd:code <id>\`"
 assert_contains "skills/dr/SKILL.md" "feat | code | yes | yes | yes"
 assert_contains "skills/dr/SKILL.md" "chg | code | yes | yes | yes"
 assert_contains "skills/dr/SKILL.md" "arch | code | maybe | yes | yes"
@@ -235,9 +230,9 @@ assert_contains "skills/dr/SKILL.md" "typo | document | no | no | no"
 assert_contains "skills/dr/SKILL.md" "spec_change: no\`、\`plan_required: no\`：运行 \`/sdd:code <id>\`"
 assert_contains "skills/dr/SKILL.md" "class: document\`：运行 \`/sdd:spec\` 或对应文档 Skill，不进入 \`/sdd:plan\`"
 assert_contains "skills/dr/SKILL.md" "docs/versions/vX.Y.Z/dr/NNN-<tag>-<slug>.md"
-assert_contains "skills/dr/SKILL.md" "Generate version-local increasing DR number \`NNN\`; if none, use \`001\`."
-assert_contains "skills/dr/SKILL.md" "Fail DR creation when the next DR number would exceed \`999\`."
-assert_contains "skills/dr/SKILL.md" "Slugify title into a non-empty lowercase kebab-case slug using only ASCII lowercase letters, digits, and hyphens."
+assert_contains "skills/dr/SKILL.md" "生成版本内递增 DR 编号 \`NNN\`；如果还没有 DR，则使用 \`001\`。"
+assert_contains "skills/dr/SKILL.md" "若下一个编号会超过 \`999\`，则直接失败。"
+assert_contains "skills/dr/SKILL.md" "将标题 slugify 为非空 lowercase kebab-case"
 assert_contains "skills/dr/SKILL.md" "\`DR ID\` 指去掉 \`.md\` 后的完整 DR basename"
 assert_contains "skills/dr/SKILL.md" "标题标识格式固定为 \`DR-NNN-<tag>\`"
 assert_contains "skills/dr/SKILL.md" "\`/sdd:dr accept 001-fix-login-null\`"
@@ -367,15 +362,56 @@ assert_contains "skills/review/SKILL.md" '手工入口'
 assert_contains "skills/review/SKILL.md" 'requires_user_confirmation'
 assert_not_contains "skills/review/SKILL.md" '当前 Skill 直接顺序触发 quality -> feasibility'
 
-for skill in research prd dr spec plan; do
+# Task 4: /sdd:review 是共享 runner 的薄手工入口。
+assert_contains "skills/review/SKILL.md" 'scripts/lib/sdd-review-runner.sh'
+assert_contains "skills/review/SKILL.md" '手工触发 review'
+assert_contains "skills/review/SKILL.md" 'runner 返回 requires_user_confirmation 时，由 /sdd:review 承接用户确认'
+assert_not_contains "skills/review/SKILL.md" '当前 Skill 直接顺序触发 quality -> feasibility'
+assert_not_contains "skills/review/SKILL.md" '成功写入后由当前 Skill 自己继续执行 review'
+
+for skill in research prd spec plan; do
+  assert_contains "skills/$skill/SKILL.md" '目标文件不存在：视为 create；存在：视为 update'
+  assert_contains "skills/$skill/SKILL.md" '成功写入后由 `PostToolUse Hook` 触发'
+  assert_contains "skills/$skill/SKILL.md" 'scripts/lib/sdd-review-runner.sh'
+  assert_contains "skills/$skill/SKILL.md" '修改已有文档时，不自动执行 review'
+  assert_contains "skills/$skill/SKILL.md" '文档已更新；如需复审，请执行 `/sdd:review <doc-path>`'
   assert_contains "skills/$skill/SKILL.md" 'PostToolUse Hook'
   assert_contains "skills/$skill/SKILL.md" '共享 review runner'
+  assert_contains "skills/$skill/SKILL.md" '/sdd:review'
+  assert_not_contains "skills/$skill/SKILL.md" '写入后必须显式触发 `/sdd:review <doc-path>` 或等价共享 runner 流程'
+  assert_not_contains "skills/$skill/SKILL.md" '当前 Skill 直接调用 `doc-reviewer`'
+  assert_not_contains "skills/$skill/SKILL.md" '修改已有文档时也默认立即进入自动 review'
 done
 
-assert_contains "skills/research/SKILL.md" '成功写入后由运行时 Hook 触发 review'
-assert_contains "skills/prd/SKILL.md" '成功写入后由运行时 Hook 触发 review'
-assert_contains "skills/dr/SKILL.md" '成功写入后由运行时 Hook 触发 review'
-assert_contains "skills/spec/SKILL.md" '成功写入后由运行时 Hook 触发 review'
-assert_contains "skills/plan/SKILL.md" '成功写入后由运行时 Hook 触发 review'
+assert_contains "skills/dr/SKILL.md" 'create mode 只创建新 DR 文件，因此本次写入结果恒为 create，不存在 update 分支'
+assert_contains "skills/dr/SKILL.md" '成功写入后由 `PostToolUse Hook` 触发'
+assert_contains "skills/dr/SKILL.md" 'scripts/lib/sdd-review-runner.sh'
+assert_contains "skills/dr/SKILL.md" '这属于 update：修改已有 DR 时，不自动执行 review'
+assert_contains "skills/dr/SKILL.md" '文档已更新；如需复审，请执行 `/sdd:review <doc-path>`'
+assert_contains "skills/dr/SKILL.md" 'PostToolUse Hook'
+assert_contains "skills/dr/SKILL.md" '共享 review runner'
+assert_contains "skills/dr/SKILL.md" '/sdd:review'
+assert_not_contains "skills/dr/SKILL.md" '目标文件不存在：视为 create；存在：视为 update'
+assert_not_contains "skills/dr/SKILL.md" '写入后必须显式触发 `/sdd:review <doc-path>` 或等价共享 runner 流程'
+assert_not_contains "skills/dr/SKILL.md" '修改已有文档时也默认立即进入自动 review'
+
+assert_contains "skills/spec/SKILL.md" '新建文档拿不到有效 review 结果时保持 `draft`'
+assert_contains "skills/plan/SKILL.md" '新建文档拿不到有效 review 结果时保持 `draft`'
+assert_contains "skills/spec/SKILL.md" '修改已有文档时，不自动执行 review'
+assert_contains "skills/plan/SKILL.md" '修改已有文档时，不自动执行 review'
+
+assert_contains "skills/research/SKILL.md" 'quality'
+assert_contains "skills/prd/SKILL.md" 'quality'
+assert_contains "skills/dr/SKILL.md" 'quality'
+assert_contains "skills/spec/SKILL.md" 'quality -> feasibility'
+assert_contains "skills/plan/SKILL.md" 'quality -> feasibility'
+
+assert_not_contains "skills/research/SKILL.md" 'feasibility'
+assert_not_contains "skills/prd/SKILL.md" 'feasibility'
+assert_not_contains "skills/dr/SKILL.md" 'quality -> feasibility'
+assert_not_contains "skills/dr/SKILL.md" 'feasibility'
+assert_not_contains "skills/research/SKILL.md" '仅允许手动 /sdd:review'
+assert_not_contains "skills/spec/SKILL.md" '当前 Skill 直接顺序触发 quality -> feasibility'
+assert_not_contains "skills/plan/SKILL.md" '当前 Skill 直接顺序触发 quality -> feasibility'
 
 printf 'PASS: skill contracts\n'
