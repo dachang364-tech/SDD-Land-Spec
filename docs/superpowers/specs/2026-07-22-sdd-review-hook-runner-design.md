@@ -211,7 +211,47 @@ runner 遇到以下情况应返回失败：
 
 runner 不负责向用户追问；任何需要确认的内容都应由 `/sdd:review` 或更上层调用者承接。
 
-## 9. Testing Strategy
+## 9. Impacted Skills
+
+### 9.1 必须更新的 Skill
+
+以下 Skill 合同必须同步更新，因为它们当前直接描述了 review 触发语义，或持有 `/sdd:review` 的核心编排责任：
+
+- `skills/review/SKILL.md`
+- `skills/research/SKILL.md`
+- `skills/prd/SKILL.md`
+- `skills/dr/SKILL.md`
+- `skills/spec/SKILL.md`
+- `skills/plan/SKILL.md`
+
+### 9.2 各 Skill 的预期调整
+
+1. **`/sdd:review`**
+   - 从完整编排者改为薄入口。
+   - 保留对外合同、用户输入说明、用户回执和确认承接语义。
+   - 去掉与 runner 重复的核心编排细节，改为明确“内部调用共享 review runner”。
+
+2. **`/sdd:research` / `/sdd:prd` / `/sdd:dr` / `/sdd:spec` / `/sdd:plan`**
+   - 不再把“写完后由当前 Skill 显式触发 review”描述为本 Skill 的独立职责。
+   - 改为声明：当受管目标文档成功写入后，由运行时 Hook 触发共享 review runner。
+   - 保留各文档类型对应的 review mode 语义，例如：
+     - `research / prd / dr -> quality`
+     - `spec / plan -> quality -> feasibility`
+   - 保留 review 阻断、待确认项和不得绕过 gate 的流程约束。
+
+### 9.3 可选复核但不应成为主改造对象的 Skill
+
+以下 Skill 通常不需要核心改造，但在实现阶段应复核其文案是否引用了旧的 review 触发方式：
+
+- `skills/init/SKILL.md`
+- `skills/new/SKILL.md`
+- `skills/archive/SKILL.md`
+- `skills/code/SKILL.md`
+- `skills/triage/SKILL.md`
+
+这些 Skill 如果引用“某个文档 Skill 内部显式触发 review”的旧表述，应同步改为引用统一的 review 运行时机制。
+
+## 10. Testing Strategy
 
 ### 9.1 Hook 触发测试
 
@@ -237,7 +277,7 @@ runner 不负责向用户追问；任何需要确认的内容都应由 `/sdd:rev
 - 它的用户回执来自 runner。
 - 它不再复制核心编排逻辑。
 
-## 10. Acceptance Criteria
+## 11. Acceptance Criteria
 
 1. SDD 受管文档写入成功后，会触发统一 review 路径。
 2. Hook 的覆盖范围只包括 SDD 受管文档路径。
@@ -247,7 +287,7 @@ runner 不负责向用户追问；任何需要确认的内容都应由 `/sdd:rev
 6. `prd`、`spec` 等 Skill 不再依赖模型继续执行后续 review 步骤。
 7. 设计不会把 `doc-reviewer` 暴露成新的对外公共入口。
 
-## 11. Decision Summary
+## 12. Decision Summary
 
 本次设计采用以下结论：
 
