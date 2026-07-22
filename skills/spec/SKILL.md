@@ -1,6 +1,6 @@
 ---
 name: spec
-description: Create or revise the functional specification. Use for /sdd:spec.
+description: 创建或更新功能规格文档。用户执行 `/sdd:spec` 时使用。
 ---
 
 # /sdd:spec
@@ -51,8 +51,10 @@ Write formal relationships into the unified `## 文档引用` table:
 
 ## Review
 
-- 成功写入后由运行时 Hook 触发 review；当前流程会通过 `PostToolUse Hook` 自动完成 review，并统一使用 `scripts/lib/sdd-review-runner.sh` 这个共享 review runner。
-- 如需再次人工复审或查看回执，请调用 `/sdd:review <doc-path>`；其内部继续沿用 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同。
+- 写入前显式判断目标文件：目标文件不存在：视为 create；存在：视为 update。
+- create：写入后必须显式触发 `/sdd:review <doc-path>` 或等价共享 runner 流程；该流程调用 `scripts/lib/sdd-review-runner.sh` 这个共享 review runner，并沿用 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同。拿不到有效结果不能继续后续流程；新建文档拿不到有效 review 结果时保持 `draft`。
+- update：修改已有文档时，不自动执行 review。回执统一为“文档已更新；如需复审，请执行 `/sdd:review <doc-path>`”。
+- `PostToolUse Hook` 仅保留运行时兼容合同，不是本 Skill 的 review 主触发职责。
 - `spec` 自动按顺序触发 `quality -> feasibility`；每个 mode 的机器结果均须先通过 schema 校验。
 - `quality` JSON 无效、admission check 失败、`blocked: true` 或 `requires_user_confirmation: true` 时，停止，不执行 `feasibility`，聚合已执行结果为一份回执，并保留 `draft`。
 - 只有 `quality` 的有效结果未阻断且无需确认时才执行 `feasibility`。`feasibility` 默认弱阻断：未阻断的风险只进入聚合回执；若它返回 `blocked: true`、需要确认或无效 JSON，则保留 `draft`。

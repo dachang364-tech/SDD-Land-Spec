@@ -1,6 +1,6 @@
 ---
 name: dr
-description: Create, accept, or dismiss SDD decision records. Use for /sdd:dr <tag> <title>, /sdd:dr accept <id>, or /sdd:dr dismiss <id> <reason>.
+description: 创建、接受或驳回 SDD Decision Record。用户执行 `/sdd:dr <tag> <title>`、`/sdd:dr accept <id>` 或 `/sdd:dr dismiss <id> <reason>` 时使用。
 ---
 
 # /sdd:dr
@@ -67,10 +67,12 @@ Steps:
    - 引用 project-level requirements：同时写相对 Markdown link 和 `project:requirements/<file>.md` locator。
    - 引用跨版本文档：同时写相对 Markdown link 和版本 locator。
    - `## 文档引用` 是 DR 的正式关系来源；`## 影响资产` 只做摘要，不作为正式关系来源。
-12. 成功写入后由运行时 Hook 触发 review；当前流程会通过 `PostToolUse Hook` 自动完成 review，并统一使用 `scripts/lib/sdd-review-runner.sh` 这个共享 review runner。
-13. 如需再次人工复审或查看回执，请调用 `/sdd:review <doc-path>`；其内部继续沿用 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同。
-14. `dr` 的 runner mode 只有 `quality`；机器结果必须先通过 schema 校验。
-15. Output next step:
+12. 写入前显式判断目标文件：目标文件不存在：视为 create；存在：视为 update。
+13. create：写入后必须显式触发 `/sdd:review <doc-path>` 或等价共享 runner 流程；该流程调用 `scripts/lib/sdd-review-runner.sh` 这个共享 review runner，并沿用 `/sdd:review` 的 `doc-reviewer` agent JSON 调用合同。拿不到有效结果不能继续后续流程。
+14. update：修改已有文档时，不自动执行 review。回执统一为“文档已更新；如需复审，请执行 `/sdd:review <doc-path>`”。
+15. `PostToolUse Hook` 仅保留运行时兼容合同，不是本 Skill 的 review 主触发职责。
+16. `dr` 的 runner mode 只有 `quality`；机器结果必须先通过 schema 校验。
+17. Output next step:
    - code-class DR: run `/sdd:dr accept <id>`; after accept, next step depends on `plan_required` and may be `/sdd:plan <id>` or `/sdd:code <id>`. If `spec_change` is `yes` or `maybe`, first evaluate whether `/sdd:spec` is needed.
    - document-class DR: run `/sdd:dr accept <id>`, then `/sdd:spec` or the corresponding document Skill.
 

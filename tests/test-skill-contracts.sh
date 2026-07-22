@@ -103,14 +103,14 @@ assert_not_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/specs/"
 assert_not_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/plans/"
 assert_not_contains "skills/new/SKILL.md" "docs/versions/vX.Y.Z/decisions/"
 
-assert_contains "skills/research/SKILL.md" "description: Create project-level SDD research notes"
+assert_contains "skills/research/SKILL.md" 'description: 创建或更新项目级 SDD research 文档。用户执行 `/sdd:research <topic>` 时使用。'
 assert_file_not_exists "skills/research/references/research.md.tmpl"
 assert_contains "skills/research/SKILL.md" 'docs/versions/vX.Y.Z/research/<type>-<YYYY-MM-DD>-<slug>.md'
 assert_contains "skills/research/SKILL.md" 'research 文档没有状态机制'
 assert_contains "skills/research/SKILL.md" '同名文档存在时，用户确认后可直接更新'
 assert_not_contains "skills/research/SKILL.md" 'docs/requirements/'
 
-assert_contains "skills/prd/SKILL.md" "description: Create the product requirements document"
+assert_contains "skills/prd/SKILL.md" 'description: 创建或更新产品需求文档。用户执行 `/sdd:prd` 时使用。'
 assert_file_not_exists "skills/prd/references/prd.md.tmpl"
 assert_not_contains "skills/prd/SKILL.md" 'skills/prd/references/prd.md.tmpl'
 assert_contains "skills/prd/SKILL.md" 'docs/versions/vX.Y.Z/prd/prd.md'
@@ -133,7 +133,7 @@ for template in \
   assert_not_contains "$template" "path/to/"
 done
 
-assert_contains "skills/spec/SKILL.md" "description: Create or revise the functional specification"
+assert_contains "skills/spec/SKILL.md" 'description: 创建或更新功能规格文档。用户执行 `/sdd:spec` 时使用。'
 assert_file_not_exists "skills/spec/references/spec.md.tmpl"
 assert_not_contains "skills/spec/SKILL.md" 'skills/spec/references/spec.md.tmpl'
 assert_contains "skills/spec/SKILL.md" "docs/versions/vX.Y.Z/spec/<spec-name>.md"
@@ -154,7 +154,7 @@ assert_contains "skills/spec/SKILL.md" '停止，不执行 `feasibility`'
 assert_contains "skills/spec/SKILL.md" '普通审批不得绕过'
 assert_not_contains "skills/spec/SKILL.md" '用户确认后，将状态切换为 `approved`'
 
-assert_contains "skills/plan/SKILL.md" "description: Create an implementation plan from approved spec or accepted code-class DR"
+assert_contains "skills/plan/SKILL.md" 'description: 基于已批准 spec 或已接受 code-class DR 创建或更新实现计划。用户执行 `/sdd:plan <work-item>` 时使用。'
 assert_contains "skills/plan/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/template.md`'
 assert_contains "skills/plan/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/quality.standard.md`'
 assert_contains "skills/plan/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/plan/feasibility.standard.md`'
@@ -213,7 +213,7 @@ assert_contains "skills/triage/SKILL.md" "扫描 docs/versions/v*/state.json"
 assert_contains "skills/triage/SKILL.md" "reference issue"
 assert_contains "skills/triage/SKILL.md" "关联 DRs"
 
-assert_contains "skills/dr/SKILL.md" "description: Create, accept, or dismiss SDD decision records"
+assert_contains "skills/dr/SKILL.md" 'description: 创建、接受或驳回 SDD Decision Record。用户执行 `/sdd:dr <tag> <title>`、`/sdd:dr accept <id>` 或 `/sdd:dr dismiss <id> <reason>` 时使用。'
 assert_contains "skills/dr/SKILL.md" "fix | feat | chg | arch | spec | doc | typo"
 assert_contains "skills/dr/SKILL.md" "drafting → accepted"
 assert_contains "skills/dr/SKILL.md" "class"
@@ -381,5 +381,7 @@ done
 
 assert_contains "skills/spec/SKILL.md" '新建文档拿不到有效 review 结果时保持 `draft`'
 assert_contains "skills/plan/SKILL.md" '新建文档拿不到有效 review 结果时保持 `draft`'
+assert_contains "skills/spec/SKILL.md" '修改已有文档时，不自动执行 review'
+assert_contains "skills/plan/SKILL.md" '修改已有文档时，不自动执行 review'
 
 printf 'PASS: skill contracts\n'
