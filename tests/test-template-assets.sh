@@ -20,11 +20,14 @@ assert_file_exists "assets/template-packs/backend/plan/quality.standard.md"
 assert_file_exists "assets/template-packs/backend/plan/feasibility.standard.md"
 assert_file_exists "assets/template-packs/backend/dr/template.md"
 assert_file_exists "assets/template-packs/backend/dr/quality.standard.md"
+assert_file_exists "assets/project/CLAUDE.md"
 assert_not_contains "scripts/lib/sdd-template-assets.sh" "default-backend"
 assert_contains "scripts/lib/sdd-template-assets.sh" "printf 'backend\\n'"
 assert_contains "scripts/lib/sdd-template-assets.sh" 'mkdir -p "$target_root/research" "$target_root/prd" "$target_root/spec" "$target_root/plan" "$target_root/dr"'
 assert_not_contains "scripts/lib/sdd-template-assets.sh" 'cp -R -n "$pack_root/dr/." "$target_root/dr/" || true'
 assert_contains "scripts/lib/sdd-template-assets.sh" '模板包缺少必需目录'
+assert_contains "scripts/lib/sdd-template-assets.sh" 'sdd_ensure_project_claude'
+assert_contains "scripts/lib/sdd-template-assets.sh" 'assets/project/CLAUDE.md'
 
 mkdir -p "$tmp_plugin/assets/template-packs/backend/research"
 mkdir -p "$tmp_plugin/assets/template-packs/backend/prd"
@@ -43,6 +46,15 @@ printf '# quality\n' > "$tmp_plugin/assets/template-packs/backend/plan/quality.s
 printf '# feasibility\n' > "$tmp_plugin/assets/template-packs/backend/plan/feasibility.standard.md"
 printf '# DR\n' > "$tmp_plugin/assets/template-packs/backend/dr/template.md"
 printf '# dr quality\n' > "$tmp_plugin/assets/template-packs/backend/dr/quality.standard.md"
+mkdir -p "$tmp_plugin/assets/project"
+printf '# Project Claude\n' > "$tmp_plugin/assets/project/CLAUDE.md"
+
+sdd_ensure_project_claude "$tmp_plugin" "$tmp_project"
+assert_file_exists "$tmp_project/CLAUDE.md"
+assert_contains "$tmp_project/CLAUDE.md" '# Project Claude'
+printf '# Custom Claude\n' > "$tmp_project/CLAUDE.md"
+sdd_ensure_project_claude "$tmp_plugin" "$tmp_project"
+assert_contains "$tmp_project/CLAUDE.md" '# Custom Claude'
 
 sdd_copy_template_pack "$tmp_plugin" "$tmp_project" "backend"
 assert_file_exists "$tmp_project/.sdd/templates/research/template.md"
@@ -86,6 +98,13 @@ printf '# feasibility\n' > "$broken_plugin/assets/template-packs/backend/plan/fe
 
 if sdd_copy_template_pack "$broken_plugin" "$tmp_project" "backend"; then
   fail "expected sdd_copy_template_pack to fail when a required template subdirectory is missing"
+fi
+
+missing_claude_plugin="$(mktemp -d)"
+trap 'rm -rf "$tmp_plugin" "$tmp_project" "$broken_plugin" "$missing_claude_plugin"' EXIT
+mkdir -p "$missing_claude_plugin/assets/project"
+if sdd_ensure_project_claude "$missing_claude_plugin" "$tmp_project"; then
+  fail "expected sdd_ensure_project_claude to fail when project CLAUDE asset is missing"
 fi
 
 printf 'PASS: template assets\n'

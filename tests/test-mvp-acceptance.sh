@@ -14,6 +14,7 @@ for skill in init new research prd spec plan code dr archive; do
   assert_file_exists "skills/$skill/SKILL.md"
 done
 
+assert_file_exists "assets/project/CLAUDE.md"
 assert_file_exists "assets/template-packs/backend/research/template.md"
 assert_file_exists "assets/template-packs/backend/research/quality.standard.md"
 assert_file_exists "assets/template-packs/backend/prd/template.md"
@@ -45,6 +46,10 @@ assert_contains "/tmp/sdd-common.out" "PASS: common library"
 bash tests/test-skill-contracts.sh >/tmp/sdd-skills.out
 assert_contains "/tmp/sdd-skills.out" "PASS: skill contracts"
 
+# Init project context contract
+bash tests/test-init-project-context.sh >/tmp/sdd-init-context.out
+assert_contains "/tmp/sdd-init-context.out" "PASS: init project context"
+
 # DR filename 合同独立验证，并由 MVP 验收保留覆盖。
 bash tests/test-dr-filename-contract.sh >/tmp/sdd-dr-filename.out
 assert_contains "/tmp/sdd-dr-filename.out" "PASS: DR filename contract"
@@ -65,6 +70,8 @@ assert_contains "README.md" '`/sdd:review <doc-path>` 是统一 review 入口'
 assert_contains "README.md" '新建 `research / prd / dr / spec / plan` 文档后，所属 Skill 会显式进入 `/sdd:review <doc-path>`'
 assert_contains "README.md" '修改已有文档时，不自动 review；如需复审，请手工执行 `/sdd:review <doc-path>`。'
 assert_contains "README.md" '系统不再依赖 `PostToolUse Hook` 或 shell runner 触发 review。'
+assert_contains "README.md" '项目根目录缺失 `CLAUDE.md` 时生成默认 Claude Code 项目协作说明；已有时严格保留'
+assert_contains "README.md" '`/sdd:init` 不处理 `AGENTS.md`。'
 assert_contains "TESTING.md" '生成新 `research`、`prd`、`dr`、`spec`、`plan` 文档后，确认所属 Skill 显式进入 `/sdd:review <doc-path>`'
 assert_contains "TESTING.md" '确认 `research`、`prd`、`dr` create 只触发 `quality`；`spec` 与 `plan` create 按顺序触发 `quality -> feasibility`。'
 assert_contains "TESTING.md" '更新已有文档时，确认不会自动 review，只输出手工复审提示。'

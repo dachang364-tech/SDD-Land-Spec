@@ -51,18 +51,19 @@ assert_contains "skills/plan/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/pl
 assert_contains "skills/review/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/`'
 
 assert_contains "skills/init/SKILL.md" "description: Initialize SDD project structure"
-assert_contains "skills/init/SKILL.md" '`docs/CONSTITUTION.md` 已存在'
-assert_contains "skills/init/SKILL.md" "继续初始化"
-assert_contains "skills/init/SKILL.md" '`${CLAUDE_PROJECT_DIR}/.sdd/templates/` 资产'
-assert_contains "skills/init/SKILL.md" '重新执行 `/sdd:init`'
+assert_contains "skills/init/SKILL.md" '如果 `${CLAUDE_PROJECT_DIR}/CLAUDE.md` 缺失，允许本次初始化补齐项目级 Claude Code 协作说明'
+assert_contains "skills/init/SKILL.md" '如果 `${CLAUDE_PROJECT_DIR}/CLAUDE.md` 已存在，则必须完整保留原文件，不覆盖、不合并'
+assert_contains "skills/init/SKILL.md" '`AGENTS.md` 不属于 `/sdd:init` 管理范围'
+assert_contains "skills/init/SKILL.md" '调用 `sdd_ensure_project_claude "$plugin_root" "$project_root"`'
+assert_contains "skills/init/SKILL.md" '如果 `sdd_ensure_project_claude` 返回非零，停止并报告失败'
 assert_contains "skills/init/SKILL.md" '仅当 `${CLAUDE_PROJECT_DIR}/docs/CONSTITUTION.md` 缺失时，复制 `CONSTITUTION.default.md`'
 assert_contains "skills/init/SKILL.md" '如果 `${CLAUDE_PROJECT_DIR}/docs/CONSTITUTION.md` 已存在，则保留现有文件，不覆盖用户内容'
 assert_not_contains "skills/init/SKILL.md" '2. Copy `CONSTITUTION.default.md` to `docs/CONSTITUTION.md`.'
 assert_not_contains "skills/init/SKILL.md" "stop and say"
-assert_contains "skills/init/SKILL.md" "docs/versions/"
-assert_contains "skills/init/SKILL.md" '不创建任何版本目录或版本级 `state.json`'
-assert_contains "skills/init/SKILL.md" "允许处于 0 active version 状态"
-assert_contains "skills/init/SKILL.md" "只提示用户安装依赖插件"
+assert_contains "skills/init/SKILL.md" '`${CLAUDE_PROJECT_DIR}/CLAUDE.md`'
+assert_contains "skills/init/SKILL.md" '不处理 `AGENTS.md`；无论 `${CLAUDE_PROJECT_DIR}/AGENTS.md` 是否存在，都不创建、不修改、不删除。'
+assert_contains "skills/init/SKILL.md" '复制 `CONSTITUTION.default.md`、`${CLAUDE_PROJECT_DIR}/CLAUDE.md` 与模板资产时，只在缺失时写入；不得覆盖用户已有内容。'
+assert_contains "skills/init/SKILL.md" 'docs/archive/'
 assert_contains "skills/init/SKILL.md" '不执行 `scripts/install-deps.sh`'
 assert_contains "skills/init/SKILL.md" '`superpowers`'
 assert_contains "skills/init/SKILL.md" '`spec-kit`'

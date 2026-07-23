@@ -34,11 +34,13 @@ assert_contains "$archive_contents" "${package_root}/agents/doc-reviewer.md"
 assert_contains "$zip_listing" "${package_root}/agents/doc-reviewer.md"
 
 assert_contains "$archive_contents" "${package_root}/assets/template-packs/backend/research/template.md"
+assert_contains "$archive_contents" "${package_root}/assets/project/CLAUDE.md"
 assert_contains "$archive_contents" "${package_root}/assets/template-packs/backend/research/quality.standard.md"
 assert_contains "$archive_contents" "${package_root}/assets/template-packs/backend/prd/template.md"
 assert_contains "$archive_contents" "${package_root}/assets/template-packs/backend/spec/feasibility.standard.md"
 assert_contains "$archive_contents" "${package_root}/assets/template-packs/backend/plan/quality.standard.md"
 assert_contains "$zip_listing" "${package_root}/assets/template-packs/backend/research/template.md"
+assert_contains "$zip_listing" "${package_root}/assets/project/CLAUDE.md"
 assert_contains "$zip_listing" "${package_root}/assets/template-packs/backend/research/quality.standard.md"
 assert_contains "$zip_listing" "${package_root}/assets/template-packs/backend/prd/template.md"
 assert_contains "$zip_listing" "${package_root}/assets/template-packs/backend/spec/feasibility.standard.md"
@@ -65,6 +67,8 @@ assert_contains "$readme_tmp" "用户自行安装"
 assert_contains "$readme_tmp" "可选辅助脚本"
 assert_contains "$readme_tmp" '`/sdd:init` 不会自动安装依赖插件'
 assert_contains "$readme_tmp" '`/sdd:init` 会在项目中初始化 `.sdd/templates/`，并将所选模板包展开为运行时唯一生效资产。'
+assert_contains "$readme_tmp" '`/sdd:init` 在项目根目录缺失 `CLAUDE.md` 时会自动生成默认项目协作说明；若已存在则不覆盖。'
+assert_contains "$readme_tmp" '`/sdd:init` 不处理 `AGENTS.md`。'
 assert_contains "$readme_tmp" '.sdd/templates/'
 if grep -Eq '本项目验证|测试指南|worktree|合并|开发' "$readme_tmp"; then
   fail "packaged README must focus on user usage, not plugin development"

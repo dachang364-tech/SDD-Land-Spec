@@ -21,6 +21,8 @@
 - must: 受 SDD 管理的文档，其运行时结构与质量规则必须以项目内运行时模板为唯一事实来源。
 - must: skill 内置模板、示例文本或其他静态资源不能作为运行时事实来源。
 - must: 若运行时模板缺失，相关 skill 必须视为前置条件不满足，不得静默回退到其他模板来源。
+- must: `docs/CONSTITUTION.md` 是 SDD 正式流程、状态、review 与门控规则的事实来源。
+- should: 项目根 `CLAUDE.md` 只承载 Claude Code 协作上下文与进入 SDD 工作流前的提醒，不应复制或替代本宪法正文。
 
 ## 4. Review 治理
 - must: review 是受管文档工作流中的正式 gate，不是可选附加动作。

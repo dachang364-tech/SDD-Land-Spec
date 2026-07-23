@@ -36,6 +36,40 @@ sdd_project_templates_root() {
   printf '%s/.sdd/templates\n' "$project_root"
 }
 
+sdd_project_claude_asset_path() {
+  local plugin_root="$1"
+  printf '%s/assets/project/CLAUDE.md\n' "$plugin_root"
+}
+
+sdd_project_claude_target_path() {
+  local project_root="$1"
+  printf '%s/CLAUDE.md\n' "$project_root"
+}
+
+sdd_ensure_project_claude() {
+  local plugin_root="$1"
+  local project_root="$2"
+  local source_path
+  local target_path
+
+  source_path="$(sdd_project_claude_asset_path "$plugin_root")"
+  target_path="$(sdd_project_claude_target_path "$project_root")"
+
+  if [[ ! -f "$source_path" ]]; then
+    printf '项目级 CLAUDE 模板不存在：%s\n' "$source_path" >&2
+    return 2
+  fi
+
+  if [[ -e "$target_path" ]]; then
+    return 0
+  fi
+
+  cp "$source_path" "$target_path" || {
+    printf '项目级 CLAUDE 模板复制失败：%s -> %s\n' "$source_path" "$target_path" >&2
+    return 2
+  }
+}
+
 sdd_copy_template_pack() {
   local plugin_root="$1"
   local project_root="$2"

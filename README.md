@@ -7,6 +7,7 @@ SDD Plugin 是一个面向 Claude Code 的 Specification Driven Development（SD
 SDD Plugin MVP 提供以下能力：
 
 - 初始化项目级 SDD 目录和流程宪法 `docs/CONSTITUTION.md`
+- 在项目根目录缺失 `CLAUDE.md` 时生成默认 Claude Code 项目协作说明；已有时严格保留
 - 创建唯一活跃版本目录 `docs/versions/vX.Y.Z/`
 - 生成版本内调研资料：`docs/versions/vX.Y.Z/research/*.md`
 - 生成无状态 PRD：`docs/versions/vX.Y.Z/prd/prd.md`
@@ -121,6 +122,7 @@ claude
 
 - `/sdd:init` 创建：
   - `docs/CONSTITUTION.md`
+  - `CLAUDE.md`（仅在项目根目录缺失时生成；已有时保留）
   - `docs/archive/`
   - `.sdd/templates/research/`
   - `.sdd/templates/prd/`
@@ -128,6 +130,8 @@ claude
   - `.sdd/templates/plan/`
   - `.sdd/templates/dr/`
 - `/sdd:init` 会提示模板包选择；未显式切换时默认使用 `backend`。
+- `/sdd:init` 在项目根目录缺失 `CLAUDE.md` 时会自动生成默认项目协作说明；若已存在则不覆盖、不合并。
+- `/sdd:init` 不处理 `AGENTS.md`。
 - `/sdd:init` 不会自动安装依赖插件，只会提示用户手动安装 `superpowers` 与 `spec-kit`。
 - `/sdd:new v0.2.0` 创建：
   - `docs/versions/v0.2.0/state.json`
@@ -140,6 +144,8 @@ claude
 ## 项目模板资产
 
 `/sdd:init` 会将所选模板包展开到 `.sdd/templates/`，这是 `/sdd:research`、`/sdd:prd`、`/sdd:spec`、`/sdd:plan` 和 `/sdd:review` 的运行时唯一模板来源。
+
+`docs/CONSTITUTION.md` 是 SDD 正式流程、状态、review 与门控规则的事实来源；项目根 `CLAUDE.md` 只承载 Claude Code 的项目协作上下文，不替代宪法正文。
 
 当前版本实现的内置模板包为 `backend`。模板包内容由 Plugin 静态资产 `assets/template-packs/backend/` 提供，通过 `/sdd:init` 物化到项目运行时目录；后续文档生成和 reviewer 只读取项目 `.sdd/templates/`，不回退到 Plugin 内置模板。
 
@@ -369,5 +375,6 @@ claude plugin marketplace add /path/to/sdd-plugin
 - 不做 git log CONFORMANCE 回溯
 - 不做 PostToolUse 进度记账
 - 不做 PreCompact 状态持久化
-- 不自动修改 `CLAUDE.md` 或 `AGENTS.md`
+- 只在项目根目录缺失 `CLAUDE.md` 时生成默认项目协作说明；已有 `CLAUDE.md` 时严格保留，不覆盖、不合并
+- 不处理 `AGENTS.md`
 - 不发布到公开插件市场

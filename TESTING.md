@@ -15,6 +15,9 @@ bash tests/test-common-library.sh && \
 bash tests/test-pre-tool-use.sh && \
 bash tests/test-reference-validation.sh && \
 bash tests/test-skill-contracts.sh && \
+bash tests/test-template-governance-matrix.sh && \
+bash tests/test-init-project-context.sh && \
+bash tests/test-package-local.sh && \
 bash tests/test-mvp-acceptance.sh
 ```
 
@@ -27,6 +30,9 @@ PASS: common library
 PASS: pre-tool-use hook
 PASS: reference validation
 PASS: skill contracts
+PASS: template governance matrix
+PASS: init project context
+PASS: local package script
 PASS: MVP acceptance
 ```
 
@@ -37,14 +43,17 @@ PASS: MVP acceptance
 3. 手工删除 `.sdd/templates/research/quality.standard.md` 后再次运行 `/sdd:research demo`，期望命令明确失败，并提示缺少项目模板资产。
 4. 手工删除 `.sdd/templates/spec/feasibility.standard.md` 后再次运行 `/sdd:spec`，期望命令明确失败，并提示缺少项目模板资产。
 5. 重新执行 `/sdd:init` 恢复缺失模板资产，并确认已有项目自定义模板不会被覆盖。
-6. 生成新 `research`、`prd`、`dr`、`spec`、`plan` 文档后，确认所属 Skill 显式进入 `/sdd:review <doc-path>`。
-7. 确认 `research`、`prd`、`dr` create 只触发 `quality`；`spec` 与 `plan` create 按顺序触发 `quality -> feasibility`。
-8. 更新已有文档时，确认不会自动 review，只输出手工复审提示。
-9. 确认插件安装后的组件目录包含 `agents/doc-reviewer.md`。
-10. 对可 review 文档执行 `/sdd:review <doc-path>`，确认 reviewer 使用该 agent，而不是仅依据 review skill 文本模拟执行，并且只返回一份聚合用户回执。
-11. 对 archived version 下的 `research`、`prd/prd.md`、`spec/*.md`、`plan/*.md`、`dr/*.md` 执行 `/sdd:review`，期望直接失败。
-12. 对一个可 review 文档执行 `/sdd:review <doc-path>`，确认系统按路径自动识别文档类型，而不是要求用户手工指定类型。
-13. 对 `/sdd:code <plan>` 执行前，确认目标 plan 的 `## 文档引用` 中仍保持 `implements` 闭包指向 approved spec 或 accepted code-class DR。
+6. 如果项目根目录没有 `CLAUDE.md`，执行 `/sdd:init` 后确认自动生成默认 `CLAUDE.md`。
+7. 编辑项目根 `CLAUDE.md` 为自定义内容后再次执行 `/sdd:init`，确认内容保持不变。
+8. 预先放置 `AGENTS.md` 后执行 `/sdd:init`，确认该文件未被修改；如果不存在，也确认 `/sdd:init` 不会创建它。
+9. 生成新 `research`、`prd`、`dr`、`spec`、`plan` 文档后，确认所属 Skill 显式进入 `/sdd:review <doc-path>`。
+10. 确认 `research`、`prd`、`dr` create 只触发 `quality`；`spec` 与 `plan` create 按顺序触发 `quality -> feasibility`。
+11. 更新已有文档时，确认不会自动 review，只输出手工复审提示。
+12. 确认插件安装后的组件目录包含 `agents/doc-reviewer.md`。
+13. 对可 review 文档执行 `/sdd:review <doc-path>`，确认 reviewer 使用该 agent，而不是仅依据 review skill 文本模拟执行，并且只返回一份聚合用户回执。
+14. 对 archived version 下的 `research`、`prd/prd.md`、`spec/*.md`、`plan/*.md`、`dr/*.md` 执行 `/sdd:review`，期望直接失败。
+15. 对一个可 review 文档执行 `/sdd:review <doc-path>`，确认系统按路径自动识别文档类型，而不是要求用户手工指定类型。
+16. 对 `/sdd:code <plan>` 执行前，确认目标 plan 的 `## 文档引用` 中仍保持 `implements` 闭包指向 approved spec 或 accepted code-class DR。
 
 ## 3. 检查禁止路径
 
@@ -130,6 +139,8 @@ claude plugin list
 重点确认：
 
 - `/sdd:init` 创建 `docs/CONSTITUTION.md`、`docs/versions/`、`docs/archive/`。
+- `/sdd:init` 在项目根目录缺失 `CLAUDE.md` 时创建默认项目协作说明；若已存在则保持不变。
+- `/sdd:init` 不处理 `AGENTS.md`。
 - `/sdd:init` 创建 `.sdd/templates/research/`、`.sdd/templates/prd/`、`.sdd/templates/spec/`、`.sdd/templates/plan/`、`.sdd/templates/dr/`。
 - `/sdd:init` 不自动安装依赖插件。
 - `/sdd:init` 会提示用户手动安装 `superpowers` 与 `spec-kit`。

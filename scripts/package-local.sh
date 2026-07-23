@@ -103,6 +103,10 @@ scripts/install-deps.sh
 
 `/sdd:init` 不会自动安装依赖插件，只会提示用户完成上述安装。
 
+`/sdd:init` 在项目根目录缺失 `CLAUDE.md` 时会自动生成默认项目协作说明；若已存在则不覆盖。
+
+`/sdd:init` 不处理 `AGENTS.md`。
+
 然后把本插件目录添加为本地 marketplace，并安装 `sdd`：
 
 ```bash
